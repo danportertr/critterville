@@ -35,23 +35,30 @@ export default {
     const { W, H } = S, k = falling(e);
     if (k > 0) {
       ctx.fillStyle = `rgba(105,125,170,${0.16 * k})`; ctx.fillRect(0, 0, W, H);
-      // Teardrops, falling at a gentle pace (a couple of seconds from top to bottom).
+      // Each drop is aimed at its own spot on the ground, somewhere in the meadow.
+      // It falls from above the screen to that spot, lands with a little ring,
+      // and then a new drop starts for somewhere else.
+      const FALL = 0.8;                                  // share of a drop's cycle spent falling; the rest is the splash
+      const drops = [], rings = [];
+      for (let i = 0; i < 90; i++) {
+        const len = 2.2 + hs(13, i) * 1.1, t = S.now / len + hs(12, i), n = Math.floor(t), u = t - n;
+        const lx = hs(16, i * 31 + n * 7) * W, ly = 70 + hs(17, i * 31 + n * 7) * (H - 80);   // where this one lands
+        if (u < FALL) drops.push([lx + (FALL - u) * 14, ly - (FALL - u) / FALL * (H + 40), 3 + hs(14, i) * 1.4]);
+        else rings.push([lx, ly, (u - FALL) / (1 - FALL)]);
+      }
       ctx.fillStyle = `rgba(95,150,220,${0.75 * k})`; ctx.beginPath();
-      for (let i = 0; i < 85; i++) {
-        const x = hs(11, i) * W + Math.sin(S.now * 0.8 + i) * 3, y = ((hs(12, i) + S.now * (0.38 + hs(13, i) * 0.18)) % 1) * (H + 30) - 15, r = 3 + hs(14, i) * 1.4;
+      for (const [x, y, r] of drops) {                   // teardrops: pointed on top, round underneath
         ctx.moveTo(x, y - r * 2.6);
         ctx.quadraticCurveTo(x + r * 1.5, y + r * 0.3, x, y + r);
         ctx.quadraticCurveTo(x - r * 1.5, y + r * 0.3, x, y - r * 2.6);
       }
       ctx.fill();
-      // ...and the little rings where they land
-      ctx.strokeStyle = `rgba(95,150,220,${0.5 * k})`; ctx.lineWidth = 1.4;
-      for (let i = 0; i < 14; i++) {
-        const t = (S.now * 0.9 + hs(15, i) * 5) % 1, n = Math.floor(S.now * 0.9 + hs(15, i) * 5);
-        ctx.globalAlpha = 1 - t;
-        ctx.beginPath(); ctx.ellipse(hs(16, i + n * 7) * W, 80 + hs(17, i + n * 7) * (H - 90), 2 + t * 9, 1 + t * 3.5, 0, 0, 7); ctx.stroke();
+      ctx.lineWidth = 1.6;
+      for (const [x, y, q] of rings) {                   // the splash: a ring that spreads and fades, and two flecks hopping up
+        ctx.strokeStyle = ctx.fillStyle = `rgba(95,150,220,${0.7 * k * (1 - q)})`;
+        ctx.beginPath(); ctx.ellipse(x, y, 2 + q * 10, 1 + q * 4, 0, 0, 7); ctx.stroke();
+        for (const d of [-1, 1]) { ctx.beginPath(); ctx.arc(x + d * (3 + q * 6), y - Math.sin(q * Math.PI) * 7, 1.3, 0, 7); ctx.fill(); }
       }
-      ctx.globalAlpha = 1;
     }
     if (e.t > RAIN - 4) {   // the rainbow fades in as the rain thins, and out at the end
       const a = clamp((e.t - RAIN + 4) / 8, 0, 1) * clamp((e.dur - e.t) / 10, 0, 1) * 0.42;
