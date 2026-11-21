@@ -19,7 +19,7 @@ import { settleRumour } from '../events/rumour.js';
 import { updateTheatre } from '../events/theatre.js';
 import { updatePuffs } from '../puffs.js';
 import { updateMusic } from '../activities/music.js';
-import { updateShots } from '../activities/prank.js';
+import { updateShots, updatePranks } from '../activities/prank.js';
 import { DAY_LEN } from '../config.js';
 import { planHammock, between, shape as hangHammock } from '../activities/hammock.js';
 
@@ -112,7 +112,7 @@ export function updateWorld(dt) {
   lastPhase = p;
 
   for (const c of S.critters) updateCritter(c, dt);
-  updateEvents(dt); updateRings(dt); updateVisitor(dt); updateSculptures(dt); updateJourneys(); updateTalk(); deliverMail(); settleRumour(); updateTheatre(dt); updatePuffs(dt); updateMusic(dt); updateShots(dt);
+  updateEvents(dt); updateRings(dt); updateVisitor(dt); updateSculptures(dt); updateJourneys(); updateTalk(); deliverMail(); settleRumour(); updateTheatre(dt); updatePuffs(dt); updateMusic(dt); updateShots(dt); updatePranks();
   const lh = S.lostHat; if (lh && lh.fly > 0) lh.fly -= dt;   // a hat on the wind
   for (const c of S.critters) if (c.balloon && S.clock > c.balloon.until) {   // a balloon gets away
     S.floaters.push({ ...c.balloon, x: c.x - 30 * c.size, y: c.y - 60 * c.size, t: 0 });

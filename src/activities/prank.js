@@ -94,30 +94,44 @@ function faced(a) {   // art with a face to draw on
 }
 
 // ---- the prankster ----
+/** The hat comes off, and stays off until another day. */
+function hatOff(c) {
+  c.pranking = null; c.prank = null;
+  S.prankCool = S.clock + rand(1.3, 2.6) * DAY_LEN;
+  if (!c.hidden) say(c, pick(['phew', 'what?', '♪']), 1.6);
+  if (c.act === 'idle') c.t = Math.max(c.t, 2);
+  log(`${c.name} has taken the prankster hat off, and looks very innocent.`);
+}
+/**
+ * A safety net, called every tick from sim/world.js: whatever else is going
+ * on, the hat doesn't stay on past its time, overnight, or on anyone who
+ * isn't the prankster (after a save and reload, say).
+ */
+export function updatePranks() {
+  for (const c of S.critters) {
+    if (!c.pranking || c.act === 'prank') continue;
+    if (S.clock > (c.pranking.until || 0) + 25 || isNight() || c.hidden || !isPrankster(c)) hatOff(c);
+  }
+}
 export const prankster = {
   id: 'prankster',
   weight(c) {
-    if (c.pranking) return 9;                                              // hat's on: nothing else matters
-    return isPrankster(c) && !isNight() && S.clock > (S.prankCool || DAY_LEN * 0.6) && PRANKS.some(p => p.can()) ? 0.55 : 0;
+    if (c.pranking) return 1000;                                           // hat's on: nothing else matters
+    return isPrankster(c) && !isNight() && S.clock > (S.prankCool || DAY_LEN * 0.6) && PRANKS.some(p => p.can()) ? 0.9 : 0;   // (how often is really set by the cooldown after each spree)
   },
   start(c) {
-    if (!c.pranking) {   // on goes the hat
-      c.pranking = { left: 2 + irand(3) };
+    if (!c.pranking) {   // on goes the hat, for a few pranks or a couple of minutes, whichever is sooner
+      c.pranking = { left: 2 + irand(3), until: S.clock + rand(110, 160) };
       say(c, 'hee hee', 1.8); c.hopV = 120;
       note(`${c.name} has put on the prankster hat. Oh dear.`);
     }
     const open = PRANKS.filter(p => p.can());
-    if (!open.length || c.pranking.left <= 0) {   // ...and off it comes
-      c.pranking = null; S.prankCool = S.clock + rand(1.3, 2.6) * DAY_LEN;
-      say(c, pick(['phew', 'what?', '♪']), 1.6); setAct(c, 'idle', 3);
-      log(`${c.name} has taken the prankster hat off, and looks very innocent.`);
-      return;
-    }
+    if (!open.length || c.pranking.left <= 0 || S.clock > c.pranking.until) return hatOff(c);   // ...and off it comes
     let r = rand(open.reduce((s, p) => s + p.w, 0)), prank = open[0];
     for (const p of open) if ((r -= p.w) <= 0) { prank = p; break; }
     const target = prank.pick ? prank.pick() : null, at = prank.at(target);
     c.nextWalk = 'sneak';
-    goTo(c, at.x, at.y, () => { c.prank = { prank, target }; c.dir = (target || prank.where() || at).x > c.x ? 1 : -1; setAct(c, 'prank', rand(3.5, 5)); c.strikeT = 0.3; });
+    goTo(c, at.x, at.y, () => { if (!c.pranking) return; c.prank = { prank, target }; c.dir = (target || prank.where() || at).x > c.x ? 1 : -1; setAct(c, 'prank', rand(3.5, 5)); c.strikeT = 0.3; });
   },
   states: {
     prank: {
@@ -129,9 +143,10 @@ export const prankster = {
       finish(c) {
         const { prank, target } = c.prank || {};
         c.prank = null;
-        if (!prank || !c.pranking || !prank.can()) return;
+        if (!c.pranking) return;
+        c.pranking.left--;                                // (counts even if it came to nothing, so the hat always comes off)
+        if (!prank || !prank.can()) return;
         const did = prank.go(target);
-        c.pranking.left--;
         S.pranked = c.name;
         say(c, pick(['hee hee', 'tee hee', 'ha!']), 1.6); c.hopV = 110;
         puff('confetti', c.x + c.dir * 30, c.y - 40);
