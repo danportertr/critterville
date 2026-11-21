@@ -4,6 +4,7 @@ import { SAVE_KEY, SAVE_VERSION } from '../config.js';
 import { clamp } from '../util.js';
 import { rebuildObs, placeBridge } from './geometry.js';
 import { newJournal } from '../journal.js';
+import { restore as restoreHammock } from '../activities/hammock.js';
 import { hydrate, makeSwing, makeBall, assignHomes, scatterDecor } from './town.js';
 
 export function save() {
@@ -44,7 +45,7 @@ export function load() {
   for (const t of S.trees) if (!t.apples) t.apples = [Math.random(), Math.random(), Math.random()];   // towns saved before apples grew
   S.flowers = d.flowers.map(mv); S.arts = (d.arts || []).map(mv);
   S.apples = [];
-  S.hammocks = (d.hammocks || []).filter(h => S.trees[h.a] && S.trees[h.b]).map(h => ({ ...h, user: null }));
+  S.hammocks = (d.hammocks || []).map(restoreHammock).filter(Boolean);
   S.ball = mv(d.ball) ? makeBall(d.ball.x, d.ball.y) : null;
   S.critters = d.critters.map(c => hydrate(mv(c)));
   for (const c of S.critters) { c.x = clamp(c.x, 20, S.W - 20); c.y = clamp(c.y, 90, S.H - 10); }

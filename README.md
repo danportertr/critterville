@@ -17,7 +17,7 @@ The critters:
 - build the campfire, houses (and later add chimneys, side rooms and upstairs), a bridge, the swing set, a fish tank and the pool
 - jump the stream until there's a bridge, then mostly use that
 - keep a few of the fish they catch in the tank for a while, and come by to watch them
-- string a hammock between two trees, if a pair happens to be the right distance apart, and take turns lying in it
+- string a hammock between two trees, two houses, or a house and a tree, if a pair happens to be the right distance apart, and take turns lying in it
 - gather at the campfire in the evening and go home to sleep at night
 
 Every day or three something rare happens that leaves the town a little different: a shower brings up flowers (and a rainbow), a shooting star lands and stays as a glowing stone, a windy spell leaves a seedling that grows into a new tree, a duck family moves onto the water, or a ring of mushrooms appears and everyone dances in it.

@@ -1,20 +1,39 @@
-// Hammocks. Where two grown trees stand close together and roughly level, the
-// critters string a hammock between them (planHammock, built like anything
-// else), and then take turns lying in it.
+// Hammocks. Where two grown trees, two houses, or a house and a tree stand the
+// right distance apart and roughly level, the critters string a hammock between
+// them (planHammock, built like anything else), and then take turns lying in it.
 import { S, built, isEvening } from '../state.js';
+import { HOUSE } from '../config.js';
 import { rand, irand, pick } from '../util.js';
 import { ctx } from '../draw/canvas.js';
 import { goTo, setAct, say, release } from '../sim/core.js';
 
-const grown = t => t.grow === undefined;
-/** Two trees a hammock could hang between: near enough, level enough, and not already used. */
+// A hammock hangs between two anchors, each a grown tree or a finished house:
+// { t: 'tree' | 'house', i: index }.
+const thing = ref => (ref.t === 'tree' ? S.trees : S.houses)[ref.i];
+const key = ref => ref.t + ref.i;
+/** Where a rope ties on: `side` is 1 for the anchor's right-hand side, -1 for its left. */
+function tieOn(ref, side) {
+  const o = thing(ref);
+  if (ref.t === 'tree') return [o.x + side * 7 * o.size, o.y - 34 * o.size];
+  const k = HOUSE.scale;
+  if (side < 0 && o.addons.includes('annex')) return [o.x - 84 * k, o.y - 30 * k];   // the side room sticks out that way
+  return [o.x + side * 45 * k, o.y - 34 * k];
+}
+function anchors() {
+  const out = [];
+  S.trees.forEach((t, i) => { if (t.grow === undefined) out.push({ t: 'tree', i }); });
+  S.houses.forEach((h, i) => { if (built(h) && !h.adding) out.push({ t: 'house', i }); });
+  return out;
+}
+/** Two anchors a hammock could hang between: the right gap, level enough, and neither already used. */
 function freePair() {
-  const used = new Set(S.hammocks.flatMap(h => [h.a, h.b]));
-  for (let i = 0; i < S.trees.length; i++) for (let j = i + 1; j < S.trees.length; j++) {
-    const a = S.trees[i], b = S.trees[j], dx = Math.abs(a.x - b.x);
-    if (grown(a) && grown(b) && !used.has(i) && !used.has(j) && dx > 95 && dx < 210 && Math.abs(a.y - b.y) < 32) return a.x < b.x ? [i, j] : [j, i];
+  const used = new Set(S.hammocks.flatMap(h => [key(h.a), key(h.b)])), all = anchors().filter(r => !used.has(key(r))), ok = [];
+  for (const p of all) for (const q of all) {
+    if (p === q || thing(p).x >= thing(q).x) continue;   // p is the left-hand one
+    const A = tieOn(p, 1), B = tieOn(q, -1), gap = B[0] - A[0];
+    if (gap > 75 && gap < 190 && Math.abs(A[1] - B[1]) < 30 && Math.abs(thing(p).y - thing(q).y) < 36) ok.push([p, q]);
   }
-  return null;
+  return ok.length ? pick(ok) : null;
 }
 export function planHammock() {
   const pair = S.hammocks.length < 2 && freePair();
@@ -24,15 +43,25 @@ export function planHammock() {
   shape(h);
   return h;
 }
+/** "between two trees", "between a house and a tree"... */
+export function between(h) {
+  const n = [h.a, h.b].filter(r => r.t === 'house').length;
+  return n === 2 ? 'between two houses' : n === 1 ? 'between a house and a tree' : 'between two trees';
+}
+/** Is this saved hammock still hangable? (Also upgrades old saves, where anchors were tree numbers.) */
+export function restore(h) {
+  for (const end of ['a', 'b']) if (typeof h[end] === 'number') h[end] = { t: 'tree', i: h[end] };
+  return thing(h.a) && thing(h.b) ? { ...h, user: null } : null;
+}
 /**
- * Where a hammock hangs right now: its two ends on the trunks, the low point
- * in the middle (lower with someone in it), and the ground beneath.
+ * Where a hammock hangs right now: its two ends, the low point in the middle
+ * (lower with someone in it), and the ground beneath.
  */
 export function shape(h) {
-  const a = S.trees[h.a], b = S.trees[h.b], lying = h.user && h.user.act === 'hammock';
-  h.A = [a.x + 7 * a.size, a.y - 34 * a.size]; h.B = [b.x - 7 * b.size, b.y - 34 * b.size];
+  const a = thing(h.a), b = thing(h.b), lying = h.user && h.user.act === 'hammock';
+  h.A = tieOn(h.a, 1); h.B = tieOn(h.b, -1);
   h.M = [(h.A[0] + h.B[0]) / 2 + (lying ? Math.sin(S.now * 1.3 + h.seed) * 3 : 0), (h.A[1] + h.B[1]) / 2 + (lying ? 24 : 15)];
-  h.x = (a.x + b.x) / 2; h.y = Math.max(a.y, b.y) + 0.5;   // drawn just in front of both trees
+  h.x = (h.A[0] + h.B[0]) / 2; h.y = Math.max(a.y, b.y) + 0.5;   // drawn just in front of both anchors
   return h;
 }
 

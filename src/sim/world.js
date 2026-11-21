@@ -11,7 +11,7 @@ import { updateCritter, goTo, setAct, say } from './core.js';
 import { updateEvents } from '../events/index.js';
 import { updateRings } from '../events/ring.js';
 import { DAY_LEN } from '../config.js';
-import { planHammock, shape as hangHammock } from '../activities/hammock.js';
+import { planHammock, between, shape as hangHammock } from '../activities/hammock.js';
 
 let lastPhase = null, townT = 0, arriveT = 45, saveT = 15, nextAddon = 0;
 
@@ -53,7 +53,7 @@ export const currentSite = () => [S.fire, S.bridge, S.swing, S.tank, S.pool, ...
 function growTown() {
   if (!currentSite()) {
     const beds = S.houses.length * HOUSE.residents, n = S.critters.length;
-    let msg = null;
+    let msg = null, hammock;
     if (!S.fire) { planFire(); msg = 'The critters are making a campfire.'; }
     else if (!S.houses.length) { newHouse(0); msg = 'The first house is going up.'; }
     else if (S.stream && !S.bridge) { planBridge(); msg = 'Tired of jumping the stream, the critters start on a bridge.'; }
@@ -62,7 +62,7 @@ function growTown() {
     else if (!S.tank) { planTank(); msg = 'The critters are making a fish tank.'; }
     else if (!S.pool) { planPool(); msg = 'The critters are digging a pool.'; }
     else if (beds < n && S.houses.length < 3) { newHouse(0); msg = 'A new house is going up.'; }
-    else if (planHammock()) msg = 'Two trees are just the right distance apart for a hammock.';
+    else if ((hammock = planHammock())) msg = `There's just the right gap for a hammock ${between(hammock)}.`;
     else if (S.clock > nextAddon) {   // the town is finished; now and then somebody improves a house
       nextAddon = S.clock + rand(240, 520);
       const h = planAddon();
