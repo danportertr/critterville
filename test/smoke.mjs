@@ -79,11 +79,12 @@ for (const [w, h, name] of SIZES) {
   globalThis.innerWidth = w; globalThis.innerHeight = h;
   for (const fn of listeners.resize || []) fn();
   newTown(); startDiary();
-  const seen = new Set(), events = new Set(), stuck = new Map();
+  const seen = new Set(), events = new Set(), stuck = new Map(), ballGames = new Set();
   const t0 = Date.now();
   for (let i = 0; i < DAYS * DAY / STEP; i++) {
     S.now += STEP; S.boil = Math.floor(S.now * 5);
     try { updateWorld(STEP); } catch (e) { fail('the simulation threw', e); }
+    for (const g of S.ballGames) ballGames.add(g);
     if (i % 15 === 0) {
       try { render(); } catch (e) { fail('drawing threw', e); }
       check();
@@ -104,7 +105,7 @@ for (const [w, h, name] of SIZES) {
     }
   }
   total += seen.size;
-  console.log(`ok  ${name.padEnd(7)} ${w}x${h}  ${DAYS} days in ${((Date.now() - t0) / 1000).toFixed(1)}s  ${S.critters.length} critters, ${S.houses.length} houses, ${S.plays.length} plays, ${S.games.length} games, ${seen.size} kinds of activity, events: ${[...events].join(' ') || 'none'}`);
+  console.log(`ok  ${name.padEnd(7)} ${w}x${h}  ${DAYS} days in ${((Date.now() - t0) / 1000).toFixed(1)}s  ${S.critters.length} critters, ${S.houses.length} houses, ${S.plays.length} plays, ${S.games.length} games invented (${[...ballGames].filter(g => g.named).length} of ${ballGames.size} ball games were one of the town's own), ${seen.size} kinds of activity, events: ${[...events].join(' ') || 'none'}`);
 }
 if (total < 30) fail('hardly anything happened, which is suspicious');
 console.log('\nAll towns ran without trouble.');

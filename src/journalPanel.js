@@ -100,10 +100,10 @@ function renderSongs() {
   if (S.songs.length && !S.sound) $body.append(el('p', 'meta', 'Sound is switched off (the ♫ button).'));
 
   $body.append(el('h3', 'day', 'Games'));
-  if (!S.games.length) $body.append(el('p', 'lede', 'No games of their own yet. Sooner or later a kickabout turns into something with rules.'));
+  if (!S.games.length) $body.append(el('p', 'lede', 'No games of their own yet. Sooner or later a kickabout turns into something with rules, and then they play it again and again.'));
   for (const g of S.games) {
     const bill = el('div', 'playbill');
-    bill.append(el('h3', '', g.name), el('p', 'meta', `Invented by ${g.by.join(' and ')} on day ${g.day}.`), el('p', '', g.rule));
+    bill.append(el('h3', '', g.name), el('p', 'meta', `Invented by ${g.by.join(' and ')} on day ${g.day}.${g.last > g.day ? ` Last played on day ${g.last}.` : ''}`), el('p', '', g.rule));
     $body.append(bill);
   }
 

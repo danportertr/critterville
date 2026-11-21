@@ -8,7 +8,9 @@
 //   juggle    three little balls (no big ball needed)
 //
 // Now and then a game that went well gets a name and a silly extra rule, and
-// becomes one of the town's own games (S.games), played again by name.
+// becomes one of the town's own games (S.games). Like the town's songs, those
+// are a small repertoire: once a game exists it's what gets played, again and
+// again, and a new one is only invented once in a long while.
 //
 // A ball in a game is moved by script, not physics: throwBall() sends it
 // along an arc (ball.fly), and sim/world.js follows that until it lands.
@@ -42,11 +44,18 @@ const TWISTS = [
   { text: 'it only counts if a duck is watching' },
   { text: 'the winner is whoever laughs last' },
 ];
-const known = kind => { const g = S.games.filter(g => g.kind === kind); return g.length && rand() < 0.7 ? pick(g) : null; };
+const today = () => Math.floor(S.clock / 300) + 1;
+/** The town's game of this kind, if it has one: that's nearly always what gets played. */
+const known = kind => { const g = S.games.filter(g => g.kind === kind); return g.length && rand() < 0.92 ? pick(g) : null; };
+/** How keen critters are on this kind of game: keener when it's one of their own. */
+const keen = kind => (S.games.some(g => g.kind === kind) ? 1.7 : 1);
 function maybeInvent(game) {
-  if (game.named || S.games.length >= 5 || S.games.some(g => g.kind === game.kind) && rand() < 0.8 || rand() > 0.45) return null;
+  // New games are rare: never two within a few days, and a kind that already has one hardly ever gets another.
+  const newest = Math.max(0, ...S.games.map(g => g.day));
+  if (game.named || S.games.length >= 5 || (S.games.length && today() - newest < 4)) return null;
+  if (rand() > (S.games.some(g => g.kind === game.kind) ? 0.06 : 0.3)) return null;
   const twist = pick(TWISTS.filter(t => t.not !== game.kind)), free = NAMES.filter(n => !S.games.some(g => g.name === n));
-  const made = { name: pick(free.length ? free : NAMES), kind: game.kind, by: game.players.map(p => p.name), day: Math.floor(S.clock / 300) + 1, rule: `${BASICS[game.kind]}, and ${twist.text}.`, hop: !!twist.hop, shout: !!twist.shout };
+  const made = { name: pick(free.length ? free : NAMES), kind: game.kind, by: game.players.map(p => p.name), day: today(), last: today(), rule: `${BASICS[game.kind]}, and ${twist.text}.`, hop: !!twist.hop, shout: !!twist.shout };
   S.games.push(made);
   const who = made.by.length > 1 ? `${made.by.slice(0, -1).join(', ')} and ${made.by[made.by.length - 1]}` : made.by[0];
   note(`${who} invented a game called ${made.name}. ${made.rule}`);
@@ -70,7 +79,10 @@ function finish(game, ok) {
   for (const p of game.players.slice()) { p.game = null; p.cleanup = null; if (p.act === 'ballgame') { setAct(p, 'idle', rand(1, 3)); if (ok) { p.hopV = rand(70, 120); if (rand() < 0.5) say(p, pick(['yay', 'again!', 'ha!', '♥']), 1.4); } } }
   if (!ok || !names.length) return;
   const made = maybeInvent(game);
-  if (!made && game.named) log(`${names.length > 1 ? `${names.slice(0, -1).join(', ')} and ${names[names.length - 1]}` : names[0]} played ${game.named.name}.`);
+  if (made || !game.named) return;
+  const g = game.named, who = names.length > 1 ? `${names.slice(0, -1).join(', ')} and ${names[names.length - 1]}` : names[0];
+  if (g.last !== today() && rand() < 0.5) note(`${who} played ${g.name}.`); else log(`${who} played ${g.name}.`);   // (the diary hears about it once a day at most)
+  g.last = today(); journalChanged('songs');
 }
 function begin(c, kind, mates, spots, extra = {}) {
   const b = extra.ball, game = { kind, ball: b, players: [c, ...mates], joined: [], count: 0, wait: 0.6, deadline: S.clock + 18, named: known(kind), ...extra };
@@ -96,7 +108,7 @@ function centre(b) {
 
 export const ring = {
   id: 'ballRing',
-  weight: c => nearestBall(c) ? 0.9 : 0,
+  weight: c => nearestBall(c) ? 0.9 * keen('ring') : 0,
   start(c) {
     const b = nearestBall(c); if (!b) return false;
     const mates = S.critters.filter(o => o !== c && isFree(o) && dist(o, b) < 430).sort((p, q) => dist(p, b) - dist(q, b)).slice(0, pick([1, 1, 2, 3]));
@@ -107,12 +119,12 @@ export const ring = {
 };
 export const keepy = {
   id: 'ballKeepy',
-  weight: c => nearestBall(c) ? 0.4 : 0,
+  weight: c => nearestBall(c) ? 0.4 * keen('keepy') : 0,
   start(c) { const b = nearestBall(c); if (!b) return false; begin(c, 'keepy', [], [{ x: b.x, y: b.y + 1 }], { ball: b, need: 1, goal: 8 + irand(14) }); },
 };
 export const bat = {
   id: 'ballBat',
-  weight: c => nearestBall(c) ? 0.45 : 0,
+  weight: c => nearestBall(c) ? 0.45 * keen('bat') : 0,
   start(c) {
     const b = nearestBall(c); if (!b) return false;
     const mate = S.critters.filter(o => o !== c && isFree(o) && dist(o, b) < 430).sort((p, q) => dist(p, b) - dist(q, b))[0];
@@ -139,6 +151,7 @@ export function updateBallGames(dt) {
       if (live.length < game.need) { finish(game, false); continue; }
       game.started = true; game.players = live.slice(); game.joined = live;
       game.holder = game.kind === 'bat' ? live[1] : live[0];
+      if (game.named) say(live[0], `${game.named.name}!`, 1.6);   // everyone knows this one
       throwBall(b, feet(game.holder), 0.5, 18);
       continue;
     }
