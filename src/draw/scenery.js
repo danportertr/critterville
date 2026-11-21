@@ -1,7 +1,7 @@
 // Everything in town that isn't a critter.
 import { ctx } from './canvas.js';
 import { S } from '../state.js';
-import { INK, LW, HOUSE, SWING, WOOD, STONE } from '../config.js';
+import { INK, LW, HOUSE, SWING, VIEW, WOOD, STONE } from '../config.js';
 import { TAU, clamp, hs } from '../util.js';
 import { jit, wob, smooth, polyPath, blobPts, paint, blob, box, line, tube, dot } from './primitives.js';
 
@@ -148,8 +148,41 @@ export function drawSwing(sw) {
 }
 
 // ---- art: paintings on easels and sculptures on plinths ----
-const CANVAS = [[-17, -60], [17, -60], [17, -28], [-17, -28]];
+const CANVAS = [[-22, -68], [22, -68], [22, -30], [-22, -30]];
+
+// A painted miniature of one thing the painter could see (a.view, captured in
+// activities/art.js). x/y are offsets from the easel in world units.
+function mini(el) {
+  const px = el.x / VIEW.rx * 18, py = -43 + el.y / VIEW.ry * 11;   // leave headroom: things are drawn upwards from their base
+  if (el.k === 'pond' || el.k === 'pool') return miniShape(el, px, py);
+  ctx.save(); ctx.translate(px, py); ctx.scale(1.6, 1.6);   // bigger than life, so it reads
+  miniShape(el, 0, 0);
+  ctx.restore();
+}
+function miniShape(el, x, y) {
+  const fill = (c) => { ctx.fillStyle = c; ctx.fill(); };
+  const oval = (cx, cy, rx, ry, c) => { ctx.beginPath(); ctx.ellipse(cx, cy, rx, ry, 0, 0, TAU); fill(c); };
+  const rect = (rx, ry, w, h, c) => { ctx.fillStyle = c; ctx.fillRect(rx, ry, w, h); };
+  switch (el.k) {
+    case 'pond': return oval(x, y, el.rx / VIEW.rx * 21, el.ry / VIEW.ry * 18, '#a8dcf5');
+    case 'pool': oval(x, y, el.rx / VIEW.rx * 21 + 1, el.ry / VIEW.ry * 18 + 1, '#fff'); return oval(x, y, el.rx / VIEW.rx * 21, el.ry / VIEW.ry * 18, '#74dbe8');
+    case 'tree': rect(x - 0.9, y - 5, 1.8, 5, '#b06634'); oval(x, y - 7.5, 4, 3.6, el.c); return oval(x + 1, y - 7, 0.8, 0.8, '#fb6540');
+    case 'house':
+      rect(x - 4, y - 5, 8, 5, el.c);
+      ctx.beginPath(); ctx.moveTo(x - 5, y - 5); ctx.lineTo(x, y - 9); ctx.lineTo(x + 5, y - 5); ctx.closePath(); return fill(el.c2);
+    case 'swing': ctx.beginPath(); ctx.moveTo(x - 6, y); ctx.lineTo(x - 5, y - 9); ctx.lineTo(x + 5, y - 9); ctx.lineTo(x + 6, y); ctx.lineWidth = 1.3; ctx.strokeStyle = '#ff8f8f'; return ctx.stroke();
+    case 'fire': rect(x - 2, y - 0.6, 4, 1.2, '#b06634'); return oval(x, y - 2, 1.4, 2, '#ffab45');
+    case 'critter': rect(x - 1.2, y - 3.4, 2.4, 3.4, el.c2); return oval(x, y - 5, 2, 1.9, el.c);
+    case 'flower': return oval(x, y - 1, 1.1, 1.1, el.c);
+    case 'art': return rect(x - 1.5, y - 4, 3, 3, '#d9d0ff');
+  }
+}
+
 const PAINTINGS = {
+  view: a => [
+    () => { ctx.fillStyle = '#f3fbdc'; ctx.fillRect(-24, -70, 48, 42); },
+    ...a.view.map(el => () => mini(el)),
+  ],
   portrait: a => [
     () => { ctx.fillStyle = a.c3; ctx.fillRect(-20, -62, 40, 36); },
     () => box([[-7, -36], [7, -36], [8, -26], [-8, -26]], a.c2, a.seed + 3, 0.3, 1.6),
@@ -184,7 +217,7 @@ export function drawArt(a) {
   if (a.dying !== undefined) ctx.globalAlpha = clamp(a.dying, 0, 1);
   shadow(0, 1, 18, 4);
   if (a.type === 'painting') {
-    for (const [x, y] of [[-15, 0], [15, 0], [3, -7]]) line([[0, -56], [x, y]], a.seed + x, 3, INK, 0.4);
+    for (const [x, y] of [[-16, 0], [16, 0], [3, -7]]) line([[0, -60], [x, y]], a.seed + x, 3, INK, 0.4);
     box(CANVAS, '#fff', a.seed + 1, 0.4, 2.4);
     const els = PAINTINGS[a.style](a), n = Math.ceil(a.progress * els.length - 0.001);
     ctx.save(); polyPath(wob(CANVAS, a.seed + 1, 0.4)); ctx.clip();

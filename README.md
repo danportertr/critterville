@@ -11,7 +11,7 @@ The critters:
 - talk to each other
 - swing on the swing set
 - swim in the pool
-- make paintings and sculptures (and go admire each other's)
+- make sculptures, and paintings of whatever they can see from the easel (and go admire each other's)
 - dance, sometimes in groups
 - fish in the pond, plant flowers, pick fruit, kick a ball around
 - build the campfire, houses, swing set and pool

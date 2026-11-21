@@ -8,6 +8,8 @@ export const DAY_LEN = 300;     // seconds per in-game day
 export const FONT = '700 15px "Chalkboard SE","Comic Sans MS","Comic Neue","Marker Felt",cursive';
 
 export const HOUSE = { w: 92, h: 58, residents: 3 };
+// How far a painter can "see" from the easel, in world units.
+export const VIEW = { rx: 200, ry: 135 };
 export const SWING = { barH: 130, rope: 84, half: 80, seats: [-30, 30], maxAngle: 0.42 };
 
 export const HEADS = ['#ff8fc7', '#8fd3ff', '#b7a6ff', '#ffab76', '#8fe3b0', '#ff8f8f', '#ffd36b', '#c9f27a', '#f5a8ff', '#7fe0d8'];
