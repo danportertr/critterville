@@ -54,11 +54,24 @@ export function drawRing(r) {
   ctx.globalAlpha = 1;
 }
 
+const SLING = 0.14;   // how far in from each end the cloth starts
+/**
+ * The outline of everything above the bottom of the sling. An occupant is
+ * clipped to this, so nothing of them hangs out underneath.
+ */
+export function hammockClip(h) {
+  const { A, B, M } = h;
+  ctx.beginPath();
+  ctx.moveTo(A[0] - 80, A[1] - 300); ctx.lineTo(A[0] - 80, A[1] + 4); ctx.lineTo(A[0], A[1] + 4);
+  ctx.quadraticCurveTo(M[0], M[1] + 22, B[0], B[1] + 4);
+  ctx.lineTo(B[0] + 80, B[1] + 4); ctx.lineTo(B[0] + 80, B[1] - 300); ctx.closePath();
+  ctx.clip();
+}
 /** A hammock between two trees: ropes at each end and a striped sling that sags in the middle. */
 export function drawHammock(h) {
   const { A, B, M } = h, at = (p, q, k) => [p[0] + (q[0] - p[0]) * k, p[1] + (q[1] - p[1]) * k];
   if (h.progress < 1) return void tube([A, [M[0], M[1] - 8], B], 0.6, INK, h.seed, 0.3);     // just the rope so far
-  const a = at(A, M, 0.22), b = at(B, M, 0.22), full = h.user && h.user.act === 'hammock';
+  const a = at(A, M, SLING), b = at(B, M, SLING), full = h.user && h.user.act === 'hammock';
   const spread = full ? 9 : 4;   // with someone in it the sling opens out
   for (const [end, near] of [[A, a], [B, b]]) for (const dy of [-spread, spread]) { ctx.beginPath(); ctx.moveTo(end[0], end[1]); ctx.lineTo(near[0], near[1] + dy); ctx.lineWidth = 1.6; ctx.strokeStyle = INK; ctx.stroke(); }
   tube([a, M, b], full ? 20 : 9, '#ffd1e8', h.seed, 0.3);
@@ -70,7 +83,7 @@ function stripes(a, M, b, offsets) {
 /** The near edge of an occupied hammock, drawn over whoever is in it so they're tucked inside. */
 export function drawHammockFront(h) {
   const { A, B, M } = h, at = (p, q, k) => [p[0] + (q[0] - p[0]) * k, p[1] + (q[1] - p[1]) * k];
-  const a = at(A, M, 0.22), b = at(B, M, 0.22), down = p => [p[0], p[1] + 5];
-  tube([down(a), [M[0], M[1] + 9], down(b)], 11, '#ffd1e8', h.seed + 1, 0.3);
-  stripes(down(a), [M[0], M[1] + 9], down(b), [-2.6, 2.6]);
+  const a = at(A, M, SLING), b = at(B, M, SLING), down = p => [p[0], p[1] + 3];
+  tube([down(a), [M[0], M[1] + 6], down(b)], 14, '#ffd1e8', h.seed + 1, 0.3);
+  stripes(down(a), [M[0], M[1] + 6], down(b), [-4, 4]);
 }

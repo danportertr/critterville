@@ -6,7 +6,7 @@ import { HOUSE } from '../config.js';
 import { rand, irand, pick } from '../util.js';
 import { ctx } from '../draw/canvas.js';
 import { goTo, setAct, say, release } from '../sim/core.js';
-import { drawHammockFront } from '../draw/props.js';
+import { drawHammockFront, hammockClip } from '../draw/props.js';
 
 // A hammock hangs between two anchors, each a grown tree or a finished house:
 // { t: 'tree' | 'house', i: index }.
@@ -32,7 +32,7 @@ function freePair() {
   for (const p of all) for (const q of all) {
     if (p === q || thing(p).x >= thing(q).x) continue;   // p is the left-hand one
     const A = tieOn(p, 1), B = tieOn(q, -1), gap = B[0] - A[0];
-    if (gap > 75 && gap < 190 && Math.abs(A[1] - B[1]) < 30 && Math.abs(thing(p).y - thing(q).y) < 36) ok.push([p, q]);
+    if (gap > 105 && gap < 200 && Math.abs(A[1] - B[1]) < 30 && Math.abs(thing(p).y - thing(q).y) < 36) ok.push([p, q]);
   }
   return ok.length ? pick(ok) : null;
 }
@@ -86,14 +86,15 @@ export default {
       finish(c) { c.sink = 0; c.y = c.ham.y + 8; c.hopV = 90; release(c); },
       transform(c) {   // lying back along the hammock, head slightly raised
         const h = c.ham, m = h.M;
-        ctx.translate(m[0], m[1] - 4 * c.size);
-        ctx.rotate(c.dir * 1.3 + Math.sin(S.now * 1.3 + h.seed) * 0.04);
+        hammockClip(h);                                  // nothing shows below the sling
+        ctx.translate(m[0], m[1] - 13 * c.size);         // high enough that their head shows over the edge
+        ctx.rotate(c.dir * 1.42 + Math.sin(S.now * 1.3 + h.seed) * 0.03);
         ctx.translate(0, 30 * c.size);
         ctx.scale(c.size, c.size);
         return true;
       },
       after(c) { drawHammockFront(c.ham); },
-      pose(c, p) { p.bob = 0; p.eyesClosed = true; p.hl = [-13, -52]; p.hr = [13, -52]; p.lx = 2; p.rx = -2; },   // hands behind the head
+      pose(c, p) { p.bob = 0; p.eyesClosed = true; p.hl = [-13, -52]; p.hr = [13, -52]; p.lx = 3; p.rx = -3; p.lf = p.rf = 4; },   // hands behind the head, feet tucked in
     },
   },
 };
