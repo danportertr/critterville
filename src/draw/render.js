@@ -2,6 +2,7 @@
 import { ctx } from './canvas.js';
 import { S, phase, nightAmt, built } from '../state.js';
 import { INK, PAPER, FONT, HOUSE } from '../config.js';
+import { wallTop } from './scenery.js';
 import { clamp, lerp, smoothstep, hs } from '../util.js';
 import { drawCritter, drawBubble } from './critter.js';
 import * as sc from './scenery.js';
@@ -35,6 +36,7 @@ export function render() {
   ctx.fillStyle = PAPER; ctx.fillRect(0, 0, W, H);
   for (const t of S.tufts) sc.drawTuft(t);
   if (S.stream) sc.drawStream();
+  if (S.bridge) sc.drawBridge();
   if (S.pond) sc.drawPond();
   if (S.pool) sc.drawPool();
 
@@ -45,6 +47,7 @@ export function render() {
   if (S.fire) items.push([S.fire.y, sc.drawFire, fireLit]);
   if (S.ball) items.push([S.ball.y, sc.drawBall]);
   if (S.swing) items.push([S.swing.y, sc.drawSwing, S.swing]);
+  if (S.tank) items.push([S.tank.y, sc.drawTank, S.tank]);
   for (const h of S.houses) items.push([h.y, sc.drawHouse, h, lit.has(h)]);
   for (const t of S.trees) items.push([t.y, sc.drawTree, t]);
   for (const f of S.flowers) items.push([f.y, sc.drawFlower, f]);
@@ -62,14 +65,14 @@ export function render() {
   if (n > 0.02) {
     ctx.globalCompositeOperation = 'screen';
     if (built(S.fire)) glow(S.fire.x, S.fire.y - 14, 150 + Math.sin(S.now * 9) * 6, '255,205,130', 0.6 * n);
-    for (const h of lit) glow(h.x + 30, h.y - 35, 46, '255,205,130', 0.5 * n);
+    for (const h of lit) for (const k of [-1, 1]) glow(h.x + k * 37, h.y - 50, 50, '255,205,130', 0.45 * n);
     for (const f of S.flies) glow(f.x, f.y, 9, '230,255,140', (0.5 + 0.5 * Math.sin(S.now * 2 + f.seed)) * n);   // fireflies
     ctx.globalCompositeOperation = 'source-over';
-    for (const h of lit) sc.drawLitWindow(h, n);
+    for (const h of lit) sc.drawHouseLights(h, n);
   }
 
   ctx.font = FONT; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillStyle = INK;
-  for (const h of lit) zzz(h.x + 34, h.y - HOUSE.h - 20, h.seed);
+  for (const h of lit) zzz(h.x - 62, h.y - (wallTop(h) + HOUSE.roof * 0.6) * HOUSE.scale, h.seed);
   for (const c of S.critters) {
     if (c.act === 'sleep' && !c.hidden) { ctx.fillStyle = INK; zzz(c.x + 16 * c.size, c.y - 80 * c.size, c.seed); }
     if (c.bubble && !c.hidden) drawBubble(c);

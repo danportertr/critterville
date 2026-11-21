@@ -15,5 +15,6 @@ import sleep from './sleep.js';
 import swing from './swing.js';
 import swim from './swim.js';
 import { art, admire } from './art.js';
+import tank from './tank.js';
 
-[wander, rest, chat, dance, fish, garden, snack, fruit, ball, build, campfire, sleep, swing, swim, art, admire].forEach(register);
+[wander, rest, chat, dance, fish, garden, snack, fruit, ball, build, campfire, sleep, swing, swim, art, admire, tank].forEach(register);

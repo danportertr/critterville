@@ -7,6 +7,12 @@ export const lerp = (a, b, t) => a + (b - a) * t;
 export const dist = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
 export const smoothstep = (a, b, x) => { const t = clamp((x - a) / (b - a), 0, 1); return t * t * (3 - 2 * t); };
 
+/** Darken (k < 1) a #rrggbb colour. */
+export function shade(hex, k) {
+  const n = parseInt(hex.slice(1), 16);
+  return '#' + [n >> 16, (n >> 8) & 255, n & 255].map(v => Math.round(clamp(v * k, 0, 255)).toString(16).padStart(2, '0')).join('');
+}
+
 // Cheap integer hash -> 0..1. Used for all the "drawn by hand" wobble.
 export function hash(n) {
   n |= 0;

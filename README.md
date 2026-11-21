@@ -14,7 +14,9 @@ The critters:
 - make sculptures, and paintings of whatever they can see from the easel (and go admire each other's)
 - dance, sometimes in groups
 - fish in the pond or the stream (a town has one or the other, sometimes both), plant flowers, pick apples, kick a ball around
-- build the campfire, houses, swing set and pool
+- build the campfire, houses (and later add chimneys, side rooms and upstairs), a bridge, the swing set, a fish tank and the pool
+- jump the stream until there's a bridge, then mostly use that
+- keep a few of the fish they catch in the tank for a while, and come by to watch them
 - gather at the campfire in the evening and go home to sleep at night
 
 You can tap a critter to say hi, or tap the ground to drop a snack. There's also a little ♪ radio button that plays a lofi internet radio stream (the critters dance more when it's on); the stations are listed in `src/config.js`. The town is saved in your browser, so it's still there when you come back.

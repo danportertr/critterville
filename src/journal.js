@@ -45,7 +45,7 @@ export function catchFish(c, water) {
     changed('fish');
   } else {
     seen.times++;
-    if (rand() < 0.5) log(`${c.name} caught ${sp.call} and let it go.`);
+    if (!(S.tank && S.tank.progress >= 1) && rand() < 0.5) log(`${c.name} caught ${sp.call} and let it go.`);
   }
   return sp;
 }

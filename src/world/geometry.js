@@ -1,6 +1,6 @@
 // Where things are: walking obstacles, and finding empty spots to put stuff.
 import { S } from '../state.js';
-import { HOUSE, STREAM_HALF } from '../config.js';
+import { HOUSE, STREAM_HALF, BRIDGE } from '../config.js';
 import { rand } from '../util.js';
 
 export function inEllipse(x, y, o, pad = 0) {
@@ -25,6 +25,29 @@ export function inStream(x, y, pad = 0) {
   }
   return false;
 }
+/** Which bank is (x, y) on? -1 above the stream, 1 below. (The stream runs left to right.) */
+export function bankSide(x, y) {
+  const pts = S.stream.pts;
+  let i = 0;
+  while (i < pts.length - 2 && pts[i + 1][0] < x) i++;
+  const a = pts[i], b = pts[i + 1], k = (x - a[0]) / (b[0] - a[0]);
+  return y < a[1] + (b[1] - a[1]) * k ? -1 : 1;
+}
+/** Put the bridge where its `t` along the stream says, and work out its two ends. */
+export function placeBridge() {
+  const b = S.bridge;
+  if (!b || !S.stream) return;
+  const p = streamPoint(b.t);
+  Object.assign(b, { x: p.x, y: p.y, nx: p.nx, ny: p.ny, tx: p.tx, ty: p.ty });
+  b.ends = [-1, 1].map(k => ({ x: p.x + p.nx * k * (BRIDGE.reach + 5), y: p.y + p.ny * k * (BRIDGE.reach + 5) }));
+}
+/** Is (x, y) on the (finished) bridge deck? */
+export function onBridge(x, y) {
+  const b = S.bridge;
+  if (!b || b.progress < 1) return false;
+  const dx = x - b.x, dy = y - b.y;
+  return Math.abs(dx * b.tx + dy * b.ty) < BRIDGE.half && Math.abs(dx * b.nx + dy * b.ny) < BRIDGE.reach + 8;
+}
 export const topEdge = () => Math.min(120, S.H * 0.3);
 
 /** Ground footprints critters steer around. Call after anything is added, removed or moved. */
@@ -35,7 +58,8 @@ export function rebuildObs() {
   if (pond) S.obs.push({ x: pond.x, y: pond.y, rx: pond.rx + 8, ry: pond.ry + 6 });
   if (pool) S.obs.push({ x: pool.x, y: pool.y, rx: pool.rx + 14, ry: pool.ry + 11 });
   if (fire) S.obs.push({ x: fire.x, y: fire.y - 3, rx: 20, ry: 11 });
-  for (const h of S.houses) S.obs.push({ x: h.x, y: h.y - 9, rx: HOUSE.w / 2 + 6, ry: 13 });
+  for (const h of S.houses) { const wide = (h.addons || []).includes('annex') ? 24 : 0; S.obs.push({ x: h.x - wide, y: h.y - 10, rx: HOUSE.w / 2 * HOUSE.scale + 6 + wide, ry: 14 }); }
+  if (S.tank) S.obs.push({ x: S.tank.x, y: S.tank.y - 3, rx: 38, ry: 9 });
   for (const t of S.trees) S.obs.push({ x: t.x, y: t.y - 2, rx: 24 * t.size, ry: 7 });
   for (const a of S.arts) S.obs.push({ x: a.x, y: a.y - 2, rx: 17, ry: 7 });
 }
@@ -57,9 +81,11 @@ function zones() {
   if (fire) z.push({ x: fire.x, y: fire.y - 5, rx: 62, ry: 38 });
   if (pool) z.push({ x: pool.x, y: pool.y, rx: pool.rx + 16, ry: pool.ry + 14 });
   if (pond) z.push({ x: pond.x, y: pond.y, rx: pond.rx + 6, ry: pond.ry + 6 });
+  if (S.tank) z.push({ x: S.tank.x, y: S.tank.y - 30, rx: 46, ry: 42 });
+  if (S.bridge) z.push({ x: S.bridge.x, y: S.bridge.y, rx: 44, ry: BRIDGE.reach + 30 });
   if (S.stream) for (let i = 0; i <= 24; i++) { const p = streamPoint(i / 24); z.push({ x: p.x, y: p.y, rx: 40, ry: STREAM_HALF + 18 }); }
   if (swing) z.push({ x: swing.x, y: swing.y - 55, rx: 100, ry: 70 });
-  for (const h of S.houses) z.push({ x: h.x, y: h.y - 40, rx: 58, ry: 55 });
+  for (const h of S.houses) z.push({ x: h.x - 12, y: h.y - 84, rx: 96, ry: 96 });
   for (const t of S.trees) z.push({ x: t.x, y: t.y - 52 * t.size, rx: 44 * t.size, ry: 54 * t.size });
   for (const a of S.arts) z.push({ x: a.x, y: a.y - 25, rx: 22, ry: 32 });
   return z;

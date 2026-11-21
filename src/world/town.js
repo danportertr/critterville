@@ -1,13 +1,13 @@
 // Building a town from nothing, and the factories for the things in it.
 import { S } from '../state.js';
-import { DAY_LEN, HOUSE, SWING, HEADS, BODIES, WALLS, ROOFS, PETALS, GREENS, NAME_A, NAME_B } from '../config.js';
+import { DAY_LEN, HOUSE, SWING, ADDONS, HEADS, BODIES, WALLS, ROOFS, PETALS, GREENS, NAME_A, NAME_B } from '../config.js';
 import { TAU, clamp, rand, irand, pick, hs, dist } from '../util.js';
-import { rebuildObs, freePoint, findSpot, inEllipse, inStream } from './geometry.js';
+import { rebuildObs, freePoint, findSpot, inEllipse, inStream, streamPoint, placeBridge } from './geometry.js';
 import { newJournal } from '../journal.js';
 
 export function newHouse(progress) {
-  const p = findSpot(58, 55, 40);
-  const h = { kind: 'house', x: p.x, y: p.y, seed: irand(1e6), color: pick(WALLS), roof: pick(ROOFS), progress };
+  const p = findSpot(96, 96, 84);
+  const h = { kind: 'house', x: p.x + 12, y: p.y, seed: irand(1e6), color: pick(WALLS), roof: pick(ROOFS), progress, addons: [] };
   S.houses.push(h);
   return h;
 }
@@ -39,6 +39,30 @@ export function makeStream() {
     pts.push([-70 + i * (W + 140) / n, clamp(y, 150, H - 50)]);
   }
   return { pts, seed: irand(1e6), flow: rand() < 0.5 ? 1 : -1 };
+}
+
+export function planTank() {
+  const p = findSpot(46, 42, 30);
+  return (S.tank = { kind: 'tank', x: p.x, y: p.y, seed: irand(1e6), progress: 0, fish: [] });
+}
+/** A bridge at the bit of stream nearest the middle of town. */
+export function planBridge() {
+  const mid = S.fire || { x: S.W / 2, y: S.H / 2 };
+  let best = 0.5, bd = Infinity;
+  for (let t = 0.15; t <= 0.85; t += 0.02) { const p = streamPoint(t), d = dist(p, mid); if (d < bd && p.x > 80 && p.x < S.W - 80) { bd = d; best = t; } }
+  S.bridge = { kind: 'bridge', t: best, seed: irand(1e6), progress: 0 };
+  placeBridge();
+  S.flowers = S.flowers.filter(f => dist(f, S.bridge) > 50);
+  return S.bridge;
+}
+/** Start adding something onto a finished house, if any house still has room to grow. */
+export function planAddon() {
+  // Each house ends up with between one and three add-ons, decided by its seed.
+  const room = h => h.progress >= 1 && !h.adding && h.addons.length < 1 + Math.floor(hs(h.seed, 9) * 3);
+  const h = pick(S.houses.filter(room));
+  if (!h) return null;
+  h.adding = { what: pick(ADDONS.filter(a => !h.addons.includes(a))), progress: 0 };
+  return h;
 }
 
 export function planFire() {
@@ -86,7 +110,7 @@ export function scatterDecor() {
 
 export function newTown() {
   const { W, H } = S;
-  Object.assign(S, { critters: [], houses: [], trees: [], flowers: [], apples: [], arts: [], pond: null, stream: null, pool: null, swing: null });
+  Object.assign(S, { critters: [], houses: [], trees: [], flowers: [], apples: [], arts: [], pond: null, stream: null, bridge: null, pool: null, swing: null, tank: null });
   S.journal = newJournal();
   S.clock = DAY_LEN * 0.08;
 

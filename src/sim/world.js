@@ -5,11 +5,11 @@ import { HOUSE, SWING } from '../config.js';
 import { log, setStats } from '../ui.js';
 import { note } from '../journal.js';
 import { inEllipse, rebuildObs, freePoint, topEdge } from '../world/geometry.js';
-import { newHouse, newCritter, assignHomes, planFire, planPool, planSwing, makeBall } from '../world/town.js';
+import { newHouse, newCritter, assignHomes, planFire, planPool, planSwing, planBridge, planAddon, planTank, makeBall } from '../world/town.js';
 import { save } from '../world/save.js';
 import { updateCritter, goTo, setAct, say } from './core.js';
 
-let lastPhase = null, townT = 0, arriveT = 45, saveT = 15;
+let lastPhase = null, townT = 0, arriveT = 45, saveT = 15, nextAddon = 0;
 
 export function refreshStats() {
   // No scores: this isn't a game about getting more of anything.
@@ -41,21 +41,28 @@ function fade(list, dt, onRemove) {
 }
 
 /** Anything planned but not finished. Critters work on one thing at a time. */
-export const currentSite = () => [S.fire, S.swing, S.pool, ...S.houses].find(o => o && o.progress < 1);
+export const currentSite = () => [S.fire, S.bridge, S.swing, S.tank, S.pool, ...S.houses].find(o => o && (o.progress < 1 || o.adding));
 
 // The town plan: a fire to gather round, somewhere to sleep, then the fun stuff,
-// and enough houses for everyone. Once that's done the town is finished and
-// the critters just get on with enjoying it.
+// and enough houses for everyone. Once that's done the town is finished, apart
+// from the odd home improvement, and the critters just get on with enjoying it.
 function growTown() {
   if (!currentSite()) {
     const beds = S.houses.length * HOUSE.residents, n = S.critters.length;
     let msg = null;
     if (!S.fire) { planFire(); msg = 'The critters are making a campfire.'; }
     else if (!S.houses.length) { newHouse(0); msg = 'The first house is going up.'; }
+    else if (S.stream && !S.bridge) { planBridge(); msg = 'Tired of jumping the stream, the critters start on a bridge.'; }
     else if (!S.swing) { planSwing(); msg = 'Somebody had an idea: a swing set.'; }
     else if (beds < n && S.houses.length < 2) { newHouse(0); msg = 'A new house is going up.'; }
+    else if (!S.tank) { planTank(); msg = 'The critters are making a fish tank.'; }
     else if (!S.pool) { planPool(); msg = 'The critters are digging a pool.'; }
-    else if (beds < n && S.houses.length < 4) { newHouse(0); msg = 'A new house is going up.'; }
+    else if (beds < n && S.houses.length < 3) { newHouse(0); msg = 'A new house is going up.'; }
+    else if (S.clock > nextAddon) {   // the town is finished; now and then somebody improves a house
+      nextAddon = S.clock + rand(240, 520);
+      const h = planAddon();
+      if (h) msg = { chimney: 'One of the houses is getting a chimney.', annex: 'One of the houses is getting a side room.', upstairs: 'One of the houses is getting an upstairs.' }[h.adding.what];
+    }
     if (msg) { rebuildObs(); note(msg); }
   }
   if (!S.ball && S.houses.some(built)) {   // turns up in the moving boxes

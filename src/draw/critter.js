@@ -6,7 +6,7 @@ import { S } from '../state.js';
 import { INK, LW, FONT } from '../config.js';
 import { TAU } from '../util.js';
 import { STATES } from '../sim/core.js';
-import { inStream } from '../world/geometry.js';
+import { inStream, onBridge } from '../world/geometry.js';
 
 const WADE = 8;   // how deep the stream is, in critter units
 import { jit, wob, smooth, polyPath, blob, box, line, dot } from './primitives.js';
@@ -16,7 +16,7 @@ export function drawCritter(c) {
   let wading = false;
   ctx.save();
   if (st.transform && st.transform(c)) { /* the state placed the critter itself */ }
-  else if (c.hopY < 1 && inStream(c.x, c.y, -5)) {   // ankle-deep in the stream
+  else if (c.hopY < 1 && inStream(c.x, c.y, -5) && !onBridge(c.x, c.y)) {   // somehow standing in the stream: ankle-deep
     wading = true;
     ctx.translate(c.x, c.y + WADE * s); ctx.scale(s, s);
     ctx.beginPath(); ctx.rect(-80, -160, 160, 160 - WADE); ctx.clip();

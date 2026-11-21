@@ -26,14 +26,14 @@ function fishPicture(sp, seen) {
 
 function renderFish() {
   const ws = waters();
-  $body.append(el('p', 'lede', `What lives in this town's ${ws.join(' and ')}, as far as the critters have found out. They always let them go.`));
+  $body.append(el('p', 'lede', `What lives in this town's ${ws.join(' and ')}, as far as the critters have found out. They always go back in the water, sooner or later.`));
   const grid = el('div', 'cards');
   for (const sp of localSpecies()) {
     const seen = S.journal.fish[sp.id], card = el('article', seen ? 'card' : 'card unseen');
     card.append(fishPicture(sp, seen));
     if (seen) {
       card.append(el('h3', '', sp.name), el('p', 'meta', sp.size), el('p', '', sp.fact),
-        el('p', 'meta', `First caught by ${seen.by} in the ${seen.where} on day ${seen.day}.`));
+        el('p', 'meta', `First caught by ${seen.by} in the ${seen.where} on day ${seen.day}.${S.tank && S.tank.fish.some(f => f.id === sp.id) ? ' One is in the tank right now.' : ''}`));
     } else {
       const where = sp.where.filter(w => ws.includes(w)).join(' or ');
       card.append(el('h3', '', '???'), el('p', 'meta', `Not met yet. Something in the ${where}${sp.when === 'dusk' ? ', around dusk' : ''}.`));

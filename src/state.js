@@ -7,6 +7,8 @@ export const S = {
   now: 0, boil: 0, clock: 0,       // real seconds, line-boil frame, in-game seconds
   critters: [], houses: [], trees: [], flowers: [], apples: [], arts: [], tufts: [], flies: [],
   pond: null, stream: null,        // nature: a town has a pond, a stream, or both
+  bridge: null,                    // over the stream, once the critters build one
+  tank: null,                      // fish tank: {progress, fish: [{id, from, seed}]}
   journal: { fish: {}, diary: [] },   // see journal.js
   fire: null, pool: null, swing: null, ball: null,   // made by the critters; null until someone starts on them
   obs: [],                         // ellipses critters walk around

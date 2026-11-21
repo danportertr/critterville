@@ -2,7 +2,7 @@
 import { S } from '../state.js';
 import { SAVE_KEY, SAVE_VERSION } from '../config.js';
 import { clamp } from '../util.js';
-import { rebuildObs } from './geometry.js';
+import { rebuildObs, placeBridge } from './geometry.js';
 import { newJournal } from '../journal.js';
 import { hydrate, makeSwing, makeBall, assignHomes, scatterDecor } from './town.js';
 
@@ -10,7 +10,7 @@ export function save() {
   if (!S.W || !S.critters.length) return;
   try {
     localStorage.setItem(SAVE_KEY, JSON.stringify({
-      v: SAVE_VERSION, W: S.W, H: S.H, clock: S.clock, journal: S.journal, pond: S.pond, stream: S.stream, pool: S.pool, fire: S.fire,
+      v: SAVE_VERSION, W: S.W, H: S.H, clock: S.clock, journal: S.journal, pond: S.pond, stream: S.stream, tank: S.tank, bridge: S.bridge && { kind: 'bridge', t: S.bridge.t, seed: S.bridge.seed, progress: S.bridge.progress }, pool: S.pool, fire: S.fire,
       swing: S.swing && { x: S.swing.x, y: S.swing.y, seed: S.swing.seed, progress: S.swing.progress },
       houses: S.houses, trees: S.trees,
       flowers: S.flowers.filter(f => f.dying === undefined),
@@ -31,12 +31,16 @@ export function load() {
   S.clock = d.clock || 0;
   S.pond = mv(d.pond) || null; if (S.pond) { S.pond.rx *= fx; S.pond.ry = S.pond.rx * 0.5; }
   S.stream = d.stream || null; if (S.stream) S.stream.pts = S.stream.pts.map(([x, y]) => [x * fx, y * fy]);
+  S.bridge = S.stream && d.bridge ? d.bridge : null; placeBridge();
   S.journal = { ...newJournal(), ...d.journal };
   S.pool = mv(d.pool) || null; if (S.pool) { S.pool.rx *= fx; S.pool.ry = S.pool.rx * 0.48; }
   S.fire = mv(d.fire) || null;
+  S.tank = mv(d.tank) || null;
   S.swing = mv(d.swing) ? makeSwing(d.swing.x, d.swing.y, d.swing.seed, d.swing.progress) : null;
-  S.houses = d.houses.map(mv); S.trees = d.trees.map(mv);
-  for (const t of S.trees) if (!t.apples) { t.apples = [Math.random(), Math.random(), Math.random()]; }   // towns saved before apples grew S.flowers = d.flowers.map(mv); S.arts = (d.arts || []).map(mv);
+  S.houses = d.houses.map(mv); for (const h of S.houses) h.addons = h.addons || [];
+  S.trees = d.trees.map(mv);
+  for (const t of S.trees) if (!t.apples) t.apples = [Math.random(), Math.random(), Math.random()];   // towns saved before apples grew
+  S.flowers = d.flowers.map(mv); S.arts = (d.arts || []).map(mv);
   S.apples = [];
   S.ball = mv(d.ball) ? makeBall(d.ball.x, d.ball.y) : null;
   S.critters = d.critters.map(c => hydrate(mv(c)));

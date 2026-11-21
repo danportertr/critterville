@@ -4,7 +4,7 @@ import { S } from './state.js';
 import { clamp } from './util.js';
 import { cv } from './draw/canvas.js';
 import { render } from './draw/render.js';
-import { rebuildObs } from './world/geometry.js';
+import { rebuildObs, placeBridge } from './world/geometry.js';
 import { newTown, scatterDecor } from './world/town.js';
 import { save, load } from './world/save.js';
 import { updateWorld } from './sim/world.js';
@@ -27,10 +27,11 @@ function resize() {
   if (!oW || !S.critters.length) return;
   // Stretch the existing town to fit the new window.
   const fx = S.W / oW, fy = S.H / oH;
-  for (const o of [S.pond, S.pool, S.fire, S.ball, S.swing, ...S.houses, ...S.trees, ...S.flowers, ...S.apples, ...S.arts, ...S.critters].filter(Boolean)) { o.x *= fx; o.y *= fy; }
+  for (const o of [S.pond, S.pool, S.fire, S.ball, S.swing, S.tank, ...S.houses, ...S.trees, ...S.flowers, ...S.apples, ...S.arts, ...S.critters].filter(Boolean)) { o.x *= fx; o.y *= fy; }
   for (const c of S.critters) { c.tx *= fx; c.ty *= fy; if (c.bobx) { c.bobx *= fx; c.boby *= fy; } }
   if (S.pond) { S.pond.rx *= fx; S.pond.ry = S.pond.rx * 0.5; }
   if (S.stream) S.stream.pts = S.stream.pts.map(([x, y]) => [x * fx, y * fy]);
+  placeBridge();
   if (S.pool) { S.pool.rx *= fx; S.pool.ry = S.pool.rx * 0.48; }
   rebuildObs(); scatterDecor();
 }

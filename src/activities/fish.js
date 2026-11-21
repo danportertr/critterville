@@ -1,6 +1,6 @@
 // Stand at the water with a rod and wait. Works at the pond or the stream;
 // what bites depends on which (see journal.js and data/fish.js).
-import { S } from '../state.js';
+import { S, built } from '../state.js';
 import { INK, STREAM_HALF } from '../config.js';
 import { TAU, rand, pick } from '../util.js';
 import { ctx } from '../draw/canvas.js';
@@ -9,6 +9,7 @@ import { drawFish } from '../draw/fish.js';
 import { streamPoint, topEdge } from '../world/geometry.js';
 import { waters, catchFish } from '../journal.js';
 import { goTo, setAct, say, tick } from '../sim/core.js';
+import { stock } from './tank.js';
 
 /** Somewhere to stand, and where the float will land. */
 function fishingSpot() {
@@ -47,6 +48,11 @@ export default {
           say(c, '!'); c.hopV = 90;
         }
         tick(c, dt);
+      },
+      finish(c) {   // if there's a tank, the catch goes in it
+        if (!c.caught || !built(S.tank)) return;
+        stock(c, c.caught, c.water);
+        return true;
       },
       pose(c, p) { p.hand(p.d, p.d * 27, -30); },
       props(c, p) {

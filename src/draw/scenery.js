@@ -1,34 +1,81 @@
 // Everything in town that isn't a critter.
 import { ctx } from './canvas.js';
 import { S } from '../state.js';
-import { INK, LW, HOUSE, SWING, VIEW, STREAM_HALF, WOOD, STONE } from '../config.js';
+import { INK, LW, HOUSE, SWING, TANK, VIEW, STREAM_HALF, BRIDGE, WOOD, STONE } from '../config.js';
+import { SPECIES_BY_ID } from '../data/fish.js';
+import { drawFish } from './fish.js';
 import { streamPoint } from '../world/geometry.js';
-import { TAU, clamp, hs } from '../util.js';
+import { TAU, clamp, hs, shade } from '../util.js';
 import { jit, wob, smooth, polyPath, blobPts, paint, blob, box, line, tube, dot } from './primitives.js';
 
 const shadow = (x, y, rx, ry) => { ctx.fillStyle = 'rgba(0,0,0,.08)'; ctx.beginPath(); ctx.ellipse(x, y, rx, ry, 0, 0, TAU); ctx.fill(); };
-const WINDOW = [[22, -26], [22, -44], [38, -44], [38, -26]];
+// ---- houses ----
+// Drawn from the middle of the doorstep. Walls pinch in at the waist, the roof
+// overhangs, and the door is a darker shade of the walls. A house can grow
+// add-ons (h.addons): a chimney, a side room ('annex') and an upstairs.
+const GLASS = '#dff4fd', GLOW = '#ffe98a';
+const has = (h, what) => (h.addons || []).includes(what);
+/** How far the walls go up, including an upstairs. */
+export const wallTop = h => HOUSE.h + (has(h, 'upstairs') ? HOUSE.upstairs : 0);
+
+const WINDOWS = [[[-38, -50], [-27, -52], [-25, -32], [-37, -30]], [[24, -52], [36, -52], [33, -34], [22, -33]]];
+const UP_WINDOWS = [[[-37, -104], [-25, -105], [-24, -89], [-36, -88]], [[23, -105], [35, -104], [34, -88], [22, -89]]];
+const ANNEX_WINDOW = [[-76, -29], [-61, -30], [-60, -14], [-75, -13]];
+function panes(h, fill) {
+  const sd = h.seed;
+  WINDOWS.forEach((w, i) => box(w, fill, sd + 40 + i, 0.5, 2.2));
+  box([[-13, -48], [10, -50], [11, -30], [-11, -27]], fill, sd + 44, 0.5, 2.2);                  // the pane in the door
+  if (has(h, 'upstairs')) UP_WINDOWS.forEach((w, i) => box(w, fill, sd + 46 + i, 0.5, 2.2));
+  if (has(h, 'annex')) box(ANNEX_WINDOW, fill, sd + 49, 0.5, 2.2);
+  blob(-3, -wallTop(h) + 17, 7.5, 6.5, fill, sd + 50, 8, 0.06, 0.4, 2.2);                             // round window under the eaves
+}
+function annex(h, wall, roof) {
+  box([[-86, 0], [-46, 0], [-46, -43], [-85, -41]], wall, h.seed + 60, 0.7);
+  box([[-93, -35], [-46, -63], [-45, -38]], roof, h.seed + 61, 0.7);
+}
+function chimney(h, wall, cap, top) {
+  box([[24, -top - 14], [24, -top - 43], [47, -top - 41], [47, -top + 2]], wall, h.seed + 62, 0.6);
+  box([[19, -top - 43], [53, -top - 40], [52, -top - 49], [18, -top - 52]], cap, h.seed + 63, 0.6);
+}
+function roofShape(h, fill, top) {
+  // The underside dips below the top of the walls, so the roof sits on the house with no gap.
+  box([[-69, -top + 9], [-30, -top - 26], [-1, -top - HOUSE.roof + 2], [28, -top - 26], [62, -top + 8], [30, -top + 4], [0, -top + 2], [-35, -top + 5]], fill, h.seed + 1, 0.9);
+}
 
 export function drawHouse(h, lit) {
-  const sd = h.seed, p = h.progress, W = HOUSE.w, H = HOUSE.h;
-  ctx.save(); ctx.translate(h.x, h.y);
-  const wallH = H * clamp(p / 0.7, 0.12, 1);
-  box([[-W / 2, 0], [W / 2, 0], [W / 2, -wallH], [-W / 2, -wallH]], p < 1 ? '#fff' : h.color, sd, 0.8);
-  if (p < 1) {   // scaffolding
-    for (const x of [-W / 2 - 9, W / 2 + 9]) line([[x, 2], [x + jit(sd, 9, 1), -H - 14]], sd + (x | 0), 3, WOOD, 0.6);
-    line([[-W / 2 - 12, -wallH - 4], [W / 2 + 12, -wallH - 4]], sd + 3, 3, WOOD, 0.6);
-  }
-  if (p > 0.7) box([[-W / 2 - 11, -H], [0, -H - 42], [W / 2 + 11, -H]], p < 1 ? '#fff' : h.roof, sd + 1, 0.9);
-  if (p >= 1) {
-    box([[-11, 0], [-11, -30], [11, -30], [11, 0]], WOOD, sd + 2, 0.6);
-    dot(6, -14, 1.8);
-    box(WINDOW, lit ? '#ffe98a' : '#fff', sd + 4, 0.5, 2.2);
+  const sd = h.seed, p = h.progress, done = p >= 1, top = wallTop(h);
+  const wall = done ? h.color : '#fff', roof = done ? h.roof : '#fff', door = shade(h.color, 0.8);
+  ctx.save(); ctx.translate(h.x, h.y); ctx.scale(HOUSE.scale, HOUSE.scale);
+  shadow(0, 2, 60, 6);
+  const adding = h.adding, pole = (x, hgt) => line([[x, 2], [x + jit(sd, 9, 1), -hgt]], sd + (x | 0), 3, WOOD, 0.6);
+  if (!done || adding) { pole(-62, top + 20); pole(60, top + 20); }                              // scaffolding
+  if (has(h, 'annex')) annex(h, wall, roof);
+  else if (adding && adding.what === 'annex') { pole(-92, 60); if (adding.progress > 0.4) annex(h, '#fff', '#fff'); }
+
+  const k = done ? 1 : clamp(p / 0.7, 0.12, 1), y = v => -v * k;                                 // walls rise as it's built
+  let wtop = top;
+  if (adding && adding.what === 'upstairs') wtop = top + HOUSE.upstairs * clamp(adding.progress / 0.8, 0, 1);
+  if (has(h, 'chimney')) chimney(h, wall, door, wtop);
+  else if (adding && adding.what === 'chimney' && adding.progress > 0.4) chimney(h, '#fff', '#fff', wtop);
+  box([[-49, 0], [-44, y(28)], [-45, y(wtop - 25)], [-50, y(wtop)], [48, y(wtop)], [44, y(wtop - 25)], [42, y(28)], [47, 0]], wall, sd, 0.8);
+  if (done || p > 0.7) roofShape(h, roof, wtop);
+  if (done) {
+    box([[-19, 0], [-21, -30], [-22, -56], [20, -58], [17, -30], [22, 0]], door, sd + 2, 0.6);
+    panes(h, lit ? GLOW : GLASS);
+    dot(11, -22, 2.8); dot(11, -22, 1.5, '#ffd93b');
+    if (lit && has(h, 'chimney')) for (let i = 0; i < 2; i++) {                                  // someone's home: smoke
+      const t = (S.now * 0.22 + i * 0.5 + hs(sd, 3)) % 1;
+      ctx.globalAlpha = Math.sin(t * Math.PI);
+      blob(38 + t * 20, -top - 58 - t * 30, 6 + t * 6, 5 + t * 4, '#e0e0e0', sd + 70 + i, 8, 0.12, 0.6, 2.2);
+    }
+    ctx.globalAlpha = 1;
   }
   ctx.restore();
 }
-export function drawLitWindow(h, alpha) {
-  ctx.save(); ctx.translate(h.x, h.y); ctx.globalAlpha = alpha;
-  box(WINDOW, '#ffe98a', h.seed + 4, 0.5, 2.2);
+/** Just the windows, glowing: drawn again over the night-time wash. */
+export function drawHouseLights(h, alpha) {
+  ctx.save(); ctx.translate(h.x, h.y); ctx.scale(HOUSE.scale, HOUSE.scale); ctx.globalAlpha = alpha;
+  panes(h, GLOW);
   ctx.restore();
 }
 
@@ -107,6 +154,16 @@ export function drawStream() {
     blob(p.x + p.nx * off, p.y + p.ny * off, 5 + hs(st.seed, i + 70) * 3, 3.5, '#ddd', st.seed + 80 + i, 7, 0.1, 0.3, 2);
   }
 }
+/** Planks across the stream. They go down one at a time from one bank as it's built. */
+export function drawBridge() {
+  const b = S.bridge, n = 7, r = BRIDGE.reach, laid = Math.round(clamp(b.progress, 0, 1) * n);
+  const at = (along, across) => [b.x + b.nx * along + b.tx * across, b.y + b.ny * along + b.ty * across];
+  for (let i = 0; i < laid; i++) {
+    const a0 = -r + i * 2 * r / n, a1 = a0 + 2 * r / n - 1.5, w = BRIDGE.half;
+    box([at(a0, -w), at(a1, -w), at(a1, w), at(a0, w)], i % 2 ? '#d9a878' : WOOD, b.seed + i, 0.5, 2.2);
+  }
+  if (b.progress >= 1) for (const k of [-1, 1]) tube([at(-r - 2, k * BRIDGE.half), at(0, k * (BRIDGE.half + 3)), at(r + 2, k * BRIDGE.half)], 2.5, '#d9a878', b.seed + 20 + k, 0.4);   // rails
+}
 export function drawPool() {
   const p = S.pool, g = p.progress;
   if (g < 1) {   // being dug: a growing hole, then the rim goes on
@@ -163,6 +220,37 @@ export function drawSwing(sw) {
   }
   tube([[-half - 3, -barH], [half + 3, -barH]], 6, red, sw.seed, 0.4);                                        // top bar
   for (const k of [-1, 1]) tube([[k * half, -barH], [k * (half + 14), 0]], 6, red, sw.seed + k + 9, 0.4);     // front legs
+  ctx.restore();
+}
+
+/** The fish tank: a stand, a glass box of water, and whoever's living in it. */
+export function drawTank(t) {
+  const { w, h, legs } = TANK, g = t.progress, sd = t.seed, top = -legs - h;
+  ctx.save(); ctx.translate(t.x, t.y);
+  shadow(0, 2, w / 2 + 6, 5);
+  for (const k of [-1, 1]) tube([[k * (w / 2 - 6), 0], [k * (w / 2 - 8), -legs]], 4, WOOD, sd + k, 0.4);
+  if (g > 0.3) box([[-w / 2 - 4, -legs + 3], [w / 2 + 4, -legs + 3], [w / 2 + 4, -legs - 3], [-w / 2 - 4, -legs - 3]], WOOD, sd + 3, 0.5);
+  if (g > 0.6) {
+    const glass = [[-w / 2, -legs - 3], [w / 2, -legs - 3], [w / 2, top], [-w / 2, top]];
+    box(glass, g >= 1 ? '#c9ecf8' : '#fff', sd + 4, 0.5);
+    if (g >= 1) {
+      ctx.save(); polyPath(glass); ctx.clip();
+      ctx.fillStyle = '#fff'; ctx.fillRect(-w / 2, top - 2, w, 7);                                     // air above the waterline
+      ctx.fillStyle = '#e9d9a8'; ctx.fillRect(-w / 2, -legs - 9, w, 8);                                // gravel
+      line([[-w / 2 + 9, -legs - 8], [-w / 2 + 6 + Math.sin(S.now * 1.3) * 2, -legs - 20], [-w / 2 + 10, -legs - 30]], sd + 5, 2.4, '#7fd66a', 0.3);
+      t.fish.forEach((f, i) => {
+        const sp = SPECIES_BY_ID[f.id];
+        if (!sp) return;
+        const sc = Math.min(0.55, 15 / (sp.L || 26));
+        if (sp.kind === 'boot') return drawFish(sp, w / 2 - 12, -legs - 13, 0.55, f.seed);            // sits on the bottom
+        const ph = S.now * (0.25 + hs(f.seed, 1) * 0.25) + hs(f.seed, 2) * 9, span = w / 2 - 12;
+        const x = Math.sin(ph) * span, y = top + 13 + (i % 3) * 9 + Math.sin(ph * 2.3 + i) * 2;
+        drawFish(sp, x, y, sc, f.seed, Math.cos(ph) < 0);
+      });
+      ctx.restore();
+      polyPath(wob(glass, sd + 4, 0.5)); paint(null);
+    }
+  }
   ctx.restore();
 }
 
