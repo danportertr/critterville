@@ -43,13 +43,25 @@ function standAt(s) {
   }
 }
 
+function workOn(c, s) {
+  const p = standAt(s);
+  goTo(c, p.x, p.y, () => { c.dir = s.x > c.x ? 1 : -1; c.site = s; setAct(c, 'build', rand(4, 7)); });
+}
+/**
+ * The monument is a long, slow job done in odd moments. It's separate from the
+ * ordinary building site so that it never has to wait its turn behind a
+ * hammock, a chimney or a stage: somebody can always go and put in a session.
+ */
+export const monumentWork = {
+  id: 'monumentWork',
+  weight: () => S.monument && S.monument.progress < 1 ? 1.3 : 0,
+  start(c) { workOn(c, S.monument); },
+};
+
 export default {
   id: 'build',
-  weight() { const s = currentSite(); return !s ? 0 : s.kind === 'monument' && !s.adding ? 1 : 4; },   // the monument is a now-and-then job
-  start(c) {
-    const s = currentSite(), p = standAt(s);
-    goTo(c, p.x, p.y, () => { c.dir = s.x > c.x ? 1 : -1; c.site = s; setAct(c, 'build', rand(4, 7)); });
-  },
+  weight: () => currentSite() ? 4 : 0,
+  start(c) { workOn(c, currentSite()); },
   states: {
     build: { mood: 'flat',
       finish(c) {

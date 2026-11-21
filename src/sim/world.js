@@ -55,15 +55,14 @@ function fade(list, dt, onRemove) {
 export const currentSite = () => {
   const th = S.theatre;   // a stage going up, or coming down again, takes priority
   if (th && (th.phase === 'building' || th.phase === 'striking')) return th;
-  return [S.fire, S.bridge, S.swing, S.tank, S.pool, ...S.hammocks, ...S.houses, S.monument].find(o => o && (o.progress < 1 || o.adding));
+  return [S.fire, S.bridge, S.swing, S.tank, S.pool, ...S.hammocks, ...S.houses].find(o => o && (o.progress < 1 || o.adding));   // (not the monument: that's its own slow job, see build.js)
 };
 
 // The town plan: a fire to gather round, somewhere to sleep, then the fun stuff,
 // and enough houses for everyone. Once that's done the town is finished, apart
 // from the odd home improvement, and the critters just get on with enjoying it.
 function growTown() {
-  const site = currentSite();
-  if (!site || site === S.monument) {   // (the monument is a long, slow job: other things get planned around it)
+  if (!currentSite()) {
     const beds = S.houses.length * HOUSE.residents, n = S.critters.length;
     let msg = null, hammock;
     if (!S.fire) { planFire(); msg = 'The critters are making a campfire.'; }

@@ -9,7 +9,7 @@ import fish from './fish.js';
 import garden from './garden.js';
 import { snack, fruit } from './snack.js';
 import ball from './ball.js';
-import build from './build.js';
+import build, { monumentWork } from './build.js';
 import campfire from './campfire.js';
 import sleep from './sleep.js';
 import swing from './swing.js';
@@ -29,6 +29,6 @@ import { stargaze as telescope, isNightOwl, nightLife } from './night.js';
 import { nightHooks } from '../sim/core.js';
 import { playgoer } from '../events/theatre.js';
 
-[wander, rest, chat, dance, fish, garden, snack, fruit, ball, build, campfire, sleep, swing, swim, art, admire, repaint, tidy, tank, hammock, respond, topiary, cairn, stargaze, ringDance, shop, story, findHat, picnicking, investigate, telescope, playgoer].forEach(register);
+[wander, rest, chat, dance, fish, garden, snack, fruit, ball, build, campfire, sleep, swing, swim, art, admire, repaint, tidy, tank, hammock, respond, topiary, cairn, stargaze, ringDance, shop, story, findHat, picnicking, investigate, telescope, playgoer, monumentWork].forEach(register);
 
 nightHooks.life = c => isNightOwl(c) && nightLife(c);

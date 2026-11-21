@@ -7,7 +7,7 @@ import { render } from './draw/render.js';
 import { rebuildObs, placeBridge } from './world/geometry.js';
 import { newTown, scatterDecor } from './world/town.js';
 import { save, load } from './world/save.js';
-import { updateWorld } from './sim/world.js';
+import { updateWorld, currentSite } from './sim/world.js';
 import './activities/index.js';
 import './input.js';
 import './radio.js';
@@ -60,6 +60,13 @@ function boot() {
   if (!load()) { newTown(); startDiary(); }
   requestAnimationFrame(frame);
 }
+// critterville.status() says what's being built and how far along the monument is.
+S.status = () => ({
+  build: VERSION.n,
+  site: (s => s && { kind: s.kind, adding: s.adding && s.adding.what, progress: s.progress, phase: s.phase })(currentSite()),
+  monument: S.monument && { form: S.monument.form, progress: S.monument.progress },
+  doing: S.critters.map(c => `${c.name}:${c.act}`).join(' '),
+});
 S.version = VERSION; S.checkVersion = checkForNewer; S.freshReload = freshReload;   // critterville.checkVersion() asks the server right now
 S.trigger = trigger;       // e.g. critterville.trigger('rain') | 'star' | 'wind' | 'ducks' | 'ring' | 'cart' | 'farewell' | 'adventure' | 'picnic' | 'rumour' | 'theatre'
 window.critterville = S;   // for poking around in the console
