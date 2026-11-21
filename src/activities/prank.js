@@ -13,7 +13,7 @@ import { TAU, rand, irand, pick, hs } from '../util.js';
 import { log, setTownName, TOWN } from '../ui.js';
 import { line, box } from '../draw/primitives.js';
 import { puff } from '../puffs.js';
-import { wallTop } from '../draw/scenery.js';
+import { wallTop, WILD } from '../draw/scenery.js';
 import { note } from '../journal.js';
 import { news, nearby } from '../talk.js';
 import { goTo, setAct, say, tick } from '../sim/core.js';
@@ -47,7 +47,11 @@ const PRANKS = [
     can: () => S.houses.some(h => built(h) && !h.prank),
     pick: () => pick(S.houses.filter(h => built(h) && !h.prank)),
     at: h => ({ x: h.x + 62, y: h.y + 10 }),
-    go(h) { const [wall, roof, dots] = LOUD.slice().sort(() => rand() - 0.5); h.prank = { wall, roof, dots, style: pick(['spots', 'stripes']), at: S.clock }; return 'painted a house in the loudest colours going'; },
+    go(h) {
+      const colors = LOUD.slice().sort(() => rand() - 0.5).slice(0, 5), style = pick(WILD);
+      h.prank = { colors, wall: colors[0], roof: colors[1], style, roofStyle: pick(WILD.filter(w => w !== style)), seed: irand(1e6), at: S.clock };
+      return { zigzag: 'painted a house in zigzags', checks: 'painted a house in checks', rainbow: 'painted a house in rainbow stripes', bubbles: 'covered a house in spots within spots', swirls: 'painted swirls all over a house', splat: 'splattered a house with paint', zebra: 'painted a house like a zebra, but louder', stars: 'covered a house in stars', waves: 'painted a house in wavy lines', harlequin: 'painted a house in diamonds' }[style];
+    },
     where: () => S.houses.find(h => h.prank) || null, when: () => (S.houses.find(h => h.prank) || {}).prank?.at,
     undo() { const h = S.houses.find(h => h.prank); if (h) h.prank = null; return 'painted the house back the way it was'; }, paint: true },
   { id: 'moustache', w: 1.5,

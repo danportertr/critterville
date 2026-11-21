@@ -40,9 +40,67 @@ function chimney(h, wall, cap, top) {
   box([[24, -top - 14], [24, -top - 43], [47, -top - 41], [47, -top + 2]], wall, h.seed + 62, 0.6);
   box([[19, -top - 43], [53, -top - 40], [52, -top - 49], [18, -top - 52]], cap, h.seed + 63, 0.6);
 }
-function roofShape(h, fill, top) {
-  // The underside dips below the top of the walls, so the roof sits on the house with no gap.
-  box([[-69, -top + 9], [-30, -top - 26], [-1, -top - HOUSE.roof + 2], [28, -top - 26], [62, -top + 8], [30, -top + 4], [0, -top + 2], [-35, -top + 5]], fill, h.seed + 1, 0.9);
+// The underside dips below the top of the walls, so the roof sits on the house with no gap.
+const roofPts = top => [[-69, -top + 9], [-30, -top - 26], [-1, -top - HOUSE.roof + 2], [28, -top - 26], [62, -top + 8], [30, -top + 4], [0, -top + 2], [-35, -top + 5]];
+function roofShape(h, fill, top) { box(roofPts(top), fill, h.seed + 1, 0.9); }
+
+/**
+ * The prankster's idea of decorating: a wild pattern filling the box from
+ * (x0, y0) to (x1, y1). (The caller clips it to the wall or the roof.)
+ */
+export const WILD = ['zigzag', 'checks', 'rainbow', 'bubbles', 'swirls', 'splat', 'zebra', 'stars', 'waves', 'harlequin'];
+function wild(style, cols, seed, x0, y0, x1, y1) {
+  const col = i => cols[((i % cols.length) + cols.length) % cols.length], r = i => hs(seed, i), w = x1 - x0, h = y1 - y0;
+  ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+  const starAt = (x, y, R, c) => { ctx.fillStyle = c; ctx.beginPath(); for (let i = 0; i < 10; i++) { const t = -Math.PI / 2 + i / 10 * TAU, q = i % 2 ? R * 0.45 : R; ctx.lineTo(x + Math.cos(t) * q, y + Math.sin(t) * q); } ctx.fill(); };
+  switch (style) {
+    case 'zigzag':
+      for (let row = 0, y = y0 - 4; y < y1 + 10; y += 9, row++) { ctx.strokeStyle = col(row + 1); ctx.lineWidth = 5; ctx.beginPath(); for (let x = x0 - 6, i = 0; x < x1 + 8; x += 8, i++) ctx.lineTo(x, y + (i % 2 ? 6 : 0)); ctx.stroke(); }
+      break;
+    case 'checks':
+      for (let i = 0; i * 11 < w + 11; i++) for (let j = 0; j * 11 < h + 11; j++) if ((i + j) % 2) { ctx.fillStyle = col(1 + ((i * 3 + j) % 3)); ctx.fillRect(x0 + i * 11, y0 + j * 11, 11, 11); }
+      break;
+    case 'rainbow':
+      for (let i = 0; i * 9 < w + 30; i++) { ctx.strokeStyle = col(i + 1); ctx.lineWidth = 8; ctx.beginPath(); ctx.moveTo(x0 + i * 9 - 16, y1 + 4); ctx.lineTo(x0 + i * 9 + 4, y0 - 4); ctx.stroke(); }
+      break;
+    case 'bubbles':
+      for (let i = 0; i < 22; i++) { const x = x0 + r(i) * w, y = y0 + r(i + 40) * h, R = 3 + r(i + 80) * 7; ctx.fillStyle = col(i + 1); ctx.beginPath(); ctx.arc(x, y, R, 0, TAU); ctx.fill(); ctx.fillStyle = col(i + 2); ctx.beginPath(); ctx.arc(x, y, R * 0.45, 0, TAU); ctx.fill(); }
+      break;
+    case 'swirls':
+      for (let i = 0; i < 7; i++) { const x = x0 + r(i) * w, y = y0 + r(i + 40) * h; ctx.strokeStyle = col(i + 1); ctx.lineWidth = 3.4; ctx.beginPath(); for (let t = 0; t < 4.2 * Math.PI; t += 0.3) ctx.lineTo(x + Math.cos(t) * t * 1.15, y + Math.sin(t) * t * 1.15); ctx.stroke(); }
+      break;
+    case 'splat':
+      for (let i = 0; i < 12; i++) {
+        const x = x0 + r(i) * w, y = y0 + r(i + 40) * h, R = 4 + r(i + 80) * 6;
+        ctx.fillStyle = ctx.strokeStyle = col(i + 1);
+        ctx.beginPath(); ctx.arc(x, y, R, 0, TAU); ctx.fill();
+        for (let k = 0; k < 5; k++) { const t = r(i * 7 + k) * TAU, d = R + 2 + r(i * 9 + k) * 6; ctx.beginPath(); ctx.arc(x + Math.cos(t) * d, y + Math.sin(t) * d, 1 + r(i + k) * 1.6, 0, TAU); ctx.fill(); }
+        ctx.lineWidth = 2.4; ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x + (r(i + 5) - 0.5) * 3, y + R + 6 + r(i + 6) * 12); ctx.stroke();   // a drip
+      }
+      break;
+    case 'zebra':
+      for (let i = -2; i * 13 < w + 40; i++) { ctx.strokeStyle = col(1 + (i & 1)); ctx.lineWidth = 6; ctx.beginPath(); for (let y = y0 - 4; y <= y1 + 4; y += 6) ctx.lineTo(x0 + i * 13 + Math.sin(y * 0.16 + i) * 6 + (y - y0) * 0.25, y); ctx.stroke(); }
+      break;
+    case 'stars':
+      for (let i = 0; i < 16; i++) starAt(x0 + r(i) * w, y0 + r(i + 40) * h, 4 + r(i + 80) * 5, col(i + 1));
+      break;
+    case 'waves':
+      for (let row = 0, y = y0 - 2; y < y1 + 8; y += 8, row++) { ctx.strokeStyle = col(row + 1); ctx.lineWidth = 4.5; ctx.beginPath(); for (let x = x0 - 4; x <= x1 + 4; x += 4) ctx.lineTo(x, y + Math.sin(x * 0.22 + row * 1.3) * 3.5); ctx.stroke(); }
+      break;
+    default:   // harlequin: diamonds
+      for (let i = -1; i * 14 < w + 14; i++) for (let j = -1; j * 18 < h + 18; j++) {
+        const x = x0 + i * 14 + (j % 2 ? 7 : 0), y = y0 + j * 9 + 9;
+        ctx.fillStyle = col(1 + ((i + j * 2) % 4 + 4) % 4); ctx.beginPath(); ctx.moveTo(x, y - 9); ctx.lineTo(x + 7, y); ctx.lineTo(x, y + 9); ctx.lineTo(x - 7, y); ctx.fill();
+      }
+  }
+}
+/** Paint a wild pattern inside the outline `pts` (already-wobbled points), then redraw the outline. */
+function wildFill(pts, style, cols, seed) {
+  const xs = pts.map(p => p[0]), ys = pts.map(p => p[1]);
+  ctx.save(); polyPath(pts); ctx.clip();
+  wild(style, cols, seed, Math.min(...xs), Math.min(...ys), Math.max(...xs), Math.max(...ys));
+  ctx.restore();
+  polyPath(pts); paint(null);
 }
 
 export function drawHouse(h, lit) {
@@ -72,12 +130,12 @@ export function drawHouse(h, lit) {
   if (adding && adding.what === 'upstairs') wtop = top + HOUSE.upstairs * clamp(adding.progress / 0.8, 0, 1);
   if (has(h, 'chimney')) chimney(h, wall, door, wtop);
   else if (adding && adding.what === 'chimney' && adding.progress > 0.4) chimney(h, '#fff', '#fff', wtop);
-  box([[-49, 0], [-44, y(28)], [-45, y(wtop - 25)], [-50, y(wtop)], [48, y(wtop)], [44, y(wtop - 25)], [42, y(28)], [47, 0]], wall, sd, 0.8);
-  if (pr) {   // spots or stripes, all over
-    if (pr.style === 'spots') for (let i = 0; i < 11; i++) dot(-38 + hs(sd, i + 200) * 76, -6 - hs(sd, i + 220) * (wtop - 12), 3.2 + hs(sd, i + 240) * 2.4, pr.dots);
-    else for (let i = 0; i < 6; i++) line([[-40 + i * 16, -3], [-44 + i * 16, -wtop + 4]], sd + 200 + i, 4.5, pr.dots, 0.4);
-  }
+  const wallPts = [[-49, 0], [-44, y(28)], [-45, y(wtop - 25)], [-50, y(wtop)], [48, y(wtop)], [44, y(wtop - 25)], [42, y(28)], [47, 0]];
+  box(wallPts, wall, sd, 0.8);
+  const loud = pr && (pr.colors || [pr.wall, pr.roof, pr.dots, pr.wall]);   // (older saves had three colours)
+  if (pr) wildFill(wob(wallPts, sd, 0.8), WILD.includes(pr.style) ? pr.style : 'bubbles', loud, (pr.seed || sd) + 1);
   if (done || p > 0.7) roofShape(h, roof, wtop);
+  if (pr) wildFill(wob(roofPts(wtop), sd + 1, 0.9), WILD.includes(pr.roofStyle) ? pr.roofStyle : 'zigzag', loud.slice().reverse(), (pr.seed || sd) + 2);   // the roof gets a different one
   if (done) {
     box([[-19, 0], [-21, -30], [-22, -56], [20, -58], [17, -30], [22, 0]], door, sd + 2, 0.6);
     panes(h, lit ? GLOW : GLASS);
