@@ -45,7 +45,23 @@ export const isFriend = (a, b) => score(a, b) >= 4;
 
 // ---- what to say next ----
 const TALE = ['it was so big', 'THIS big!', 'no, THIS big!', 'enormous!!', 'a monster!', 'big as a house!'];
-export const DREAMS = ['I could fly', 'of a giant apple', 'I was a fish', 'the moon came down', 'of a bridge with no end', 'my hat could talk', 'it rained soup', 'of a tree that walked', 'I was very small'];
+// Dreams: `text` completes "I dreamt ...", and `title` is what a painting of it gets called.
+// A dream stays with a critter for a day or so (c.lastDream) and may turn up
+// in what they paint or carve, or in the hat they ask the hatmaker for.
+export const DREAMS = [
+  { id: 'fly', text: 'I could fly', title: 'a dream of flying' },
+  { id: 'apple', text: 'of a giant apple', title: 'a dream of a giant apple' },
+  { id: 'fish', text: 'I was a fish', title: 'a dream of being a fish' },
+  { id: 'moon', text: 'the moon came down', title: 'the night the moon came down' },
+  { id: 'bridge', text: 'of a bridge with no end', title: 'the bridge with no end' },
+  { id: 'hat', text: 'my hat could talk', title: 'the talking hat' },
+  { id: 'soup', text: 'it rained soup', title: 'the day it rained soup' },
+  { id: 'tree', text: 'of a tree that walked', title: 'the tree that walked' },
+  { id: 'small', text: 'I was very small', title: 'a dream of being very small' },
+];
+/** What's on this critter's mind lately: a dream from last night, something seen through the telescope. */
+export const recentDream = c => (c.lastDream && S.clock - c.lastDream.clock < 1.2 * DAY_LEN ? DREAMS.find(d => d.id === c.lastDream.id) : null);
+export const recentSky = c => (c.sawSky && S.clock - c.sawSky.clock < 1.5 * DAY_LEN ? c.sawSky.id : null);
 
 function compliment(from, to) {
   const options = ['nice day', '♥', 'you look well'];
@@ -71,7 +87,7 @@ export function nextLine(speaker, listener, chat) {
     return line;
   }
   if (speaker.dream && rand() < 0.6) {
-    const d = speaker.dream;
+    const d = speaker.dream.text;
     speaker.dream = null; reply(['ha!', 'ooh', 'strange', 'me too!']);
     if (rand() < 0.35) note(`${speaker.name} dreamt ${d.replace(/^I was/, 'they were').replace(/^I /, 'they ').replace(/^my /, 'their ')}, and told ${listener.name} all about it.`);
     return `I dreamt ${d}`;

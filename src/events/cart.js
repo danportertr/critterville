@@ -13,7 +13,8 @@ import { findSpot, rebuildObs, inStream } from '../world/geometry.js';
 import { hydrate } from '../world/town.js';
 import { note } from '../journal.js';
 import { goTo, setAct, say } from '../sim/core.js';
-import { news, nearby } from '../talk.js';
+import { news, nearby, recentDream } from '../talk.js';
+import { isNightOwl } from '../activities/night.js';
 import { HAT_KINDS } from '../draw/cart.js';
 
 export const CARTS = {
@@ -144,8 +145,14 @@ export const shop = {
         leave(c, v); c.cleanup = null;
         c.hopV = 120;
         if (v.kind === 'hat') {
-          c.hat = { kind: pick(HAT_KINDS), color: pick(PETALS) }; c.hatFrom = v.seed;
-          say(c, '♥'); log(`${c.name} got a new hat.`);
+          // The hatmaker works to order, and what's on a critter's mind shows:
+          // last night's dream, or (for night owls especially) the stars.
+          const dream = recentDream(c), dreamHat = dream && { apple: 'apple', fish: 'fishhat', fly: 'cloud' }[dream.id];
+          const starry = isNightOwl(c) ? 0.75 : Object.keys(S.journal.sky).length ? 0.15 : 0;
+          const kind = dreamHat && rand() < 0.75 ? dreamHat : rand() < starry ? 'wizard' : pick(HAT_KINDS);
+          c.hat = { kind, color: pick(PETALS) }; c.hatFrom = v.seed;
+          say(c, '♥');
+          log(kind === dreamHat ? `${c.name} described a dream to the hatmaker and got a hat to match.` : kind === 'wizard' ? `${c.name} got a hat covered in stars.` : `${c.name} got a new hat.`);
         } else if (v.kind === 'balloon') {
           c.balloon = { color: pick(PETALS), seed: irand(1000), until: S.clock + rand(0.5, 1.1) * DAY_LEN };
           say(c, '♥'); log(`${c.name} got a balloon.`);

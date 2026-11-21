@@ -15,13 +15,14 @@ import { DAY_LEN, STREAM_HALF, PETALS, HEADS } from '../config.js';
 import { TAU, rand, irand, pick, clamp, dist } from '../util.js';
 import { log } from '../ui.js';
 import { ctx } from '../draw/canvas.js';
-import { MATERIALS, STATUES, formOf, drawBenchFront } from '../draw/sculpture.js';
+import { MATERIALS, STATUES, SKY_FORMS, DREAM_FORMS, CARVED, formOf, drawBenchFront } from '../draw/sculpture.js';
+import { recentDream, recentSky } from '../talk.js';
 import { findSpot, rebuildObs, streamPoint } from '../world/geometry.js';
 import { note } from '../journal.js';
 import { goTo, setAct, say, release } from '../sim/core.js';
 
 const WORKING = ['sundial', 'vane', 'birdbath', 'bench'];
-const NAMES = { critter: 'statue of a critter', totem: 'totem', arch: 'arch', castle: 'sandcastle', sandcritter: 'sand critter', sundial: 'sundial', vane: 'weathervane', birdbath: 'birdbath', bench: 'bench', assemblage: 'pile of found things' };
+const NAMES = { moon: 'crescent moon', star: 'star', planet: 'ringed planet', apple: 'giant apple', treelegs: 'walking tree', critter: 'statue of a critter', totem: 'totem', arch: 'arch', castle: 'sandcastle', sandcritter: 'sand critter', sundial: 'sundial', vane: 'weathervane', birdbath: 'birdbath', bench: 'bench', assemblage: 'pile of found things' };
 const sculptures = () => S.arts.filter(a => a.type === 'sculpture' && a.progress >= 1 && a.dying === undefined);
 
 function weighted(options) {
@@ -55,6 +56,10 @@ export function newSculpture(c) {
   const stone = S.stones.find(s => !s.claimed);
   if (stone) options.push([1.6, { form: pick(STATUES), material: 'star', stoneSeed: stone.seed }]);
   if (S.pond || S.stream) options.push([1.1, { form: pick(['castle', 'sandcritter']), material: 'sand' }]);
+  // The night sky and last night's dream both find their way into the work.
+  const dream = recentDream(c), saw = recentSky(c), wood = () => pick(['stone', 'stone', 'wood']);
+  if (Object.keys(S.journal.sky).length) options.push([saw ? 5 : 0.9, { form: pick(SKY_FORMS), material: wood(), inspired: 'sky' }]);
+  if (dream && DREAM_FORMS[dream.id]) options.push([5, { form: DREAM_FORMS[dream.id], material: wood(), inspired: 'dream' }]);
   const things = foundThings();
   if (things.length > 2) options.push([1, { form: 'assemblage', material: 'stone', items: things }]);
   const what = weighted(options);
@@ -71,7 +76,7 @@ export function abandon(a) {
 /** "a wooden totem", "an arch carved from a fallen star"... */
 export function describe(a) {
   const form = formOf(a), mat = a.material || 'stone', name = NAMES[form] || 'sculpture';
-  if (!STATUES.includes(form)) return `${/^[aeiou]/.test(name) ? 'an' : 'a'} ${name}`;
+  if (!CARVED.includes(form)) return `${/^[aeiou]/.test(name) ? 'an' : 'a'} ${name}`;
   return mat === 'star' ? `${/^[aeiou]/.test(name) ? 'an' : 'a'} ${name} carved from a fallen star` : `a ${MATERIALS[mat].word} ${name}`;
 }
 /** The last chip falls. */
@@ -80,7 +85,8 @@ export function finished(a, c) {
   a.born = S.clock;
   if (a.material === 'star') { const i = S.stones.findIndex(s => s.seed === a.stoneSeed); if (i >= 0) S.stones.splice(i, 1); rebuildObs(); }
   const verb = a.material === 'sand' ? 'built' : form === 'assemblage' ? 'put together' : form === 'bench' ? 'made' : 'carved';
-  note(`${c.name} ${verb} ${describe(a)}${a.material === 'sand' ? ' by the water' : form === 'bench' ? ' out of a log' : ''}.`);
+  const why = a.inspired === 'dream' ? ', after a dream' : a.inspired === 'sky' ? ', after a night looking at the sky' : '';
+  note(`${c.name} ${verb} ${describe(a)}${a.material === 'sand' ? ' by the water' : form === 'bench' ? ' out of a log' : ''}${why}.`);
 }
 
 // ---- looking after them ----

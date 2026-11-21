@@ -13,6 +13,8 @@ import { findSpot, rebuildObs } from '../world/geometry.js';
 import { note } from '../journal.js';
 import { newSculpture, abandon, finished as sculptureFinished } from './sculpture.js';
 import { PLACES } from '../events/journeys.js';
+import { DREAMS, recentDream, recentSky } from '../talk.js';
+import { SKY_BY_ID } from '../data/sky.js';
 
 const placeOf = id => PLACES.find(p => p.id === id);
 import { goTo, setAct, say, tick } from '../sim/core.js';
@@ -89,11 +91,16 @@ function closeUpSubject(a, painter) {
   for (const o of S.critters) if (o !== painter) options.push([0.45, { k: 'critter', c: o.head, c2: o.body, name: o.name, hat: o.hat }]);
   for (const id of Object.keys(S.journal.fish)) options.push([0.5, { k: 'fish', id }]);
   if (S.recent && S.clock - S.recent.clock < 2.5 * DAY_LEN) options.push([4, { k: 'event', id: S.recent.id, kind: S.recent.kind }]);
+  const dream = recentDream(painter), sky = recentSky(painter);
+  if (dream) options.push([6, { k: 'dream', id: dream.id, c: painter.head, c2: painter.body }]);   // last night's dream, starring the dreamer
+  if (sky) options.push([6, { k: 'sky', id: sky }]);                                               // what they saw through the telescope
+  for (const id of Object.keys(S.journal.sky)) options.push([0.3, { k: 'sky', id }]);              // or something anyone has found up there
   return options.length ? weighted(options) : null;
 }
 function chooseStyle(a, painter) {
+  const inspired = recentDream(painter) || recentSky(painter);   // with something on their mind, a close-up is likelier
   const tale = painter.story && S.clock < painter.story.until && rand() < 0.75 && placeOf(painter.story.place);   // just back from somewhere
-  const r = rand(), subject = tale ? { k: 'adventure', place: tale.id, name: tale.name } : r < 0.34 && closeUpSubject(a, painter);
+  const r = rand(), subject = tale ? { k: 'adventure', place: tale.id, name: tale.name } : r < (inspired ? 0.7 : 0.34) && closeUpSubject(a, painter);
   a.bg = pick(BODIES.filter(c => c !== '#ffffff'));
   if (subject) { a.style = 'closeup'; a.subject = subject; a.title = titleOf(a); }   // named from the start, so a portrait always says who it's of
   else if (r < 0.52) {
@@ -132,6 +139,8 @@ function titleOf(a) {
   if (a.style !== 'closeup') return subjectOf(a.view);
   if (s.k === 'critter') return `a portrait of ${s.name}`;
   if (s.k === 'adventure') return `${s.name}, from memory`;
+  if (s.k === 'dream') return (DREAMS.find(d => d.id === s.id) || { title: 'a dream' }).title;
+  if (s.k === 'sky') return (SKY_BY_ID[s.id] || { call: 'the night sky' }).call;
   if (s.k === 'fish') return (SPECIES_BY_ID[s.id] || { call: 'a fish' }).call;
   if (s.k === 'event') return EVENT_TITLES[s.id === 'cart' ? s.kind : s.id] || 'something that happened';
   return s.k === 'flower' ? 'a flower, up close' : `${subjectOf([s])}, up close`;

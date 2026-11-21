@@ -27,7 +27,7 @@ export default {
         c.hidden = false;
         setAct(c, 'idle', rand(0.5, 2));
         if (rand() < 0.35) say(c, pick(['☼', 'yawn', 'hi!']));
-        if (rand() < 0.4) c.dream = pick(DREAMS);   // something to tell whoever they talk to first
+        if (rand() < 0.4) { c.dream = pick(DREAMS); c.lastDream = { id: c.dream.id, clock: S.clock }; }   // something to tell, and perhaps to paint
       },
       pose(c, p) { p.eyesClosed = true; p.bob = Math.sin(p.now * 1.2 + c.seed) * 0.8 - 1; p.hl = [-24, -9]; p.hr = [24, -9]; },
     },

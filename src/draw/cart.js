@@ -41,6 +41,25 @@ export function drawHat(hat, look = 1, seed = 1) {
       dot(0, -11, 1.6);
       break;
     }
+    // ---- hats that come from somewhere: the night sky, or a dream ----
+    case 'wizard':   // tall, midnight blue, covered in stars
+      box([[-10, 3], [-3, -16], [2, -30], [10, 3]], '#3b3f73', seed, 0.4, lw);
+      tube([[-16, 3], [16, 3]], 2.6, '#3b3f73', seed + 1, 0.3);
+      for (const [x, y] of [[-3, -3], [3, -10], [0, -19], [5, -1]]) dot(x, y, 1.3, '#ffe66d');
+      break;
+    case 'apple':    // a giant apple, as dreamt
+      blob(0, -8, 12, 11, '#fb6540', seed, 9, 0.05, 0.3, lw);
+      line([[0, -18], [1.5, -23]], seed + 1, 2, INK, 0.2); blob(6, -22, 4.5, 2.4, '#adeb3c', seed + 2, 6, 0.1, 0.2, 1.8);
+      break;
+    case 'fishhat':  // "I was a fish"
+      box([[-12, -6], [-20, -12], [-18, -6], [-20, 0]], '#8fb8d9', seed + 1, 0.3, lw);
+      blob(1, -6, 14, 7.5, '#8fb8d9', seed, 9, 0.05, 0.3, lw);
+      dot(look < 0 ? -7 : 8, -8, 1.3);
+      break;
+    case 'cloud':    // "I could fly"
+      for (const [x, y, r] of [[-8, -3, 7], [6, -4, 8], [-1, -9, 8], [13, -1, 5], [-14, 0, 5]]) blob(x, y, r, r * 0.8, '#fff', seed + x, 8, 0.05, 0.3, lw);
+      for (const [x, y, r] of [[-8, -3, 5.5], [6, -4, 6.5], [-1, -9, 6.5], [13, -1, 3.6], [-14, 0, 3.6]]) dot(x, y, r, '#fff');   // (hide the outlines where the puffs overlap)
+      break;
     default:   // 'crown': a ring of flowers
       line([[-16, 3], [-9, -3], [0, -5], [9, -3], [16, 3]], seed, 2.2, '#5fb86a', 0.3);
       [[-13, 0], [-6, -4], [1, -5], [8, -3.5], [14, 0.5]].forEach(([x, y], i) => blob(x, y, 3.2, 3.2, i % 2 ? '#ffe833' : c, seed + 1 + i, 6, 0.1, 0.2, 1.6));

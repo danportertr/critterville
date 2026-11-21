@@ -6,6 +6,7 @@ import { SPECIES_BY_ID } from '../data/fish.js';
 import { drawFish } from './fish.js';
 import { drawHat } from './cart.js';
 import { drawSculpture, drawTopiary } from './sculpture.js';
+import { drawSkyPicture } from './sky.js';
 import { streamPoint } from '../world/geometry.js';
 import { TAU, clamp, hs, shade } from '../util.js';
 import { jit, wob, smooth, polyPath, blobPts, paint, blob, box, line, tube, dot } from './primitives.js';
@@ -329,6 +330,8 @@ const PAINTINGS = {
         () => { if (sp) drawFish(sp, 1, -49, Math.min(1.6, 36 / ((sp.L || 26) + 12)), a.seed); },
       ];
     }
+    if (el.k === 'sky') return [() => { ctx.save(); ctx.translate(-24, -70); drawSkyPicture(el.id, 48, 42); ctx.restore(); }];
+    if (el.k === 'dream') return (DREAM_PICS[el.id] || DREAM_PICS.fly)(a, el, bg);
     if (el.k === 'adventure') return (FAR_PLACES[el.place] || FAR_PLACES.mountains)(a);
     if (el.k === 'event') return (EVENT_PICS[el.id === 'cart' ? el.kind : el.id] || EVENT_PICS.rain)(a, bg);
     const k = { tree: 3.3, house: 2.5, tank: 5, swing: 3.2, fire: 6, flower: 4.6 }[el.k] || 3;
@@ -424,6 +427,57 @@ const EVENT_PICS = {
     () => { disc(0, -50, 8, 7, '#ff8fc7'); disc(0, -59, 6, 5.5, '#fff3b0'); },
   ],
 };
+// Dreams, painted the morning after. `el.c` and `el.c2` are the dreamer's own colours.
+const me = (el, x, y, k = 1) => { ctx.fillStyle = el.c2; ctx.fillRect(x - 3 * k, y, 6 * k, 8 * k); disc(x, y - 3.5 * k, 5 * k, 4.8 * k, el.c); disc(x + 1.2 * k, y - 4.6 * k, 0.6 * k, 0.6 * k, INK); disc(x + 2.8 * k, y - 4.2 * k, 0.6 * k, 0.6 * k, INK); };
+const DREAM_PICS = {
+  fly: (a, el) => [
+    fillAll('#cfe6ff'), band('#b5e8a8', -33, -28),
+    () => { for (const [x, y] of [[-14, -40], [12, -62]]) { disc(x, y, 6, 3.2, '#fff'); disc(x + 4, y - 2, 5, 3, '#fff'); disc(x - 4, y - 1, 4, 2.6, '#fff'); } },
+    () => { ctx.save(); ctx.translate(-1, -50); ctx.rotate(-0.5); me(el, 0, 0, 1.2); ctx.strokeStyle = el.c2; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(-10, 2); ctx.lineTo(10, 2); ctx.stroke(); ctx.restore(); },
+  ],
+  apple: (a, el, bg) => [
+    fillAll(bg), band(shade(bg, 0.9), -34, -28),
+    () => { disc(-3, -46, 15, 14, '#fb6540'); ctx.strokeStyle = '#7a3b1e'; ctx.lineWidth = 1.6; ctx.beginPath(); ctx.moveTo(-3, -59); ctx.lineTo(-1, -64); ctx.stroke(); disc(3, -62, 3.4, 1.8, '#adeb3c'); },
+    () => me(el, 16, -38, 0.7),
+  ],
+  fish: (a, el) => [
+    fillAll('#c9ecf8'),
+    () => { for (let i = 0; i < 5; i++) disc(-18 + hs(a.seed, i) * 36, -64 + hs(a.seed, i + 9) * 30, 1 + hs(a.seed, i + 20), 1 + hs(a.seed, i + 20), '#fff'); },
+    () => { tri([[-10, -48], [-20, -56], [-18, -48], [-20, -40]], el.c); disc(1, -48, 13, 8, el.c); disc(6, -51, 0.9, 0.9, INK); disc(9, -50.4, 0.9, 0.9, INK); ctx.strokeStyle = INK; ctx.lineWidth = 1.2; ctx.beginPath(); ctx.moveTo(3, -48); ctx.quadraticCurveTo(6, -42, 10, -47); ctx.stroke(); },
+  ],
+  moon: () => [
+    fillAll('#3b3f73'), band('#56705a', -36, -28),
+    () => { for (let i = 0; i < 8; i++) disc(-22 + i * 6.3, -66 + (i * 7 % 13), 0.7, 0.7, '#fff'); },
+    () => { disc(2, -41, 12, 12, '#f4f1dc'); disc(-2, -44, 3, 2.6, '#d6d3bd'); disc(6, -38, 2.2, 2, '#d6d3bd'); },
+  ],
+  bridge: () => [
+    fillAll('#ffe9dc'), band('#a8dcf5', -44, -28),
+    () => tri([[-16, -28], [16, -28], [1.5, -58], [-1.5, -58]], '#c9966b'),
+    () => { ctx.strokeStyle = '#8a5a34'; ctx.lineWidth = 0.9; for (let i = 0; i < 7; i++) { const y = -30 - i * 4.2, w = 15 - i * 2.1; ctx.beginPath(); ctx.moveTo(-w, y); ctx.lineTo(w, y); ctx.stroke(); } },
+  ],
+  hat: (a, el, bg) => [
+    fillAll(bg),
+    () => { ctx.save(); ctx.translate(-5, -38); ctx.scale(1.3, 1.3); drawHat({ kind: 'top', color: '#555' }, 1, a.seed); ctx.restore(); },
+    () => { ctx.strokeStyle = '#fff'; ctx.lineWidth = 1.4; ctx.beginPath(); ctx.moveTo(-10, -44); ctx.quadraticCurveTo(-5, -40, 0, -44); ctx.stroke(); },
+    () => { disc(12, -58, 8, 5.5, '#fff'); for (const x of [9, 12, 15]) disc(x, -58, 0.8, 0.8, INK); },
+  ],
+  soup: () => [
+    fillAll('#eef7ff'),
+    () => { for (let i = 0; i < 9; i++) disc(-20 + hs(5, i) * 40, -66 + hs(6, i) * 22, 1.3, 2.2, '#ffab45'); },
+    () => { ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.ellipse(0, -38, 15, 9, 0, 0, Math.PI); ctx.fill(); disc(0, -38, 15, 3.4, '#ffab45'); },
+  ],
+  tree: (a, el, bg) => [
+    fillAll(bg), band(shade(bg, 0.9), -32, -28),
+    () => { ctx.strokeStyle = '#8a5a34'; ctx.lineWidth = 2; ctx.lineCap = 'round'; for (const [x1, x2] of [[-2, -8], [2, 7]]) { ctx.beginPath(); ctx.moveTo(x1, -40); ctx.lineTo(x2, -32); ctx.lineTo(x2 + 4, -32); ctx.stroke(); } },
+    () => { ctx.fillStyle = '#b06634'; ctx.fillRect(-3, -52, 6, 13); disc(0, -57, 11, 9, '#adeb3c'); disc(-3, -57, 1.4, 1.4, '#fb6540'); disc(4, -60, 1.4, 1.4, '#fb6540'); },
+  ],
+  small: (a, el) => [
+    fillAll('#e6f7d0'), band('#b5e8a8', -33, -28),
+    () => { ctx.fillStyle = '#7fd66a'; ctx.fillRect(-4, -52, 3, 22); for (const [x, y] of [[-2.5, -62], [4, -56], [-2.5, -50], [-9, -56]]) disc(x, y, 5, 5, '#ff8fc7'); disc(-2.5, -56, 3.6, 3.6, '#ffe833'); },
+    () => me(el, 13, -35, 0.45),
+  ],
+};
+
 // Places a critter has been on an adventure, painted from memory once they're home.
 const tri = (pts, c) => { ctx.fillStyle = c; ctx.beginPath(); pts.forEach(([x, y], i) => ctx[i ? 'lineTo' : 'moveTo'](x, y)); ctx.fill(); };
 const band = (c, y0, y1) => () => { ctx.fillStyle = c; ctx.fillRect(-24, y0, 48, y1 - y0); };

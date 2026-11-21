@@ -17,7 +17,10 @@ export const MATERIALS = {
   star: { color: '#fff3a8', word: 'star-stone' },   // carved from a fallen star; glows at night
 };
 export const STATUES = ['critter', 'totem', 'arch'];          // carved from a block, stood on a plinth
-const ON_PLINTH = new Set([...STATUES, 'assemblage']);
+export const SKY_FORMS = ['moon', 'star', 'planet'];          // made after a night at the telescope
+export const DREAM_FORMS = { apple: 'apple', tree: 'treelegs', moon: 'moon' };   // dream id -> what gets carved
+export const CARVED = [...STATUES, ...SKY_FORMS, 'apple', 'treelegs'];
+const ON_PLINTH = new Set([...CARVED, 'assemblage']);
 const HAT_AT = { critter: -54, totem: -58, arch: -56 };      // where a hat sits, if someone hangs one on it
 export const formOf = a => a.form || a.style || 'totem';      // (old saves called it `style`)
 const shadow = (rx, ry) => { ctx.fillStyle = 'rgba(0,0,0,.08)'; ctx.beginPath(); ctx.ellipse(0, 1, rx, ry, 0, 0, TAU); ctx.fill(); };
@@ -37,6 +40,26 @@ const FORMS = {
     dot(-3, -22, 1.2); dot(3, -22, 1.2); dot(-2.4, -39, 1); dot(2.4, -39, 1);
   },
   arch(a, c) { tube([[-11, -11], [-13, -40], [0, -55], [13, -40], [11, -11]], 7, c, a.seed + 3, 0.5); },
+  // ---- after the night sky, or a dream ----
+  moon(a, c) {
+    ctx.beginPath(); ctx.arc(0, -36, 20, -Math.PI * 0.42, Math.PI * 1.0); ctx.arc(8, -42, 16, Math.PI * 0.86, -Math.PI * 0.28, true); ctx.closePath();
+    ctx.fillStyle = c; ctx.fill(); ctx.lineWidth = 2.4; ctx.strokeStyle = INK; ctx.lineJoin = 'round'; ctx.stroke();
+  },
+  star(a, c) { const p = []; for (let i = 0; i < 10; i++) { const t = -Math.PI / 2 + i / 10 * TAU, r = i % 2 ? 9.5 : 22; p.push([Math.cos(t) * r, -35 + Math.sin(t) * r]); } box(p, c, a.seed + 3, 0.5, 2.4); },
+  planet(a, c) {
+    blob(0, -34, 15, 14.5, c, a.seed + 3, 10, 0.03, 0.3, 2.4);
+    ctx.beginPath(); ctx.ellipse(0, -34, 26, 6.5, -0.28, -0.25, Math.PI + 0.25);
+    ctx.lineWidth = 6.5; ctx.strokeStyle = INK; ctx.lineCap = 'round'; ctx.stroke(); ctx.lineWidth = 2.6; ctx.strokeStyle = shade(c, 0.85); ctx.stroke();
+  },
+  apple(a, c) {
+    blob(0, -29, 19, 18, c, a.seed + 3, 10, 0.05, 0.4, 2.4);
+    line([[0, -46], [2, -54]], a.seed + 4, 2.6, INK, 0.2); blob(8, -53, 6, 3, c, a.seed + 5, 6, 0.1, 0.2, 2);
+  },
+  treelegs(a, c) {   // mid-stride
+    for (const [x1, x2] of [[-3, -10], [3, 9]]) tube([[x1, -26], [x2, -13], [x2 + 5, -12]], 3.2, c, a.seed + 4 + x1, 0.3);
+    box([[-4.5, -24], [4.5, -24], [4, -40], [-4, -40]], c, a.seed + 3, 0.3, 2.2);
+    blob(0, -50, 15, 12.5, c, a.seed + 6, 9, 0.08, 0.4, 2.4);
+  },
   castle(a, c) {
     for (const x of [-15, 9]) { box([[x, 0], [x + 7, 0], [x + 7, -22], [x, -22]], c, a.seed + x, 0.4, 2.2); box([[x - 1, -22], [x + 3.5, -29], [x + 8, -22]], c, a.seed + x + 1, 0.3, 2.2); }
     box([[-9, 0], [10, 0], [10, -14], [5, -14], [5, -17], [1, -17], [1, -14], [-4, -14], [-4, -17], [-9, -17]], c, a.seed + 2, 0.4, 2.2);
@@ -105,7 +128,7 @@ export function drawSculpture(a) {
   shadow(18, 4);
   if (plinth) box([[-15, 0], [15, 0], [13, -10], [-13, -10]], '#f1efe6', a.seed + 1, 0.4);
   if (a.progress >= 1) FORMS[form](a, col);
-  else if (STATUES.includes(form)) {   // carved out of a block, from the top down
+  else if (CARVED.includes(form)) {    // carved out of a block, from the top down
     const cut = -60 + 50 * a.progress;
     ctx.save(); ctx.beginPath(); ctx.rect(-40, cut, 80, -8 - cut); ctx.clip();
     box([[-15, -10], [15, -10], [14, -58], [-14, -58]], col, a.seed + 2, 0.9);

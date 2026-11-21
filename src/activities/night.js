@@ -49,7 +49,7 @@ export const stargaze = {
           c.lookT = rand(9, 16);
           let r = rand(SKY.reduce((s, o) => s + o.w, 0)), found = SKY[0];
           for (const o of SKY) if ((r -= o.w) <= 0) { found = o; break; }
-          c.surprise = 0.7;
+          c.surprise = 0.7; c.sawSky = { id: found.id, clock: S.clock };   // it may show up in their art
           if (!S.journal.sky[found.id]) {
             S.journal.sky[found.id] = { day: Math.floor(S.clock / 300) + 1, by: c.name };
             say(c, pick(['oh!', 'look!', '★']), 1.8); c.hopV = 80;
