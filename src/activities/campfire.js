@@ -1,5 +1,5 @@
 // Gather round the fire in the evening. Night owls stay up by it for a while.
-import { S, isEvening } from '../state.js';
+import { S, isEvening, built } from '../state.js';
 import { TAU, rand } from '../util.js';
 import { goTo, setAct } from '../sim/core.js';
 
@@ -10,7 +10,7 @@ function sit(c, lo, hi) {
 
 export default {
   id: 'campfire',
-  weight: () => isEvening() ? 5 : 0,
+  weight: () => built(S.fire) && isEvening() ? 5 : 0,
   start(c) { sit(c, 8, 20); },
   startOwl(c) { c.owl = false; sit(c, 18, 40); },
   states: {

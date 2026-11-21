@@ -12,11 +12,9 @@ export const topEdge = () => Math.min(120, S.H * 0.3);
 /** Ground footprints critters steer around. Call after anything is added, removed or moved. */
 export function rebuildObs() {
   const { pond, pool, fire } = S;
-  S.obs = [
-    { x: pond.x, y: pond.y, rx: pond.rx + 8, ry: pond.ry + 6 },
-    { x: pool.x, y: pool.y, rx: pool.rx + 14, ry: pool.ry + 11 },
-    { x: fire.x, y: fire.y - 3, rx: 20, ry: 11 },
-  ];
+  S.obs = [{ x: pond.x, y: pond.y, rx: pond.rx + 8, ry: pond.ry + 6 }];
+  if (pool) S.obs.push({ x: pool.x, y: pool.y, rx: pool.rx + 14, ry: pool.ry + 11 });
+  if (fire) S.obs.push({ x: fire.x, y: fire.y - 3, rx: 20, ry: 11 });
   for (const h of S.houses) S.obs.push({ x: h.x, y: h.y - 9, rx: HOUSE.w / 2 + 6, ry: 13 });
   for (const t of S.trees) S.obs.push({ x: t.x, y: t.y - 2, rx: 11, ry: 6 });
   for (const a of S.arts) S.obs.push({ x: a.x, y: a.y - 2, rx: 17, ry: 7 });

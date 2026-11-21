@@ -1,6 +1,7 @@
 // Go home to bed at night; wake up some time after dawn.
-// Anyone without a house yet dozes off standing by the fire.
-import { S, isNight } from '../state.js';
+// Anyone without a house yet dozes off standing by the fire (or, before
+// there's even a fire, right where they are).
+import { S, isNight, built } from '../state.js';
 import { TAU, rand, pick } from '../util.js';
 import { goTo, setAct, say } from '../sim/core.js';
 
@@ -9,6 +10,7 @@ export default {
   start(c) {
     const h = c.home, f = S.fire;
     if (h) return goTo(c, h.x, h.y + 7, () => { setAct(c, 'sleep', rand(0, 16)); c.hidden = true; });
+    if (!built(f)) return setAct(c, 'sleep', rand(0, 10));
     const a = rand(TAU);
     goTo(c, f.x + Math.cos(a) * 52, f.y + Math.sin(a) * 26, () => { setAct(c, 'sleep', rand(0, 10)); c.dir = f.x > c.x ? 1 : -1; });
   },

@@ -1,5 +1,6 @@
 // Tunables, palettes and word lists. Nothing in here has behaviour.
 export const SAVE_KEY = 'critterville-v1';
+export const SAVE_VERSION = 3;
 export const INK = '#000';
 export const PAPER = '#fffdf8';
 export const LW = 2.6;          // outline thickness, in world units

@@ -1,26 +1,50 @@
-// Help hammer together whichever house is under construction.
+// Help build whatever the town is working on: the campfire, a house, the
+// swing set or the pool. What gets built next is decided in sim/world.js.
 import { S } from '../state.js';
-import { HOUSE, INK } from '../config.js';
-import { rand } from '../util.js';
+import { HOUSE, SWING, INK } from '../config.js';
+import { TAU, rand } from '../util.js';
 import { log } from '../ui.js';
 import { box, line } from '../draw/primitives.js';
 import { assignHomes } from '../world/town.js';
+import { currentSite } from '../sim/world.js';
 import { goTo, setAct, say } from '../sim/core.js';
+
+// How much one work session adds, and what to announce when it's done.
+const JOBS = {
+  fire: { step: 0.26, done: 'The campfire is ready.' },
+  house: { step: 0.1, done: 'A new house is finished!' },
+  swing: { step: 0.1, done: 'The swing set is finished!' },
+  pool: { step: 0.07, done: 'The pool is full. Last one in...' },
+};
+
+/** Somewhere to stand while working on a site. */
+function standAt(s) {
+  const a = rand(TAU), side = rand() < 0.5 ? -1 : 1;
+  switch (s.kind) {
+    case 'fire': return { x: s.x + Math.cos(a) * 34, y: s.y + Math.sin(a) * 16 };
+    case 'pool': return { x: s.x + Math.cos(a) * (s.rx + 24), y: s.y + Math.sin(a) * (s.ry + 18) };
+    case 'swing': return { x: s.x + side * rand(20, SWING.half + 10), y: s.y + rand(6, 14) };
+    default: return { x: s.x + side * rand(20, HOUSE.w / 2 + 16), y: s.y + rand(8, 16) };
+  }
+}
 
 export default {
   id: 'build',
-  weight: () => S.houses.some(h => h.progress < 1) ? 3.5 : 0,
+  weight: () => currentSite() ? 4 : 0,
   start(c) {
-    const h = S.houses.find(h => h.progress < 1), side = rand() < 0.5 ? -1 : 1;
-    goTo(c, h.x + side * rand(20, HOUSE.w / 2 + 16), h.y + rand(8, 16), () => { c.dir = -side; c.site = h; setAct(c, 'build', rand(4, 7)); });
+    const s = currentSite(), p = standAt(s);
+    goTo(c, p.x, p.y, () => { c.dir = s.x > c.x ? 1 : -1; c.site = s; setAct(c, 'build', rand(4, 7)); });
   },
   states: {
     build: {
       finish(c) {
-        const h = c.site;
-        if (!h || h.progress >= 1) return;
-        h.progress += 0.11;
-        if (h.progress >= 1) { h.progress = 1; assignHomes(); log('A new house is finished!'); c.hopV = 150; say(c, '!'); }
+        const s = c.site;
+        if (!s || s.progress >= 1) return;
+        s.progress += JOBS[s.kind].step;
+        if (s.progress < 1) return;
+        s.progress = 1;
+        if (s.kind === 'house') assignHomes();
+        log(JOBS[s.kind].done); c.hopV = 150; say(c, '!');
       },
       pose(c, p) { p.hand(p.d, p.d * 28, -34 + Math.sin(p.now * 11) * 11); },
       props(c, p) {   // hammer

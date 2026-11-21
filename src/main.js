@@ -24,10 +24,10 @@ function resize() {
   if (!oW || !S.pond) return;
   // Stretch the existing town to fit the new window.
   const fx = S.W / oW, fy = S.H / oH;
-  for (const o of [S.pond, S.pool, S.fire, S.ball, S.swing, ...S.houses, ...S.trees, ...S.flowers, ...S.apples, ...S.arts, ...S.critters]) { o.x *= fx; o.y *= fy; }
+  for (const o of [S.pond, S.pool, S.fire, S.ball, S.swing, ...S.houses, ...S.trees, ...S.flowers, ...S.apples, ...S.arts, ...S.critters].filter(Boolean)) { o.x *= fx; o.y *= fy; }
   for (const c of S.critters) { c.tx *= fx; c.ty *= fy; if (c.bobx) { c.bobx *= fx; c.boby *= fy; } }
   S.pond.rx *= fx; S.pond.ry = S.pond.rx * 0.5;
-  S.pool.rx *= fx; S.pool.ry = S.pool.rx * 0.48;
+  if (S.pool) { S.pool.rx *= fx; S.pool.ry = S.pool.rx * 0.48; }
   rebuildObs(); scatterDecor();
 }
 

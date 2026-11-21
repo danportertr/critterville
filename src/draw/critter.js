@@ -20,7 +20,7 @@ export function drawCritter(c) {
 
   // p is the pose: hand positions are relative to the feet, before body bob.
   const p = {
-    now: S.now, d: c.dir, bob: Math.sin(S.now * 2 + sd) * 0.5, rock: 0, lf: 0, rf: 0,
+    now: S.now, d: c.dir, bob: Math.sin(S.now * 2 + sd) * 0.5, rock: 0, lf: 0, rf: 0, lx: 0, rx: 0,   // lf/rf: foot lift, lx/rx: foot stride
     hl: [-33, -16], hr: [33, -16], eyesClosed: c.blink > 0,
     hand(side, x, y) { if (side > 0) this.hr = [x, y]; else this.hl = [x, y]; },
   };
@@ -32,7 +32,7 @@ export function drawCritter(c) {
   const armL = arm([-11, -33 - bob], [p.hl[0], p.hl[1] - bob], 1), armR = arm([11, -33 - bob], [p.hr[0], p.hr[1] - bob], 2);
   const HL = p.HL = armL[2], HR = p.HR = armR[2];
   p.HD = d > 0 ? HR : HL;
-  const fl = [-7 + jit(sd + 3, 0, 0.4), -3 - lf], fr = [7 + jit(sd + 4, 0, 0.4), -3 - rf];
+  const fl = [-7 + p.lx + jit(sd + 3, 0, 0.4), -3 - lf], fr = [7 + p.rx + jit(sd + 4, 0, 0.4), -3 - rf];
   const tubes = [
     [armL, 6], [armR, 6],
     [[HL, [HL[0] + 2.5, HL[1] - 7]], 3.5], [[HR, [HR[0] - 2.5, HR[1] - 7]], 3.5],     // thumbs

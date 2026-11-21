@@ -1,5 +1,5 @@
 // Jump in the pool and paddle about. Only head and arms show above the water.
-import { S, isEvening } from '../state.js';
+import { S, isEvening, built } from '../state.js';
 import { TAU, rand, pick } from '../util.js';
 import { ctx } from '../draw/canvas.js';
 import { line } from '../draw/primitives.js';
@@ -11,7 +11,7 @@ function paddleTo(c) { const p = edge(rand(TAU), rand(0.1, 0.72)); c.tx = p.x; c
 
 export default {
   id: 'swim',
-  weight: () => !isEvening() && S.critters.filter(o => o.act === 'swim').length < 4 ? 1.3 : 0,
+  weight: () => built(S.pool) && !isEvening() && S.critters.filter(o => o.act === 'swim').length < 4 ? 1.3 : 0,
   start(c) {
     const { pool } = S, a = rand(TAU);
     goTo(c, pool.x + Math.cos(a) * (pool.rx + 24), pool.y + Math.sin(a) * (pool.ry + 18), () => {

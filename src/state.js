@@ -6,11 +6,15 @@ export const S = {
   W: 0, H: 0, zoom: 1, dpr: 1,     // world size (in world units) and view scale
   now: 0, boil: 0, clock: 0,       // real seconds, line-boil frame, in-game seconds
   critters: [], houses: [], trees: [], flowers: [], apples: [], arts: [], tufts: [], flies: [],
-  pond: null, pool: null, fire: null, ball: null, swing: null,
+  pond: null,                      // nature: there from the start (with the trees)
+  fire: null, pool: null, swing: null, ball: null,   // made by the critters; null until someone starts on them
   obs: [],                         // ellipses critters walk around
   stats: { fish: 0, planted: 0, art: 0 },
   cap: 10,                         // max population for this screen size
 };
+
+/** Has this thing been planned *and* finished? (Buildables carry a 0..1 progress.) */
+export const built = o => !!o && o.progress >= 1;
 
 export const phase = () => (S.clock % DAY_LEN) / DAY_LEN;      // 0 = dawn
 export const dayNum = () => Math.floor(S.clock / DAY_LEN) + 1;

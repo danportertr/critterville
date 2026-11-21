@@ -1,6 +1,6 @@
 // One frame: ground, depth-sorted things, the time-of-day wash, then glows and bubbles.
 import { ctx } from './canvas.js';
-import { S, phase, nightAmt } from '../state.js';
+import { S, phase, nightAmt, built } from '../state.js';
 import { INK, PAPER, FONT, HOUSE } from '../config.js';
 import { clamp, lerp, smoothstep, hs } from '../util.js';
 import { drawCritter, drawBubble } from './critter.js';
@@ -35,12 +35,15 @@ export function render() {
   ctx.fillStyle = PAPER; ctx.fillRect(0, 0, W, H);
   for (const t of S.tufts) sc.drawTuft(t);
   sc.drawPond();
-  sc.drawPool();
+  if (S.pool) sc.drawPool();
 
   // Everything standing on the ground, back to front.
   const lit = new Set(S.critters.filter(c => c.hidden && c.home).map(c => c.home));
   const fireLit = clamp(Math.max(n, p < 0.9 ? smoothstep(0.58, 0.64, p) : 0), 0, 1);
-  const items = [[S.fire.y, sc.drawFire, fireLit], [S.ball.y, sc.drawBall], [S.swing.y, sc.drawSwing, S.swing]];
+  const items = [];
+  if (S.fire) items.push([S.fire.y, sc.drawFire, fireLit]);
+  if (S.ball) items.push([S.ball.y, sc.drawBall]);
+  if (S.swing) items.push([S.swing.y, sc.drawSwing, S.swing]);
   for (const h of S.houses) items.push([h.y, sc.drawHouse, h, lit.has(h)]);
   for (const t of S.trees) items.push([t.y, sc.drawTree, t]);
   for (const f of S.flowers) items.push([f.y, sc.drawFlower, f]);
@@ -57,7 +60,7 @@ export function render() {
   ctx.globalCompositeOperation = 'source-over';
   if (n > 0.02) {
     ctx.globalCompositeOperation = 'screen';
-    glow(S.fire.x, S.fire.y - 14, 150 + Math.sin(S.now * 9) * 6, '255,205,130', 0.6 * n);
+    if (built(S.fire)) glow(S.fire.x, S.fire.y - 14, 150 + Math.sin(S.now * 9) * 6, '255,205,130', 0.6 * n);
     for (const h of lit) glow(h.x + 30, h.y - 35, 46, '255,205,130', 0.5 * n);
     for (const f of S.flies) glow(f.x, f.y, 9, '230,255,140', (0.5 + 0.5 * Math.sin(S.now * 2 + f.seed)) * n);   // fireflies
     ctx.globalCompositeOperation = 'source-over';

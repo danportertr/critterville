@@ -5,7 +5,7 @@ import { goTo, say } from '../sim/core.js';
 
 export default {
   id: 'ball',
-  weight: () => 0.9,
+  weight: () => S.ball ? 0.9 : 0,
   start(c) {
     const b = S.ball;
     goTo(c, b.x, b.y + 1, () => {

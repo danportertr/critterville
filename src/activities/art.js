@@ -39,7 +39,7 @@ function done(c) {
 
 export const art = {
   id: 'art',
-  weight: () => inProgress() < 2 ? 1.1 : 0,
+  weight: () => inProgress() < 2 ? 0.7 : 0,
   start(c) {
     const a = newArt(c);
     S.arts.push(a); rebuildObs();

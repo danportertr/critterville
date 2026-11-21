@@ -57,7 +57,14 @@ export function drawPond() {
   blob(p.x + p.rx * 0.3, p.y - p.ry * 0.4, 7, 4.5, '#8fe3b0', p.seed + 61, 7, 0.05, 0.4, 2);
 }
 export function drawPool() {
-  const p = S.pool;
+  const p = S.pool, g = p.progress;
+  if (g < 1) {   // being dug: a growing hole, then the rim goes on
+    const k = clamp(g / 0.7, 0.15, 1);
+    if (g > 0.7) blob(p.x, p.y, p.rx + 10, p.ry + 9, '#fff', p.seed, 16, 0.01, 0.6);
+    blob(p.x, p.y, p.rx * k, p.ry * k, '#e6cfa8', p.seed + 1, 14, 0.06, 0.9, g > 0.7 ? 2.2 : undefined);
+    blob(p.x + p.rx + 26, p.y + p.ry * 0.5, 16 * k, 9 * k, '#e6cfa8', p.seed + 7, 8, 0.15, 0.6);   // spoil heap
+    return;
+  }
   blob(p.x, p.y, p.rx + 10, p.ry + 9, '#fff', p.seed, 16, 0.01, 0.6);                 // tiled rim
   blob(p.x, p.y, p.rx, p.ry, '#74dbe8', p.seed + 1, 16, 0.01, 0.5, 2.2);              // water
   ripples(p, 4, p.rx * 1.2, p.ry);
@@ -71,8 +78,10 @@ export function drawPool() {
 export function drawFire(lit) {
   const f = S.fire;
   ctx.save(); ctx.translate(f.x, f.y);
-  for (const k of [-1, 1]) tube([[-15 * k, 0], [15 * k, -6]], 6, WOOD, f.seed + k);
-  if (lit > 0.05) {
+  if (f.progress > 0.3) tube([[15, 0], [-15, -6]], 6, WOOD, f.seed - 1);
+  if (f.progress > 0.6) tube([[-15, 0], [15, -6]], 6, WOOD, f.seed + 1);
+  if (f.progress < 1) for (let i = 0; i < 5; i++) { const a = i / 5 * TAU + 0.4; blob(Math.cos(a) * 24, Math.sin(a) * 10 - 1, 4, 3, '#ddd', f.seed + 10 + i, 6, 0.1, 0.3, 2); }   // ring of stones
+  if (f.progress >= 1 && lit > 0.05) {
     const g = (0.6 + lit * 0.4) * (1 + Math.sin(S.now * 7) * 0.05);
     smooth(wob([[-11 * g, -6], [-9 * g, -20 * g], [-2, -38 * g], [8 * g, -22 * g], [11 * g, -6], [0, -2]], f.seed + 5, 2), true); paint('#ffab45');
     smooth(wob([[-5 * g, -6], [-3, -22 * g], [5 * g, -8], [0, -4]], f.seed + 6, 1.4), true); paint('#ffe66d', 2);
@@ -82,7 +91,17 @@ export function drawFire(lit) {
 
 export function drawSwing(sw) {
   const { barH, rope, half } = SWING, red = '#ff8f8f';
+  const g = sw.progress;
   ctx.save(); ctx.translate(sw.x, sw.y);
+  if (g < 1) {   // going up: one A-frame, then the other, then the bar, then the seats
+    for (const k of [-1, 1]) {
+      if (g > (k < 0 ? 0.15 : 0.4)) { tube([[k * half, -barH], [k * (half - 13), -10]], 5, red, sw.seed + k + 5, 0.4); tube([[k * half, -barH], [k * (half + 14), 0]], 6, red, sw.seed + k + 9, 0.4); }
+    }
+    if (g > 0.65) tube([[-half - 3, -barH], [half + 3, -barH]], 6, red, sw.seed, 0.4);
+    else tube([[-half + 20, 4], [half - 20, 8]], 6, red, sw.seed, 0.4);   // the bar, waiting on the ground
+    ctx.restore();
+    return;
+  }
   shadow(0, 2, half + 16, 6);
   for (const k of [-1, 1]) tube([[k * half, -barH], [k * (half - 13), -10]], 5, red, sw.seed + k + 5, 0.4);   // back legs
   for (const seat of sw.seats) {

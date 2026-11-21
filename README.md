@@ -4,6 +4,8 @@
 
 A tiny town of little guys who walk around and do things. There isn't much to do except watch — it's something to leave running.
 
+The town starts as an empty meadow: trees, a pond, a few flowers. The critters build everything else themselves — first a campfire, then houses, a swing set and a pool — and more of them move in over time.
+
 The critters:
 
 - talk to each other
@@ -12,7 +14,7 @@ The critters:
 - make paintings and sculptures (and go admire each other's)
 - dance, sometimes in groups
 - fish in the pond, plant flowers, pick fruit, kick a ball around
-- build new houses as more critters move in
+- build the campfire, houses, swing set and pool
 - gather at the campfire in the evening and go home to sleep at night
 
 You can tap a critter to say hi, or tap the ground to drop a snack. The town is saved in your browser, so it's still there when you come back.

@@ -30,7 +30,7 @@ cv.addEventListener('pointerdown', e => {
     if (isFree(c)) setAct(c, 'wave', 1.6);
     return;
   }
-  if (inEllipse(p.x, p.y, S.pond) || inEllipse(p.x, p.y, S.pool, 10) || p.y < 60 || S.apples.length >= 6) return;
+  if (inEllipse(p.x, p.y, S.pond) || (S.pool && inEllipse(p.x, p.y, S.pool, 10)) || p.y < 60 || S.apples.length >= 6) return;
   const a = { x: p.x, y: p.y, z: 60, vz: 0, seed: irand(1e6), claimed: null, eaten: false };
   S.apples.push(a);
   const near = S.critters.filter(c => isFree(c) && !c.apple).sort((x, y) => dist(x, a) - dist(y, a))[0];

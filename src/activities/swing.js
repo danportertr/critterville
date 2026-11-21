@@ -1,16 +1,16 @@
 // Hop on a free seat of the swing set and swing for a while.
 // The seat's motion is driven in sim/world.js so it keeps swaying after they hop off.
-import { S } from '../state.js';
+import { S, built } from '../state.js';
 import { SWING } from '../config.js';
-import { rand } from '../util.js';
+import { rand, pick } from '../util.js';
 import { ctx } from '../draw/canvas.js';
 import { goTo, setAct, say, release } from '../sim/core.js';
 
 export default {
   id: 'swing',
-  weight: () => S.swing.seats.some(s => !s.user) ? 1.3 : 0,
+  weight: () => built(S.swing) && S.swing.seats.some(s => !s.user) ? 1.3 : 0,
   start(c) {
-    const sw = S.swing, seat = sw.seats.filter(s => !s.user)[rand() < 0.5 ? 0 : sw.seats.filter(s => !s.user).length - 1];
+    const sw = S.swing, seat = pick(sw.seats.filter(s => !s.user));
     seat.user = c; c.seat = seat;
     c.cleanup = () => { seat.user = null; };
     goTo(c, sw.x + seat.dx, sw.y + 5, () => {

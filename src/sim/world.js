@@ -1,10 +1,10 @@
 // Everything that happens on its own: the clock, the ball, growing things, new arrivals.
-import { S, phase, dayNum, isNight } from '../state.js';
+import { S, phase, dayNum, isNight, built } from '../state.js';
 import { clamp, rand, hash } from '../util.js';
 import { HOUSE, SWING } from '../config.js';
 import { log, setStats } from '../ui.js';
 import { inEllipse, rebuildObs, freePoint, topEdge } from '../world/geometry.js';
-import { newHouse, newCritter, assignHomes } from '../world/town.js';
+import { newHouse, newCritter, assignHomes, planFire, planPool, planSwing, makeBall } from '../world/town.js';
 import { save } from '../world/save.js';
 import { updateCritter, goTo, setAct, say } from './core.js';
 
@@ -16,7 +16,7 @@ export function refreshStats() {
 
 function updateBall(dt) {
   const b = S.ball;
-  if (!(b.vx || b.vy || b.z > 0)) return;
+  if (!b || !(b.vx || b.vy || b.z > 0)) return;
   b.x += b.vx * dt; b.y += b.vy * dt; b.z += b.vz * dt; b.vz -= 600 * dt;
   b.spin += b.vx * dt * 0.08;
   if (b.z <= 0) { b.z = 0; b.vz = b.vz < -60 ? -b.vz * 0.5 : 0; const f = Math.pow(0.12, dt); b.vx *= f; b.vy *= f; }
@@ -37,10 +37,27 @@ function fade(list, dt, onRemove) {
   }
 }
 
+/** Anything planned but not finished. Critters work on one thing at a time. */
+export const currentSite = () => [S.fire, S.swing, S.pool, ...S.houses].find(o => o && o.progress < 1);
+
+// The town plan: a fire to gather round, somewhere to sleep, then the fun stuff,
+// then more houses whenever there are more critters than beds.
 function growTown() {
-  const done = S.houses.filter(h => h.progress >= 1).length;
-  if (!S.houses.some(h => h.progress < 1) && done * HOUSE.residents < S.critters.length && S.houses.length < 10) {
-    newHouse(0); rebuildObs(); log('A new house is going up.');
+  if (!currentSite()) {
+    const beds = S.houses.length * HOUSE.residents, n = S.critters.length;
+    let msg = null;
+    if (!S.fire) { planFire(); msg = 'The critters are making a campfire.'; }
+    else if (!S.houses.length) { newHouse(0); msg = 'The first house is going up.'; }
+    else if (!S.swing) { planSwing(); msg = 'Somebody had an idea: a swing set.'; }
+    else if (beds < n && S.houses.length < 2) { newHouse(0); msg = 'A new house is going up.'; }
+    else if (!S.pool) { planPool(); msg = 'The critters are digging a pool.'; }
+    else if (beds < n && S.houses.length < 10) { newHouse(0); msg = 'A new house is going up.'; }
+    if (msg) { rebuildObs(); log(msg); }
+  }
+  if (!S.ball && S.houses.some(built)) {   // turns up in the moving boxes
+    const h = S.houses.find(built);
+    S.ball = makeBall(h.x - 30, h.y + 14); S.ball.vx = -60; S.ball.vz = 120;
+    log('Someone found a ball!');
   }
   refreshStats();
 }
@@ -65,7 +82,7 @@ export function updateWorld(dt) {
   for (const c of S.critters) updateCritter(c, dt);
   updateBall(dt);
 
-  for (const seat of S.swing.seats) {
+  if (S.swing) for (const seat of S.swing.seats) {
     const going = seat.user && seat.user.act === 'swing';
     seat.amp += ((going ? SWING.maxAngle : 0) - seat.amp) * Math.min(1, dt * 0.9);
     seat.angle = seat.amp * Math.sin(S.clock * 2.4);

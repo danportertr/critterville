@@ -13,7 +13,7 @@
 //   { id, weight(c), start(c), states: {...} }
 // weight() says how appealing it is right now (0 = not possible) and start()
 // sends the critter off, usually with goTo(...) and then setAct(...).
-import { S, isNight } from '../state.js';
+import { S, isNight, built } from '../state.js';
 import { rand, dist } from '../util.js';
 import { inEllipse } from '../world/geometry.js';
 
@@ -56,7 +56,7 @@ export function finish(c) {
 /** Pick the next thing to do. */
 export function choose(c) {
   release(c);
-  if (isNight()) return c.owl ? ACT.campfire.startOwl(c) : ACT.sleep.start(c);
+  if (isNight()) return c.owl && built(S.fire) ? ACT.campfire.startOwl(c) : ACT.sleep.start(c);
   const snack = S.apples.filter(a => !a.claimed && !a.eaten && dist(a, c) < 450).sort((a, b) => dist(a, c) - dist(b, c))[0];
   if (snack) return ACT.snack.fetch(c, snack);
 
@@ -96,15 +96,17 @@ Object.assign(STATES, {
   wait: {},     // standing still because someone is coming over to chat
   walk: {
     update(c, dt) {
-      c.phase += dt * c.speed * 0.26;
+      c.phase += dt * c.speed * 0.24;
       if (step(c, dt)) { const f = c.then; c.then = null; setAct(c, 'idle', rand(0.4, 1.4)); if (f) f(); }
       else if ((c.walkT += dt) > 60) { c.then = null; setAct(c, 'idle', 1); }   // stuck: give up
     },
     pose(c, p) {
-      const sn = Math.sin(c.phase);
-      p.rock = sn * 0.07; p.bob = Math.abs(sn) * 1.5;
-      p.lf = Math.max(0, sn) * 5; p.rf = Math.max(0, -sn) * 5;
-      p.hl[1] += sn * 3; p.hr[1] -= sn * 3;
+      // One foot lifts and swings forward while the other pushes back; arms swing opposite.
+      const sn = Math.sin(c.phase), cs = Math.cos(c.phase);
+      p.rock = sn * 0.06; p.bob = Math.abs(cs) * 2;
+      p.lf = Math.max(0, sn) * 6; p.rf = Math.max(0, -sn) * 6;
+      p.lx = cs * 4.5 * p.d; p.rx = -cs * 4.5 * p.d;
+      p.hl = [-31 - cs * 4 * p.d, -15 - sn * 5]; p.hr = [31 - cs * 4 * p.d, -15 + sn * 5];
     },
   },
   wave: { pose(c, p) { p.hr = [30 + Math.sin(p.now * 14) * 5, -57]; } },
