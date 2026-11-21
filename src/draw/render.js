@@ -7,6 +7,8 @@ import { clamp, lerp, smoothstep, hs } from '../util.js';
 import { drawCritter, drawBubble } from './critter.js';
 import { box } from './primitives.js';
 import * as sc from './scenery.js';
+import { drawStone, drawDucks, drawRing, drawHammock } from './props.js';
+import { drawEventOverlay } from '../events/index.js';
 
 const TINTS = [[0, [255, 233, 220]], [0.05, [255, 255, 255]], [0.58, [255, 255, 255]], [0.66, [255, 214, 186]], [0.74, [140, 147, 214]], [0.93, [140, 147, 214]], [1, [255, 233, 220]]];
 function tint(p) {
@@ -40,6 +42,8 @@ export function render() {
   if (S.bridge) sc.drawBridge();
   if (S.pond) sc.drawPond();
   if (S.pool) sc.drawPool();
+  if (S.ducks) drawDucks();
+  for (const r of S.rings) drawRing(r);
 
   // Everything standing on the ground, back to front.
   const lit = new Set(S.critters.filter(c => c.hidden && c.home).map(c => c.home));
@@ -54,6 +58,8 @@ export function render() {
   for (const f of S.flowers) items.push([f.y, sc.drawFlower, f]);
   for (const a of S.apples) items.push([a.y, sc.drawApple, a]);
   for (const a of S.arts) items.push([a.y, sc.drawArt, a]);
+  for (const s of S.stones) items.push([s.y, drawStone, s]);
+  for (const h of S.hammocks) if (h.A) items.push([h.y, drawHammock, h]);
   for (const c of S.critters) if (!c.hidden) items.push([c.y, drawCritter, c]);
   items.sort((a, b) => a[0] - b[0]);
   for (const it of items) it[1](it[2], it[3]);
@@ -68,9 +74,12 @@ export function render() {
     if (built(S.fire)) glow(S.fire.x, S.fire.y - 14, 150 + Math.sin(S.now * 9) * 6, '255,205,130', 0.6 * n);
     for (const h of lit) for (const k of [-1, 1]) glow(h.x + k * 37, h.y - 50, 50, '255,205,130', 0.45 * n);
     for (const f of S.flies) glow(f.x, f.y, 9, '230,255,140', (0.5 + 0.5 * Math.sin(S.now * 2 + f.seed)) * n);   // fireflies
+    for (const s of S.stones) glow(s.x, s.y - 8, 38 + Math.sin(S.now * 2 + s.seed) * 3, '255,244,170', 0.55 * n);   // fallen stars glow
     ctx.globalCompositeOperation = 'source-over';
     for (const h of lit) sc.drawHouseLights(h, n);
   }
+
+  drawEventOverlay();
 
   ctx.font = FONT; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillStyle = INK;
   for (const h of lit) zzz(h.x - 62, h.y - (wallTop(h) + HOUSE.roof * 0.6) * HOUSE.scale, h.seed);

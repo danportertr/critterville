@@ -26,7 +26,7 @@ export const snack = {
   },
 };
 
-const ripe = t => t.apples.some(g => g >= 1);
+const ripe = t => t.grow === undefined && t.apples.some(g => g >= 1);
 
 export const fruit = {
   id: 'fruit',

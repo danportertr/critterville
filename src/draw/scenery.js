@@ -99,8 +99,10 @@ function drawAppleOnTree(x, y, g, seed) {
 
 export function drawTree(t) {
   const sd = t.seed;
-  ctx.save(); ctx.translate(t.x, t.y); ctx.scale(t.size, t.size);
+  const k = t.size * (t.grow || 1);   // seedlings (t.grow < 1) are small
+  ctx.save(); ctx.translate(t.x, t.y); ctx.scale(k, k);
   shadow(0, 1, 30, 5);
+  if (S.wind) ctx.rotate(S.wind * (0.05 + 0.02 * Math.sin(S.now * 5 + sd)));   // leaning in the wind
   // trunk: filled shape, outlined only down its two sides
   const L = wob(TRUNK_L, sd, 0.6), R = wob(TRUNK_R, sd + 1, 0.6);
   polyPath([...L, ...R.slice().reverse()]); ctx.fillStyle = '#b06634'; ctx.fill();
@@ -117,7 +119,7 @@ export function drawTree(t) {
     const dx = -jx, dy = -68 - jy, d = Math.hypot(dx, dy), vx = dx / d, vy = dy / d, m = i % 2 ? -1 : 1;
     line([[jx, jy], [jx + vx * 7 - vy * m, jy + vy * 7 + vx * m], [jx + vx * 5 - vy * 4.5 * m, jy + vy * 5 + vx * 4.5 * m]], sd + 20 + i, LW, INK, 0.3);
   }
-  t.apples.forEach((g, i) => drawAppleOnTree(APPLE_SPOTS[i][0], APPLE_SPOTS[i][1], g, sd + 30 + i * 3));
+  if (!(t.grow < 0.8)) t.apples.forEach((g, i) => drawAppleOnTree(APPLE_SPOTS[i][0], APPLE_SPOTS[i][1], g, sd + 30 + i * 3));
   ctx.restore();
 }
 

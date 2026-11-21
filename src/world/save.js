@@ -10,7 +10,7 @@ export function save() {
   if (!S.W || !S.critters.length) return;
   try {
     localStorage.setItem(SAVE_KEY, JSON.stringify({
-      v: SAVE_VERSION, W: S.W, H: S.H, clock: S.clock, journal: S.journal, pond: S.pond, stream: S.stream, tank: S.tank, bridge: S.bridge && { kind: 'bridge', t: S.bridge.t, seed: S.bridge.seed, progress: S.bridge.progress }, pool: S.pool, fire: S.fire,
+      v: SAVE_VERSION, W: S.W, H: S.H, clock: S.clock, journal: S.journal, pond: S.pond, stream: S.stream, tank: S.tank, nextEvent: S.nextEvent, hammocks: S.hammocks.map(h => ({ kind: 'hammock', a: h.a, b: h.b, seed: h.seed, progress: h.progress })), stones: S.stones, rings: S.rings, ducks: S.ducks, bridge: S.bridge && { kind: 'bridge', t: S.bridge.t, seed: S.bridge.seed, progress: S.bridge.progress }, pool: S.pool, fire: S.fire,
       swing: S.swing && { x: S.swing.x, y: S.swing.y, seed: S.swing.seed, progress: S.swing.progress },
       houses: S.houses, trees: S.trees,
       flowers: S.flowers.filter(f => f.dying === undefined),
@@ -35,6 +35,8 @@ export function load() {
   S.journal = { ...newJournal(), ...d.journal };
   S.pool = mv(d.pool) || null; if (S.pool) { S.pool.rx *= fx; S.pool.ry = S.pool.rx * 0.48; }
   S.fire = mv(d.fire) || null;
+  S.event = null; S.wind = 0; S.nextEvent = d.nextEvent || 0;
+  S.stones = (d.stones || []).map(mv); S.rings = (d.rings || []).map(mv); S.ducks = d.ducks || null;
   S.tank = mv(d.tank) || null;
   S.swing = mv(d.swing) ? makeSwing(d.swing.x, d.swing.y, d.swing.seed, d.swing.progress) : null;
   S.houses = d.houses.map(mv); for (const h of S.houses) h.addons = h.addons || [];
@@ -42,6 +44,7 @@ export function load() {
   for (const t of S.trees) if (!t.apples) t.apples = [Math.random(), Math.random(), Math.random()];   // towns saved before apples grew
   S.flowers = d.flowers.map(mv); S.arts = (d.arts || []).map(mv);
   S.apples = [];
+  S.hammocks = (d.hammocks || []).filter(h => S.trees[h.a] && S.trees[h.b]).map(h => ({ ...h, user: null }));
   S.ball = mv(d.ball) ? makeBall(d.ball.x, d.ball.y) : null;
   S.critters = d.critters.map(c => hydrate(mv(c)));
   for (const c of S.critters) { c.x = clamp(c.x, 20, S.W - 20); c.y = clamp(c.y, 90, S.H - 10); }

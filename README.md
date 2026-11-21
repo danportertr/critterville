@@ -17,7 +17,10 @@ The critters:
 - build the campfire, houses (and later add chimneys, side rooms and upstairs), a bridge, the swing set, a fish tank and the pool
 - jump the stream until there's a bridge, then mostly use that
 - keep a few of the fish they catch in the tank for a while, and come by to watch them
+- string a hammock between two trees, if a pair happens to be the right distance apart, and take turns lying in it
 - gather at the campfire in the evening and go home to sleep at night
+
+Every day or three something rare happens that leaves the town a little different: a shower brings up flowers (and a rainbow), a shooting star lands and stays as a glowing stone, a windy spell leaves a seedling that grows into a new tree, a duck family moves onto the water, or a ring of mushrooms appears and everyone dances in it.
 
 You can tap a critter to say hi, tap a house to see who lives there, tap a painting to see it up close, or tap the ground to drop a snack. There's also a little ♪ radio button that plays a lofi internet radio stream (the critters dance more when it's on); the stations are listed in `src/config.js`. The town is saved in your browser, so it's still there when you come back.
 
@@ -52,6 +55,7 @@ src/
     critter.js       drawing a critter and its speech bubble
     scenery.js       houses, trees, pond, stream, pool, swing set, artworks...
     fish.js          fish doodles
+    props.js         things events leave behind, and hammocks
     render.js        one frame: depth sort, day/night wash, glows
   world/
     geometry.js      obstacles and finding empty spots
@@ -61,6 +65,7 @@ src/
     core.js          the critter brain: states, activities, walking
     world.js         clock, ball, growth, new arrivals
   activities/        one module per thing a critter can do
+  events/            one module per rare event (rain, shooting star, wind, ducks, mushroom ring)
 ```
 
 ### Adding something for critters to do

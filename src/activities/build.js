@@ -15,6 +15,7 @@ const JOBS = {
   fire: { step: 0.26, done: 'The campfire is ready.' },
   house: { step: 0.1, done: 'A new house is finished!' },
   swing: { step: 0.1, done: 'The swing set is finished!' },
+  hammock: { step: 0.34, done: 'The hammock is up.' },
   tank: { step: 0.15, done: 'The fish tank is ready for its first fish.' },
   bridge: { step: 0.13, done: 'The bridge is finished. No more jumping, unless it\'s quicker.' },
   chimney: { step: 0.2, done: 'A house has a new chimney.' },
@@ -30,6 +31,7 @@ function standAt(s) {
     case 'fire': return { x: s.x + Math.cos(a) * 34, y: s.y + Math.sin(a) * 16 };
     case 'pool': return { x: s.x + Math.cos(a) * (s.rx + 24), y: s.y + Math.sin(a) * (s.ry + 18) };
     case 'bridge': { const e = s.ends[side < 0 ? 0 : 1]; return { x: e.x + rand(-10, 10), y: e.y + rand(-6, 6) }; }
+    case 'hammock': return { x: s.x + side * rand(10, 40), y: s.y + rand(6, 12) };
     case 'tank': return { x: s.x + side * rand(30, 46), y: s.y + rand(4, 12) };
     case 'swing': return { x: s.x + side * rand(20, SWING.half + 10), y: s.y + rand(6, 14) };
     default: return { x: s.x + side * rand(24, HOUSE.w / 2 * HOUSE.scale + 14), y: s.y + rand(8, 16) };

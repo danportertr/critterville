@@ -60,7 +60,8 @@ export function rebuildObs() {
   if (fire) S.obs.push({ x: fire.x, y: fire.y - 3, rx: 20, ry: 11 });
   for (const h of S.houses) { const wide = (h.addons || []).includes('annex') ? 24 : 0; S.obs.push({ x: h.x - wide, y: h.y - 10, rx: HOUSE.w / 2 * HOUSE.scale + 6 + wide, ry: 14 }); }
   if (S.tank) S.obs.push({ x: S.tank.x, y: S.tank.y - 3, rx: 38, ry: 9 });
-  for (const t of S.trees) S.obs.push({ x: t.x, y: t.y - 2, rx: 24 * t.size, ry: 7 });
+  for (const t of S.trees) S.obs.push({ x: t.x, y: t.y - 2, rx: 24 * t.size * (t.grow || 1), ry: 7 });
+  for (const s of S.stones) S.obs.push({ x: s.x, y: s.y - 2, rx: 11, ry: 5 });
   for (const a of S.arts) S.obs.push({ x: a.x, y: a.y - 2, rx: 17, ry: 7 });
 }
 
@@ -81,6 +82,8 @@ function zones() {
   if (fire) z.push({ x: fire.x, y: fire.y - 5, rx: 62, ry: 38 });
   if (pool) z.push({ x: pool.x, y: pool.y, rx: pool.rx + 16, ry: pool.ry + 14 });
   if (pond) z.push({ x: pond.x, y: pond.y, rx: pond.rx + 6, ry: pond.ry + 6 });
+  for (const s of S.stones) z.push({ x: s.x, y: s.y - 6, rx: 16, ry: 14 });
+  for (const r of S.rings) z.push({ x: r.x, y: r.y, rx: 48, ry: 30 });
   if (S.tank) z.push({ x: S.tank.x, y: S.tank.y - 30, rx: 46, ry: 42 });
   if (S.bridge) z.push({ x: S.bridge.x, y: S.bridge.y, rx: 44, ry: BRIDGE.reach + 30 });
   if (S.stream) for (let i = 0; i <= 24; i++) { const p = streamPoint(i / 24); z.push({ x: p.x, y: p.y, rx: 40, ry: STREAM_HALF + 18 }); }

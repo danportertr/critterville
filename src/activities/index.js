@@ -16,5 +16,8 @@ import swing from './swing.js';
 import swim from './swim.js';
 import { art, admire } from './art.js';
 import tank from './tank.js';
+import hammock from './hammock.js';
+import { stargaze } from '../events/star.js';
+import { ringDance } from '../events/ring.js';
 
-[wander, rest, chat, dance, fish, garden, snack, fruit, ball, build, campfire, sleep, swing, swim, art, admire, tank].forEach(register);
+[wander, rest, chat, dance, fish, garden, snack, fruit, ball, build, campfire, sleep, swing, swim, art, admire, tank, hammock, stargaze, ringDance].forEach(register);

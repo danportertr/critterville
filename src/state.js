@@ -8,10 +8,14 @@ export const S = {
   critters: [], houses: [], trees: [], flowers: [], apples: [], arts: [], tufts: [], flies: [],
   pond: null, stream: null,        // nature: a town has a pond, a stream, or both
   bridge: null,                    // over the stream, once the critters build one
+  hammocks: [],                    // strung between pairs of trees: {a, b: tree indexes, progress, user}
   tank: null,                      // fish tank: {progress, fish: [{id, from, seed}]}
   journal: { fish: {}, diary: [] },   // see journal.js
   fire: null, pool: null, swing: null, ball: null,   // made by the critters; null until someone starts on them
   obs: [],                         // ellipses critters walk around
+  // Rare events (src/events/) and what they leave behind:
+  event: null, nextEvent: 0, wind: 0,   // what's happening now, when the next one is due, how hard it's blowing (-1..1)
+  stones: [], rings: [], ducks: null,   // fallen stars, mushroom rings, the duck family
   viewing: null,                   // a painting you tapped, shown large: {art, until}
   sign: null,                      // a note floating over something you tapped: {x, y, text, until}
   music: false,                    // is the radio on?

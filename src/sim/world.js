@@ -8,6 +8,10 @@ import { inEllipse, rebuildObs, freePoint, topEdge } from '../world/geometry.js'
 import { newHouse, newCritter, assignHomes, planFire, planPool, planSwing, planBridge, planAddon, planTank, makeBall } from '../world/town.js';
 import { save } from '../world/save.js';
 import { updateCritter, goTo, setAct, say } from './core.js';
+import { updateEvents } from '../events/index.js';
+import { updateRings } from '../events/ring.js';
+import { DAY_LEN } from '../config.js';
+import { planHammock, shape as hangHammock } from '../activities/hammock.js';
 
 let lastPhase = null, townT = 0, arriveT = 45, saveT = 15, nextAddon = 0;
 
@@ -41,7 +45,7 @@ function fade(list, dt, onRemove) {
 }
 
 /** Anything planned but not finished. Critters work on one thing at a time. */
-export const currentSite = () => [S.fire, S.bridge, S.swing, S.tank, S.pool, ...S.houses].find(o => o && (o.progress < 1 || o.adding));
+export const currentSite = () => [S.fire, S.bridge, S.swing, S.tank, S.pool, ...S.hammocks, ...S.houses].find(o => o && (o.progress < 1 || o.adding));
 
 // The town plan: a fire to gather round, somewhere to sleep, then the fun stuff,
 // and enough houses for everyone. Once that's done the town is finished, apart
@@ -58,6 +62,7 @@ function growTown() {
     else if (!S.tank) { planTank(); msg = 'The critters are making a fish tank.'; }
     else if (!S.pool) { planPool(); msg = 'The critters are digging a pool.'; }
     else if (beds < n && S.houses.length < 3) { newHouse(0); msg = 'A new house is going up.'; }
+    else if (planHammock()) msg = 'Two trees are just the right distance apart for a hammock.';
     else if (S.clock > nextAddon) {   // the town is finished; now and then somebody improves a house
       nextAddon = S.clock + rand(240, 520);
       const h = planAddon();
@@ -91,6 +96,8 @@ export function updateWorld(dt) {
   lastPhase = p;
 
   for (const c of S.critters) updateCritter(c, dt);
+  updateEvents(dt); updateRings(dt);
+  for (const h of S.hammocks) hangHammock(h);
   updateBall(dt);
 
   if (S.swing) for (const seat of S.swing.seats) {
@@ -104,7 +111,11 @@ export function updateWorld(dt) {
   fade(S.arts, dt, rebuildObs);
   // Apples swell from a bud to ripe over a couple of minutes. A picked spot goes
   // negative first, so there's a pause before the next bud shows.
-  for (const t of S.trees) for (let i = 0; i < t.apples.length; i++) if (t.apples[i] < 1) t.apples[i] = Math.min(1, t.apples[i] + dt / (110 + hash(t.seed + i) * 80));
+  for (const t of S.trees) if (t.grow !== undefined) {   // a seedling, growing up over a few days
+    t.grow += dt / (DAY_LEN * 3);
+    if (t.grow >= 1) { delete t.grow; rebuildObs(); }
+  }
+  for (const t of S.trees) for (let i = 0; i < t.apples.length; i++) if (t.apples[i] < 1 && !(t.grow < 0.8)) t.apples[i] = Math.min(1, t.apples[i] + dt / (110 + hash(t.seed + i) * 80));
   for (const f of S.flies) {
     f.a += (hash(f.seed + Math.floor(S.now * 2)) - 0.5) * 24 * dt;
     f.x += Math.cos(f.a) * 30 * dt; f.y += Math.sin(f.a) * 18 * dt + Math.sin(S.now * 5 + f.seed) * 0.3;
