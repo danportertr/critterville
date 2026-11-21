@@ -37,7 +37,7 @@ export function load() {
   S.pond = mv(d.pond) || null; if (S.pond) { S.pond.rx *= fx; S.pond.ry = S.pond.rx * 0.5; }
   S.stream = d.stream || null; if (S.stream) S.stream.pts = S.stream.pts.map(([x, y]) => [x * fx, y * fy]);
   S.bridge = S.stream && d.bridge ? d.bridge : null; placeBridge();
-  S.journal = { ...newJournal(), ...d.journal };
+  S.journal = { ...newJournal(), ...d.journal };   // (older saves have no `sky`: newJournal supplies it)
   S.pool = mv(d.pool) || null; if (S.pool) { S.pool.rx *= fx; S.pool.ry = S.pool.rx * 0.48; }
   S.fire = mv(d.fire) || null;
   S.event = null; S.wind = 0; S.recent = d.recent || null; S.nextEvent = d.nextEvent || 0;

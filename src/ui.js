@@ -23,6 +23,19 @@ const $version = document.getElementById('version');
 $version.textContent = `build ${VERSION.n}`;
 $version.title = `Built ${VERSION.at}`;
 document.querySelector('#hud h1').addEventListener('click', () => $version.classList.toggle('show'));   // hidden until you click the title
+/**
+ * Reload, but properly. A plain reload reuses the browser's cached copies of
+ * the scripts (GitHub Pages lets them be kept for ten minutes), which is how
+ * you end up reloading into the same old build. So first re-download every
+ * file this page loaded, telling the browser to replace its cached copy.
+ */
+export async function freshReload() {
+  const mine = performance.getEntriesByType('resource').map(e => e.name).filter(u => u.startsWith(location.origin) && !u.includes('?fresh='));
+  const files = [...new Set([location.href.split('#')[0], ...mine])];
+  await Promise.all(files.map(u => fetch(u, { cache: 'reload' }).catch(() => null)));
+  location.reload();
+}
+
 export async function checkForNewer() {
   try {
     const text = await (await fetch(`src/version.js?fresh=${Date.now()}`, { cache: 'no-store' })).text();
@@ -32,7 +45,7 @@ export async function checkForNewer() {
     $version.textContent = `build ${VERSION.n} · `;
     const a = document.createElement('a');
     a.textContent = `build ${latest} is out: reload`;
-    a.onclick = () => location.reload();
+    a.onclick = () => { a.textContent = 'fetching the new build...'; freshReload(); };
     $version.append(a);
   } catch (e) { /* offline: never mind */ }
 }

@@ -11,7 +11,9 @@ export const onFirstCatch = [];
 export const onJournalChange = fn => listeners.push(fn);
 const changed = kind => listeners.forEach(fn => fn(kind));
 
-export const newJournal = () => ({ fish: {}, diary: [] });
+export const newJournal = () => ({ fish: {}, sky: {}, diary: [] });   // fish caught, things seen through the telescope, the diary
+/** Tell the open journal that one of its pages has something new. */
+export const journalChanged = kind => changed(kind);
 
 /** Show a message and write it in the diary. */
 export function note(text) {

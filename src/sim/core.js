@@ -19,6 +19,9 @@ import { rand, dist, clamp } from '../util.js';
 import { BRIDGE } from '../config.js';
 import { inEllipse, inStream, onBridge, bankSide } from '../world/geometry.js';
 
+/** Filled in by activities/night.js (kept as a hook so this file needn't import it). */
+export const nightHooks = { life: null };
+
 export const STATES = {};
 export const ACT = {};
 const list = [];
@@ -70,7 +73,10 @@ export function finish(c) {
 /** Pick the next thing to do. */
 export function choose(c) {
   release(c);
-  if (isNight()) return c.owl && built(S.fire) ? ACT.campfire.startOwl(c) : ACT.sleep.start(c);
+  if (isNight()) {
+    if (nightHooks.life && nightHooks.life(c)) return;   // a night owl, up and about (activities/night.js)
+    return c.owl && built(S.fire) ? ACT.campfire.startOwl(c) : ACT.sleep.start(c);
+  }
   const snack = S.apples.filter(a => !a.claimed && !a.eaten && dist(a, c) < 450).sort((a, b) => dist(a, c) - dist(b, c))[0];
   if (snack) return ACT.snack.fetch(c, snack);
 

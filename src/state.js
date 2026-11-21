@@ -16,7 +16,7 @@ export const S = {
   monument: null,                  // the big thing everyone builds together: {form: 'circle' | 'giant', progress}
   hammocks: [],                    // strung between pairs of trees: {a, b: tree indexes, progress, user}
   tank: null,                      // fish tank: {progress, fish: [{id, from, seed}]}
-  journal: { fish: {}, diary: [] },   // see journal.js
+  journal: { fish: {}, sky: {}, diary: [] },   // see journal.js
   fire: null, pool: null, swing: null, ball: null,   // made by the critters; null until someone starts on them
   obs: [],                         // ellipses critters walk around
   // Rare events (src/events/) and what they leave behind:

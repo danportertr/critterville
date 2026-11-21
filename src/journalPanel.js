@@ -4,6 +4,8 @@ import { S } from './state.js';
 import { drawOn } from './draw/canvas.js';
 import { drawFish, drawMystery } from './draw/fish.js';
 import { localSpecies, waters, onJournalChange } from './journal.js';
+import { SKY } from './data/sky.js';
+import { drawSkyPicture } from './draw/sky.js';
 
 const $btn = document.getElementById('journal-btn');
 const $panel = document.getElementById('journal');
@@ -43,6 +45,24 @@ function renderFish() {
   $body.append(grid);
 }
 
+function renderSky() {
+  $body.append(el('p', 'lede', 'What the night owls have found through the telescope. All of it is really up there.'));
+  const grid = el('div', 'cards');
+  for (const o of SKY) {
+    const seen = S.journal.sky[o.id], card = el('article', seen ? 'card' : 'card unseen');
+    const cv = el('canvas'), w = 150, h = 84, dpr = Math.min(devicePixelRatio || 1, 2);
+    cv.width = w * dpr; cv.height = h * dpr; cv.style.width = w + 'px'; cv.style.height = h + 'px';
+    cv.setAttribute('role', 'img'); cv.setAttribute('aria-label', seen ? `Drawing of ${o.call}` : 'Something not found yet');
+    const g = cv.getContext('2d'); g.scale(dpr, dpr);
+    drawOn(g, () => drawSkyPicture(o.id, w, h, !!seen));
+    card.append(cv);
+    if (seen) card.append(el('h3', '', o.name), el('p', '', o.fact), el('p', 'meta', `First found by ${seen.by} on the night of day ${seen.day}.`));
+    else card.append(el('h3', '', '???'), el('p', 'meta', 'Not found yet. Somebody has to stay up late.'));
+    grid.append(card);
+  }
+  $body.append(grid);
+}
+
 function renderDiary() {
   const diary = S.journal.diary;
   if (!diary.length) return void $body.append(el('p', 'lede', 'Nothing much has happened yet.'));
@@ -57,7 +77,7 @@ function renderDiary() {
 function render() {
   $body.textContent = '';
   for (const t of $tabs) t.classList.toggle('sel', t.dataset.tab === tab);
-  (tab === 'fish' ? renderFish : renderDiary)();
+  (tab === 'fish' ? renderFish : tab === 'sky' ? renderSky : renderDiary)();
 }
 function open() { $panel.hidden = false; $btn.classList.remove('new'); $btn.textContent = 'journal'; render(); }
 function close() { $panel.hidden = true; }
@@ -69,5 +89,5 @@ addEventListener('keydown', e => { if (e.key === 'Escape') close(); });
 
 onJournalChange(kind => {
   if (!$panel.hidden) { if (kind === tab || kind === 'reset') render(); }
-  else if (kind === 'fish') { $btn.classList.add('new'); $btn.textContent = 'journal •'; }   // something new to read
+  else if (kind === 'fish' || kind === 'sky') { $btn.classList.add('new'); $btn.textContent = 'journal •'; }   // something new to read
 });

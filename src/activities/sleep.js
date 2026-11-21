@@ -5,13 +5,17 @@ import { S, isNight, built } from '../state.js';
 import { TAU, rand, pick } from '../util.js';
 import { goTo, setAct, say } from '../sim/core.js';
 import { DREAMS } from '../talk.js';
+import { isNightOwl } from './night.js';
+
+const late = c => isNightOwl(c);
 
 export default {
   id: 'sleep',
   start(c) {
     const h = c.home, f = S.fire;
     c.nextWalk = 'trudge';
-    if (h) return goTo(c, h.x, h.y + 7, () => { setAct(c, 'sleep', rand(0, 16)); c.hidden = true; });
+    const lie = late(c) ? rand(30, 70) : rand(0, 16);   // night owls sleep in
+    if (h) return goTo(c, h.x, h.y + 7, () => { setAct(c, 'sleep', lie); c.hidden = true; });
     if (!built(f)) { c.nextWalk = null; return setAct(c, 'sleep', rand(0, 10)); }   // nowhere to go: sleep on the spot
     const a = rand(TAU);
     goTo(c, f.x + Math.cos(a) * 52, f.y + Math.sin(a) * 26, () => { setAct(c, 'sleep', rand(0, 10)); c.dir = f.x > c.x ? 1 : -1; });

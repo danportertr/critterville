@@ -25,5 +25,9 @@ import { ringDance } from '../events/ring.js';
 import { shop } from '../events/cart.js';
 import { story } from '../events/journeys.js';
 import { findHat, picnicking, investigate } from './errands.js';
+import { stargaze as telescope, isNightOwl, nightLife } from './night.js';
+import { nightHooks } from '../sim/core.js';
 
-[wander, rest, chat, dance, fish, garden, snack, fruit, ball, build, campfire, sleep, swing, swim, art, admire, repaint, tidy, tank, hammock, respond, topiary, cairn, stargaze, ringDance, shop, story, findHat, picnicking, investigate].forEach(register);
+[wander, rest, chat, dance, fish, garden, snack, fruit, ball, build, campfire, sleep, swing, swim, art, admire, repaint, tidy, tank, hammock, respond, topiary, cairn, stargaze, ringDance, shop, story, findHat, picnicking, investigate, telescope].forEach(register);
+
+nightHooks.life = c => isNightOwl(c) && nightLife(c);

@@ -15,7 +15,7 @@ import './journalPanel.js';
 import { startDiary } from './journal.js';
 import { trigger } from './events/index.js';
 import { VERSION } from './version.js';
-import { checkForNewer } from './ui.js';
+import { checkForNewer, freshReload } from './ui.js';
 
 const SPEED = clamp(parseFloat(new URLSearchParams(location.search).get('speed')) || 1, 0.1, 60);
 
@@ -60,7 +60,7 @@ function boot() {
   if (!load()) { newTown(); startDiary(); }
   requestAnimationFrame(frame);
 }
-S.version = VERSION; S.checkVersion = checkForNewer;   // critterville.checkVersion() asks the server right now
+S.version = VERSION; S.checkVersion = checkForNewer; S.freshReload = freshReload;   // critterville.checkVersion() asks the server right now
 S.trigger = trigger;       // e.g. critterville.trigger('rain') | 'star' | 'wind' | 'ducks' | 'ring' | 'cart' | 'farewell' | 'adventure' | 'picnic' | 'rumour'
 window.critterville = S;   // for poking around in the console
 boot();
