@@ -47,7 +47,8 @@ function roofShape(h, fill, top) {
 
 export function drawHouse(h, lit) {
   const sd = h.seed, p = h.progress, done = p >= 1, top = wallTop(h);
-  const wall = done || p > 0.86 ? h.color : '#fff', roof = done ? h.roof : '#fff', door = shade(h.color, 0.8);   // paint goes on last
+  const pr = done && h.prank;   // repainted by the prankster
+  const wall = pr ? pr.wall : done || p > 0.86 ? h.color : '#fff', roof = pr ? pr.roof : done ? h.roof : '#fff', door = shade(pr ? pr.wall : h.color, 0.8);   // paint goes on last
   ctx.save(); ctx.translate(h.x, h.y); ctx.scale(HOUSE.scale, HOUSE.scale);
   shadow(0, 2, 60, 6);
   const adding = h.adding, pole = (x, hgt) => line([[x, 2], [x + jit(sd, 9, 1), -hgt]], sd + (x | 0), 3, WOOD, 0.6);
@@ -72,6 +73,10 @@ export function drawHouse(h, lit) {
   if (has(h, 'chimney')) chimney(h, wall, door, wtop);
   else if (adding && adding.what === 'chimney' && adding.progress > 0.4) chimney(h, '#fff', '#fff', wtop);
   box([[-49, 0], [-44, y(28)], [-45, y(wtop - 25)], [-50, y(wtop)], [48, y(wtop)], [44, y(wtop - 25)], [42, y(28)], [47, 0]], wall, sd, 0.8);
+  if (pr) {   // spots or stripes, all over
+    if (pr.style === 'spots') for (let i = 0; i < 11; i++) dot(-38 + hs(sd, i + 200) * 76, -6 - hs(sd, i + 220) * (wtop - 12), 3.2 + hs(sd, i + 240) * 2.4, pr.dots);
+    else for (let i = 0; i < 6; i++) line([[-40 + i * 16, -3], [-44 + i * 16, -wtop + 4]], sd + 200 + i, 4.5, pr.dots, 0.4);
+  }
   if (done || p > 0.7) roofShape(h, roof, wtop);
   if (done) {
     box([[-19, 0], [-21, -30], [-22, -56], [20, -58], [17, -30], [22, 0]], door, sd + 2, 0.6);
@@ -191,8 +196,13 @@ export function drawPool() {
     return;
   }
   blob(p.x, p.y, p.rx + 10, p.ry + 9, '#fff', p.seed, 16, 0.01, 0.6);                 // tiled rim
-  blob(p.x, p.y, p.rx, p.ry, '#74dbe8', p.seed + 1, 16, 0.01, 0.5, 2.2);              // water
+  blob(p.x, p.y, p.rx, p.ry, p.dye || '#74dbe8', p.seed + 1, 16, 0.01, 0.5, 2.2);     // water (dyed, if the prankster's been)
   ripples(p, 4, p.rx * 1.2, p.ry);
+  for (const j of p.junk || []) {   // ...and whatever they tipped in, bobbing about
+    const a = j.a + S.now * 0.1 * (j.seed % 2 ? 1 : -1), x = p.x + Math.cos(a) * p.rx * j.r, y = p.y + Math.sin(a) * p.ry * j.r + Math.sin(S.now * 2 + j.seed) * 1.2;
+    if (j.what === 'fish') drawFish(SPECIES_BY_ID.goldfish, x, y, 0.6, j.seed, Math.cos(a) > 0);
+    else { blob(x, y, 5, 4.6, '#fb6540', j.seed, 7, 0.06, 0.2, 2); line([[x, y - 4], [x + 1.5, y - 7.5]], j.seed + 1, 1.6, INK, 0.1); }
+  }
   box([[p.x - p.rx - 30, p.y - 7], [p.x - p.rx + 26, p.y - 7], [p.x - p.rx + 26, p.y + 5], [p.x - p.rx - 30, p.y + 5]], '#ffd36b', p.seed + 2, 0.6);   // diving board
   for (const k of [0, 14]) {   // ladder
     const x = p.x + p.rx * 0.55 + k, y = p.y - p.ry * 0.8;
@@ -558,6 +568,11 @@ export function drawPaintingLarge(a, x, y, k) {
   paintCanvas(a, 3.2 / k);
   ctx.restore();
 }
+/** A fine curly moustache, for drawing on things. */
+export function moustache(x, y, k) {
+  ctx.strokeStyle = INK; ctx.lineWidth = 2 * k; ctx.lineCap = 'round';
+  for (const s of [-1, 1]) { ctx.beginPath(); ctx.moveTo(x, y); ctx.quadraticCurveTo(x + s * 5 * k, y + 3 * k, x + s * 9 * k, y - 2.5 * k); ctx.stroke(); }
+}
 export function drawArt(a) {
   if (a.type === 'sculpture') return drawSculpture(a);
   ctx.save(); ctx.translate(a.x, a.y);
@@ -565,7 +580,9 @@ export function drawArt(a) {
   shadow(0, 1, 18, 4);
   if (a.type === 'painting') {
     for (const [x, y] of [[-16, 0], [16, 0], [3, -7]]) line([[0, -60], [x, y]], a.seed + x, 3, INK, 0.4);
+    if (a.flipped) { ctx.translate(0, -49); ctx.rotate(Math.PI); ctx.translate(0, 49); }   // hung upside down
     paintCanvas(a, 2.4);
+    if (a.moustache) moustache(a.flipped ? 0 : 2, -41, 1);
   }
   ctx.restore();
 }
@@ -599,7 +616,7 @@ export function drawApple(a) {
 }
 export function drawBall() {
   const b = S.ball, y = b.y - 8 - b.z, r = b.spin;
-  shadow(b.x, b.y + 1, 8, 2.5);
+  if (b.roof == null) shadow(b.x, b.y + 1, 8, 2.5);
   blob(b.x, y, 8, 8, '#fff', 77, 8, 0.02, 0.3, 2.4);
   line([[b.x - 7 * Math.cos(r), y - 7 * Math.sin(r)], [b.x + 3 * Math.sin(r), y - 3 * Math.cos(r)], [b.x + 7 * Math.cos(r), y + 7 * Math.sin(r)]], 78, 2.4, '#ff8fc7', 0.2);
 }

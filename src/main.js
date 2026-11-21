@@ -43,9 +43,13 @@ let last = 0;
 function frame(ts) {
   const dt = Math.min(0.1, (ts - last) / 1000 || 0);
   last = ts; S.now += dt; S.boil = Math.floor(S.now * 5);
-  const steps = Math.ceil(SPEED);
-  for (let i = 0; i < steps; i++) updateWorld(dt * SPEED / steps);
-  render();
+  // If something goes wrong in one frame, say so in the console but keep the
+  // town running: one bad frame shouldn't freeze everything for good.
+  try {
+    const steps = Math.ceil(SPEED);
+    for (let i = 0; i < steps; i++) updateWorld(dt * SPEED / steps);
+    render();
+  } catch (e) { console.error(e); }
   requestAnimationFrame(frame);
 }
 

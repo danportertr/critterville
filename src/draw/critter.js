@@ -26,6 +26,7 @@ const MOUTHS = {
 const restingFace = c => (c.cheer > 0.8 ? 'big' : c.cheer > 0.45 ? 'smile' : c.cheer > 0.15 ? 'small' : 'flat');
 
 const ARM = 28.2;  // shoulder-to-hand length when the arm is straight
+const JESTER = { kind: 'jester', color: '#e0485a' };   // worn while the prankster is at it (events aside, their own hat comes off)
 const WADE = 8;   // how deep the stream is, in critter units
 import { jit, wob, smooth, polyPath, blob, box, line, tube, dot } from './primitives.js';
 
@@ -127,7 +128,7 @@ export function drawCritter(c) {
     mouth.caps.forEach((cap, i) => line(cap.map(face), sd + 14 + i, 2.4, INK, 0.3));
   }
   if (c.costume) costumeFront(c.costume, sd + 72, hy, d);   // in costume, their own hat comes off
-  else if (c.hat) { ctx.save(); ctx.translate(0, hy - 17 * c.hh); drawHat(c.hat, m, sd + 60); ctx.restore(); }
+  else if (c.pranking || c.hat) { ctx.save(); ctx.translate(0, hy - 17 * c.hh); drawHat(c.pranking ? JESTER : c.hat, m, sd + 60); ctx.restore(); }
   if (st.over) st.over(c, p);   // things held in front of the face
   ctx.restore();
 

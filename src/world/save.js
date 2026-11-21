@@ -7,13 +7,14 @@ import { newJournal } from '../journal.js';
 import { restore as restoreHammock } from '../activities/hammock.js';
 import { restoreVisitor } from '../events/cart.js';
 import { keep } from '../events/journeys.js';
+import { setTownName } from '../ui.js';
 import { hydrate, makeSwing, makeBall, assignHomes, scatterDecor } from './town.js';
 
 export function save() {
   if (!S.W || !S.critters.length) return;
   try {
     localStorage.setItem(SAVE_KEY, JSON.stringify({
-      v: SAVE_VERSION, W: S.W, H: S.H, clock: S.clock, journal: S.journal, pond: S.pond, stream: S.stream, tank: S.tank, nextEvent: S.nextEvent, away: S.away, songs: S.songs, songId: S.songId,
+      v: SAVE_VERSION, W: S.W, H: S.H, clock: S.clock, journal: S.journal, pond: S.pond, stream: S.stream, tank: S.tank, nextEvent: S.nextEvent, away: S.away, townName: S.townName, pranked: S.pranked, songs: S.songs, songId: S.songId,
       theatre: S.theatre && { kind: 'stage', x: S.theatre.x, y: S.theatre.y, seed: S.theatre.seed, progress: S.theatre.progress, phase: S.theatre.phase === 'show' ? 'ready' : S.theatre.phase, wait: 8 }, news: S.news, newsId: S.newsId, mail: S.mail, rumour: S.rumour,
       lostHat: S.lostHat && { ...S.lostHat, taken: null, held: false }, cairns: S.cairns, monument: S.monument, recent: S.recent, lastCart: S.lastCart,
       visitor: S.visitor && S.visitor.state === 'open' ? { kind: S.visitor.kind, seed: S.visitor.seed, x: S.visitor.x, y: S.visitor.y, d: S.visitor.d, until: S.visitor.until } : null, hammocks: S.hammocks.map(h => ({ kind: 'hammock', a: h.a, b: h.b, seed: h.seed, progress: h.progress })), stones: S.stones, rings: S.rings, ducks: S.ducks, bridge: S.bridge && { kind: 'bridge', t: S.bridge.t, seed: S.bridge.seed, progress: S.bridge.progress }, pool: S.pool, fire: S.fire,
@@ -21,7 +22,7 @@ export function save() {
       houses: S.houses, trees: S.trees,
       flowers: S.flowers.filter(f => f.dying === undefined),
       arts: S.arts.filter(a => a.progress >= 1 && a.dying === undefined),
-      ball: S.ball && { x: S.ball.x, y: S.ball.y },
+      ball: S.ball && { x: S.ball.x, y: S.ball.y, roof: S.ball.roof, roofAt: S.ball.roofAt },
       critters: S.critters.filter(c => !c.leaving).map(c => ({ ...keep(c), home: S.houses.indexOf(c.home) })),
     }));
   } catch (e) { /* private mode etc: the town just won't persist */ }
@@ -50,6 +51,7 @@ export function load() {
   for (const t of S.trees) if (!t.apples) t.apples = [Math.random(), Math.random(), Math.random()];   // towns saved before apples grew
   S.flowers = d.flowers.map(mv); S.arts = (d.arts || []).map(mv);
   S.theatre = mv(d.theatre) || null;
+  S.townName = d.townName || 'Critterville'; setTownName(S.townName); S.pranked = d.pranked || null; S.fixing = false;
   S.songs = d.songs || []; S.songId = d.songId || 0; S.band = null;
   S.away = d.away || []; S.news = d.news || []; S.newsId = d.newsId || 0; S.mail = d.mail || []; S.rumour = d.rumour || null; S.picnic = null;
   S.lostHat = mv(d.lostHat) || null;
@@ -59,7 +61,7 @@ export function load() {
   S.apples = []; S.floaters = []; S.lastCart = d.lastCart || null;
   S.visitor = restoreVisitor(mv(d.visitor));
   S.hammocks = (d.hammocks || []).map(restoreHammock).filter(Boolean);
-  S.ball = mv(d.ball) ? makeBall(d.ball.x, d.ball.y) : null;
+  S.ball = mv(d.ball) ? Object.assign(makeBall(d.ball.x, d.ball.y), { roof: d.ball.roof == null ? null : d.ball.roof, roofAt: d.ball.roofAt }) : null;
   S.critters = d.critters.map(c => hydrate(mv(c)));
   for (const c of S.critters) { c.x = clamp(c.x, 20, S.W - 20); c.y = clamp(c.y, 90, S.H - 10); }
   rebuildObs(); assignHomes(); scatterDecor();

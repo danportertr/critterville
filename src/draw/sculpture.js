@@ -32,6 +32,7 @@ const FORMS = {
     for (const k of [-1, 1]) tube([[k * 7, -26], [k * 17, -18]], 2.6, c, a.seed + 4 + k, 0.3);
     blob(0, -42, 13, 12.5, c, a.seed + 6, 9, 0.06, 0.3, 2.2);
     dot(2, -46, 1.1); dot(5, -45, 1.1); line([[-3, -42], [-3, -36], [1, -33], [6, -37], [6.5, -41]], a.seed + 7, 1.6, INK, 0.2);
+    if (a.moustache) { ctx.strokeStyle = INK; ctx.lineWidth = 2; for (const s of [-1, 1]) { ctx.beginPath(); ctx.moveTo(2, -41); ctx.quadraticCurveTo(2 + s * 5, -38, 2 + s * 9, -43.5); ctx.stroke(); } }
   },
   totem(a, c) {
     blob(0, -21, 12, 11, c, a.seed + 3, 9, 0.1, 0.3, 2.2);
@@ -186,6 +187,7 @@ export function drawMonument(m) {
       const t = i / n * TAU + 0.4, x = Math.cos(t) * 56, y = Math.sin(t) * 21, h = 30 + hs(sd, i) * 12, w = 6 + hs(sd, i + 9) * 2.5;
       ctx.fillStyle = 'rgba(0,0,0,.08)'; ctx.beginPath(); ctx.ellipse(x, y + 1, w + 4, 3, 0, 0, TAU); ctx.fill();
       box([[x - w, y], [x + w, y], [x + w - 1.5, y - h], [x - w + 1, y - h - 2]], i % 3 ? STONE : '#c9cbd6', sd + i, 0.7);
+      if (m.hats && i % 2 === 0) { ctx.save(); ctx.translate(x, y - h - 1); ctx.scale(0.6, 0.6); drawHat({ kind: 'cone', color: m.hats.color }, 1, sd + 40 + i); ctx.restore(); }   // party hats, courtesy of the prankster
     }
     if (g >= 1) for (const i of [1, 2]) {   // lintels across the front pairs
       const p = j => { const t = j / n * TAU + 0.4; return [Math.cos(t) * 56, Math.sin(t) * 21 - 30 - hs(sd, j) * 12]; };
@@ -205,6 +207,7 @@ export function drawMonument(m) {
     blob(0, -57, 21, 20, c, sd + 11, 11, 0.06, 0.4);
     dot(4, -64, 1.6); dot(8.5, -62.6, 1.6);
     line([[-3, -58], [-4.5, -50], [-2, -43], [4, -40.5], [9.5, -45], [12, -55]], sd + 12, 2.4, INK, 0.3);
+    if (m.hats && c !== INK) { ctx.save(); ctx.translate(0, -76); drawHat({ kind: 'cone', color: m.hats.color }, 1, sd + 40); ctx.restore(); }   // the prankster's been
     };
     const top = -172 * g - 2;
     ctx.save(); ctx.beginPath(); ctx.rect(-120, top, 240, 172 * g + 12); ctx.clip();   // (wide enough for the outstretched hands)

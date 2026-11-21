@@ -32,7 +32,7 @@ export function refreshStats() {
 
 function updateBall(dt) {
   const b = S.ball;
-  if (!b || !(b.vx || b.vy || b.z > 0)) return;
+  if (!b || b.roof != null || !(b.vx || b.vy || b.z > 0)) return;
   b.x += b.vx * dt; b.y += b.vy * dt; b.z += b.vz * dt; b.vz -= 600 * dt;
   b.spin += b.vx * dt * 0.08;
   if (b.z <= 0) { b.z = 0; b.vz = b.vz < -60 ? -b.vz * 0.5 : 0; const f = Math.pow(0.12, dt); b.vx *= f; b.vy *= f; }

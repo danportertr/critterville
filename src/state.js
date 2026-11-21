@@ -8,6 +8,7 @@ export const S = {
   critters: [], houses: [], trees: [], flowers: [], apples: [], arts: [], tufts: [], flies: [],
   pond: null, stream: null,        // nature: a town has a pond, a stream, or both
   bridge: null,                    // over the stream, once the critters build one
+  townName: 'Critterville',        // what the corner says (the prankster has been known to change it)
   songs: [], songId: 0, band: null, // the town's tunes, and whoever is playing right now (activities/music.js)
   sound: true,                     // may the critters' instruments be heard?
   news: [], newsId: 0,             // what there is to talk about (talk.js)

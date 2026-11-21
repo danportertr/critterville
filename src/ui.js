@@ -11,6 +11,9 @@ export function log(msg) {
   clearTimeout(timer);
   timer = setTimeout(() => $log.classList.remove('on'), 5000);
 }
+/** The town's proper name, and a way to change what the corner says (the prankster does). */
+export const TOWN = 'Critterville';
+export function setTownName(name) { document.querySelector('#hud h1').textContent = name; document.title = name; }
 export const setStats = text => { $stats.textContent = text; };
 export const hideHint = () => $hint.classList.add('off');
 setTimeout(hideHint, 14000);

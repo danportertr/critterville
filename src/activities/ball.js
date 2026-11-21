@@ -5,7 +5,7 @@ import { goTo, say } from '../sim/core.js';
 
 export default {
   id: 'ball',
-  weight: () => S.ball ? 0.9 : 0,
+  weight: () => S.ball && S.ball.roof == null ? 0.9 : 0,
   start(c) {
     const b = S.ball;
     c.nextWalk = 'skip';

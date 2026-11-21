@@ -29,7 +29,8 @@ import { stargaze as telescope, isNightOwl, nightLife } from './night.js';
 import { nightHooks } from '../sim/core.js';
 import { playgoer } from '../events/theatre.js';
 import { craft, perform, audience as musicAudience } from './music.js';
+import { prankster, cleanUp } from './prank.js';
 
-[wander, rest, chat, dance, fish, garden, snack, fruit, ball, build, campfire, sleep, swing, swim, art, admire, repaint, tidy, tank, hammock, respond, topiary, cairn, stargaze, ringDance, shop, story, findHat, picnicking, investigate, telescope, playgoer, monumentWork, craft, perform, musicAudience].forEach(register);
+[wander, rest, chat, dance, fish, garden, snack, fruit, ball, build, campfire, sleep, swing, swim, art, admire, repaint, tidy, tank, hammock, respond, topiary, cairn, stargaze, ringDance, shop, story, findHat, picnicking, investigate, telescope, playgoer, monumentWork, craft, perform, musicAudience, prankster, cleanUp].forEach(register);
 
 nightHooks.life = c => isNightOwl(c) && nightLife(c);

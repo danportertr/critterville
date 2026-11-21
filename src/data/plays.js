@@ -65,6 +65,12 @@ function subjects() {
     B: { role: 'her Loyal Knight', costume: 'knight', prop: 'sword', line: 'I shall guard the ducklings!' },
     event: [1, 'Who goes there?'],
   });
+  if (S.pranked) out.push({
+    title: 'The Prankster Strikes Again', backdrop: 'city',
+    A: { role: `${S.pranked} the Prankster`, costume: 'thief', prop: 'sack', line: 'Hee hee hee!' },
+    B: { role: 'a Neighbour', costume: 'none', line: 'My house is PURPLE!' },
+    event: [1, 'And there are apples in the pool!'],
+  });
   if (S.monument) out.push({
     title: 'The Giant Wakes', backdrop: 'mountains',
     A: { role: 'a Stonecarver', costume: 'none', prop: 'hammer', line: 'One more chip...' },

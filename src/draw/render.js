@@ -80,7 +80,11 @@ export function render() {
   const fireLit = clamp(Math.max(n, p < 0.9 ? smoothstep(0.58, 0.64, p) : 0), 0, 1);
   const items = [];
   if (S.fire) items.push([S.fire.y, sc.drawFire, fireLit]);
-  if (S.ball) items.push([S.ball.y, sc.drawBall]);
+  if (S.ball) {   // (it may be stuck on a roof, thanks to the prankster)
+    const b = S.ball, h = b.roof != null && S.houses[b.roof];
+    if (h) { b.x = h.x - 26; b.y = h.y + 0.5; b.z = (wallTop(h) + HOUSE.roof * 0.45) * HOUSE.scale - 8; }
+    items.push([b.y, sc.drawBall]);
+  }
   if (S.swing) items.push([S.swing.y, sc.drawSwing, S.swing]);
   if (S.tank) items.push([S.tank.y, sc.drawTank, S.tank]);
   for (const h of S.houses) items.push([h.y, sc.drawHouse, h, lit.has(h)]);

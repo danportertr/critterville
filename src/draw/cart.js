@@ -41,6 +41,14 @@ export function drawHat(hat, look = 1, seed = 1) {
       dot(0, -11, 1.6);
       break;
     }
+    case 'jester': {   // the prankster's hat: two floppy points with bells on
+      for (const [k, col] of [[-1, '#e0485a'], [1, '#ffe23d']]) {
+        box([[k * 1, 3], [k * 12, 3], [k * 20, -8], [k * 24, -20], [k * 13, -12], [k * 3, -13]], col, seed + k, 0.5, lw);
+        dot(k * 24, -21, 3.4); dot(k * 24, -21, 2.1, '#ffd93b');
+      }
+      line([[-13, 3], [13, 3]], seed + 5, 3, '#3fd6c4', 0.2);
+      break;
+    }
     // ---- hats that come from somewhere: the night sky, or a dream ----
     case 'wizard':   // tall, midnight blue, covered in stars
       box([[-10, 3], [-3, -16], [2, -30], [10, 3]], '#3b3f73', seed, 0.4, lw);

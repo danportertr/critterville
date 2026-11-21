@@ -45,6 +45,7 @@ export const WALKS = {
   stroll: { speed: 1, bounce: 1, lift: 1, swing: 1, lean: 1, droop: 0 },
   skip: { speed: 1.25, bounce: 2.6, lift: 1.5, swing: 1.7, lean: 0.6, droop: 0 },      // off to do something fun
   trot: { speed: 1.55, bounce: 1.2, lift: 1.1, swing: 1.3, lean: 2.2, droop: 0 },      // in a hurry (snacks)
+  sneak: { speed: 0.72, bounce: 0.25, lift: 1.9, swing: 0.15, lean: 0.3, droop: 0 },   // on tiptoe, up to something
   trudge: { speed: 0.68, bounce: 0.35, lift: 0.45, swing: 0.3, lean: 1.4, droop: 4 },  // tired, heading for bed
 };
 /** Can we interrupt this critter without breaking something it's in the middle of? */

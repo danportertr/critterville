@@ -25,6 +25,7 @@ The critters:
 - jump the stream until there's a bridge, then mostly use that
 - keep a few of the fish they catch in the tank for a while, and come by to watch them
 - string a hammock between two trees, two houses, or a house and a tree, if a pair happens to be the right distance apart, and take turns lying in it
+- include one prankster, who now and then puts on a jester's hat and fills the pool with apples, paints a house in spots, draws moustaches on statues or changes the town's name; the others good-naturedly put it all right
 - make themselves instruments (no two sound alike), make up tunes that become the town's songs, and play them in the evening, alone or together in parts, while the others listen and dance
 - gather at the campfire in the evening and go home to sleep at night, except for the one or two night owls, who set up a telescope, fish in the dark, follow fireflies, and sleep in
 

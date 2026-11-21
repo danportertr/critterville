@@ -56,7 +56,7 @@ cv.addEventListener('pointerdown', e => {
   if (S.viewing && S.now < S.viewing.until) { S.viewing = null; return; }   // tap anywhere to put the painting down
   if (c) {
     const friend = bestFriend(c);
-    say(c, friend ? `${c.name} (♥ ${friend.name})` : c.name, 2.4); c.surprise = 0.5;
+    say(c, c.pranking ? `${c.name}... hee hee` : friend ? `${c.name} (♥ ${friend.name})` : c.name, 2.4); c.surprise = 0.5;
     if (c.act !== 'swing' && c.act !== 'swim') c.hopV = 170;
     if (isFree(c)) setAct(c, 'wave', 1.6);
     return;
