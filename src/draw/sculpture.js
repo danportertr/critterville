@@ -207,10 +207,10 @@ export function drawMonument(m) {
     line([[-3, -58], [-4.5, -50], [-2, -43], [4, -40.5], [9.5, -45], [12, -55]], sd + 12, 2.4, INK, 0.3);
     };
     const top = -172 * g - 2;
-    ctx.save(); ctx.beginPath(); ctx.rect(-80, top, 160, 172 * g + 12); ctx.clip();
+    ctx.save(); ctx.beginPath(); ctx.rect(-120, top, 240, 172 * g + 12); ctx.clip();   // (wide enough for the outstretched hands)
     giant(STONE);
     ctx.restore();
-    if (g < 1) workingEdge(-80, top, 160, () => giant(INK));   // a flat top to whatever height it has reached
+    if (g < 1) workingEdge(-120, top, 240, () => giant(INK));   // a flat top to whatever height it has reached
   }
   ctx.restore();
 }
