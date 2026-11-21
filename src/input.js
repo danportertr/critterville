@@ -3,7 +3,8 @@ import { S } from './state.js';
 import { irand, dist } from './util.js';
 import { cv } from './draw/canvas.js';
 import { hideHint, log } from './ui.js';
-import { inEllipse, rebuildObs } from './world/geometry.js';
+import { startDiary } from './journal.js';
+import { inEllipse, inStream, rebuildObs } from './world/geometry.js';
 import { newTown } from './world/town.js';
 import { save } from './world/save.js';
 import { ACT, say, setAct, isFree } from './sim/core.js';
@@ -30,7 +31,7 @@ cv.addEventListener('pointerdown', e => {
     if (isFree(c)) setAct(c, 'wave', 1.6);
     return;
   }
-  if (inEllipse(p.x, p.y, S.pond) || (S.pool && inEllipse(p.x, p.y, S.pool, 10)) || p.y < 60 || S.apples.length >= 6) return;
+  if ((S.pond && inEllipse(p.x, p.y, S.pond)) || inStream(p.x, p.y) || (S.pool && inEllipse(p.x, p.y, S.pool, 10)) || p.y < 60 || S.apples.length >= 6) return;
   const a = { x: p.x, y: p.y, z: 60, vz: 0, seed: irand(1e6), claimed: null, eaten: false };
   S.apples.push(a);
   const near = S.critters.filter(c => isFree(c) && !c.apple).sort((x, y) => dist(x, a) - dist(y, a))[0];
@@ -51,4 +52,5 @@ $reset.addEventListener('click', () => {
   }
   disarm();
   newTown(); rebuildObs(); save(); refreshStats(); log('A brand new meadow.');
+  startDiary();
 });

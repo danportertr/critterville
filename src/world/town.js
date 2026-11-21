@@ -2,7 +2,8 @@
 import { S } from '../state.js';
 import { DAY_LEN, HOUSE, SWING, HEADS, BODIES, WALLS, ROOFS, PETALS, GREENS, NAME_A, NAME_B } from '../config.js';
 import { TAU, clamp, rand, irand, pick, hs, dist } from '../util.js';
-import { rebuildObs, freePoint, findSpot, inEllipse } from './geometry.js';
+import { rebuildObs, freePoint, findSpot, inEllipse, inStream } from './geometry.js';
+import { newJournal } from '../journal.js';
 
 export function newHouse(progress) {
   const p = findSpot(58, 55, 40);
@@ -29,6 +30,17 @@ export function hydrate(d) {
   };
 }
 export const makeSwing = (x, y, seed, progress = 1) => ({ kind: 'swing', x, y, seed, progress, seats: SWING.seats.map(dx => ({ dx, amp: 0, angle: 0, user: null })) });
+/** A stream wandering across the meadow from the left edge to the right. */
+export function makeStream() {
+  const { W, H } = S, n = 12, pts = [];
+  const y0 = H * rand(0.32, 0.72), amp = H * rand(0.05, 0.1), f1 = rand(0.5, 0.9), f2 = rand(1.2, 1.9), p1 = rand(TAU), p2 = rand(TAU);
+  for (let i = 0; i <= n; i++) {
+    const y = y0 + amp * Math.sin(i * f1 + p1) + amp * 0.5 * Math.sin(i * f2 + p2);
+    pts.push([-70 + i * (W + 140) / n, clamp(y, 150, H - 50)]);
+  }
+  return { pts, seed: irand(1e6), flow: rand() < 0.5 ? 1 : -1 };
+}
+
 export function planFire() {
   // The most central of a handful of free spots: the fire is the middle of town.
   const mid = { x: S.W / 2, y: S.H * 0.55 };
@@ -66,7 +78,7 @@ export function scatterDecor() {
   const n = Math.round(S.W * S.H / 26000);
   for (let i = 0; i < n; i++) {
     const p = { x: rand(10, S.W - 10), y: rand(70, S.H - 8), seed: irand(1e6) };
-    if (!inEllipse(p.x, p.y, S.pond, 10) && !(S.pool && inEllipse(p.x, p.y, S.pool, 16))) S.tufts.push(p);
+    if (!(S.pond && inEllipse(p.x, p.y, S.pond, 10)) && !(S.pool && inEllipse(p.x, p.y, S.pool, 16)) && !inStream(p.x, p.y, 6)) S.tufts.push(p);
   }
   S.flies = [];
   for (let i = 0; i < 4; i++) S.flies.push({ x: rand(S.W), y: rand(100, S.H), seed: irand(1e6), color: pick(PETALS), a: rand(TAU) });
@@ -74,13 +86,19 @@ export function scatterDecor() {
 
 export function newTown() {
   const { W, H } = S;
-  Object.assign(S, { critters: [], houses: [], trees: [], flowers: [], apples: [], arts: [], pond: null, pool: null, swing: null });
+  Object.assign(S, { critters: [], houses: [], trees: [], flowers: [], apples: [], arts: [], pond: null, stream: null, pool: null, swing: null });
+  S.journal = newJournal();
   S.clock = DAY_LEN * 0.08;
 
   // Only nature to begin with. The critters build the rest (see sim/world.js).
   S.fire = S.pool = S.swing = S.ball = null;
-  const rx = clamp(W * 0.09, 60, 115), ry = rx * 0.5;
-  S.pond = { ...findSpot(rx + 6, ry + 6), rx, ry, seed: irand(1e6) };
+  // Water: a pond, a stream, or sometimes both.
+  const water = pick(['pond', 'pond', 'stream', 'stream', 'both']);
+  if (water !== 'pond') S.stream = makeStream();
+  if (water !== 'stream') {
+    const rx = clamp(W * 0.09, 60, 115), ry = rx * 0.5;
+    S.pond = { ...findSpot(rx + 6, ry + 6), rx, ry, seed: irand(1e6) };
+  }
   const nt = clamp(Math.round(W * H / 170000), 3, 6);
   for (let i = 0; i < nt; i++) {
     const size = rand(1.1, 1.45), p = findSpot(44 * size, 54 * size, 52 * size);

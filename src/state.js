@@ -6,7 +6,8 @@ export const S = {
   W: 0, H: 0, zoom: 1, dpr: 1,     // world size (in world units) and view scale
   now: 0, boil: 0, clock: 0,       // real seconds, line-boil frame, in-game seconds
   critters: [], houses: [], trees: [], flowers: [], apples: [], arts: [], tufts: [], flies: [],
-  pond: null,                      // nature: there from the start (with the trees)
+  pond: null, stream: null,        // nature: a town has a pond, a stream, or both
+  journal: { fish: {}, diary: [] },   // see journal.js
   fire: null, pool: null, swing: null, ball: null,   // made by the critters; null until someone starts on them
   obs: [],                         // ellipses critters walk around
   music: false,                    // is the radio on?

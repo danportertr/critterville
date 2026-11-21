@@ -1,7 +1,7 @@
 :root { --hand: "Chalkboard SE", "Comic Sans MS", "Comic Neue", "Marker Felt", cursive; }
 html, body { margin: 0; height: 100%; overflow: hidden; background: #fffdf8; }
 body { font-family: var(--hand); color: #000; -webkit-user-select: none; user-select: none; -webkit-tap-highlight-color: transparent; }
-canvas { position: fixed; inset: 0; width: 100%; height: 100%; display: block; touch-action: manipulation; }
+#c { position: fixed; inset: 0; width: 100%; height: 100%; display: block; touch-action: manipulation; }
 #hud { position: fixed; top: 14px; left: 18px; pointer-events: none; }
 h1 { margin: 0; font-size: 26px; line-height: 1; letter-spacing: .5px; }
 #stats { margin-top: 6px; font-size: 14px; opacity: .75; }
@@ -15,3 +15,24 @@ button:hover, button:focus-visible { opacity: 1; background: #ffe66d; }
 #reset.armed { opacity: 1; background: #ffab76; }
 #radio { position: fixed; right: 14px; bottom: 46px; display: flex; gap: 6px; }
 #radio-toggle.on { opacity: 1; background: #ff8fc7; }
+
+#journal-btn { position: fixed; right: 14px; bottom: 80px; }
+#journal-btn.new { opacity: 1; background: #a8dcf5; }
+#journal { position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); width: min(620px, calc(100vw - 24px)); max-height: min(78vh, 720px); display: flex; flex-direction: column; background: #fffdf8; border: 3px solid #000; border-radius: 22px 16px 24px 14px; box-shadow: 5px 6px 0 rgba(0, 0, 0, .15); -webkit-user-select: text; user-select: text; }
+#journal[hidden] { display: none; }
+#journal .tabs { display: flex; gap: 8px; padding: 12px 14px 10px; border-bottom: 2.5px solid #000; }
+#journal button { opacity: 1; font-size: 15px; }
+#journal button.sel { background: #ffe66d; }
+#journal-close { margin-left: auto; }
+#journal-body { overflow-y: auto; padding: 4px 16px 16px; font-size: 15px; line-height: 1.4; }
+#journal .lede { opacity: .75; }
+#journal h3 { margin: 0 0 2px; font-size: 17px; }
+#journal h3.day { margin: 16px 0 4px; }
+#journal ul { margin: 0; padding-left: 20px; }
+#journal li { margin: 3px 0; }
+#journal .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 12px; }
+#journal .card { border: 2.5px solid #000; border-radius: 14px 18px 12px 16px; padding: 8px 10px 10px; background: #fff; }
+#journal .card canvas { display: block; margin: 0 auto 4px; }
+#journal .card p { margin: 4px 0 0; }
+#journal .card .meta { opacity: .65; font-size: 13px; }
+#journal .card.unseen { border-style: dashed; background: none; }

@@ -1,7 +1,8 @@
 // Everything in town that isn't a critter.
 import { ctx } from './canvas.js';
 import { S } from '../state.js';
-import { INK, LW, HOUSE, SWING, VIEW, WOOD, STONE } from '../config.js';
+import { INK, LW, HOUSE, SWING, VIEW, STREAM_HALF, WOOD, STONE } from '../config.js';
+import { streamPoint } from '../world/geometry.js';
 import { TAU, clamp, hs } from '../util.js';
 import { jit, wob, smooth, polyPath, blobPts, paint, blob, box, line, tube, dot } from './primitives.js';
 
@@ -88,6 +89,24 @@ export function drawPond() {
   blob(p.x - p.rx * 0.45, p.y + p.ry * 0.3, 9, 5.5, '#8fe3b0', p.seed + 60, 7, 0.05, 0.4, 2);
   blob(p.x + p.rx * 0.3, p.y - p.ry * 0.4, 7, 4.5, '#8fe3b0', p.seed + 61, 7, 0.05, 0.4, 2);
 }
+export function drawStream() {
+  const st = S.stream, pts = wob(st.pts, st.seed, 0.8);
+  smooth(pts, false);
+  ctx.lineWidth = STREAM_HALF * 2 + LW * 2; ctx.strokeStyle = INK; ctx.stroke();
+  ctx.lineWidth = STREAM_HALF * 2; ctx.strokeStyle = '#a8dcf5'; ctx.stroke();
+  for (let i = 0; i < 9; i++) {   // ripples drifting downstream
+    let t = (S.now * 0.012 * st.flow + i / 9 + hs(st.seed, i) * 0.05) % 1; if (t < 0) t += 1;
+    const p = streamPoint(t), off = (hs(st.seed, i + 20) - 0.5) * STREAM_HALF * 1.1;
+    const x = p.x + p.nx * off, y = p.y + p.ny * off;
+    ctx.globalAlpha = 0.8;
+    line([[x - p.tx * 7, y - p.ty * 7], [x + p.nx * 1.5, y + p.ny * 1.5], [x + p.tx * 7, y + p.ty * 7]], st.seed + 50 + i, 2, '#fff', 0.4);
+  }
+  ctx.globalAlpha = 1;
+  for (let i = 0; i < 4; i++) {   // a few stones
+    const p = streamPoint(0.12 + i * 0.23 + hs(st.seed, i + 40) * 0.1), off = (hs(st.seed, i + 60) - 0.5) * STREAM_HALF;
+    blob(p.x + p.nx * off, p.y + p.ny * off, 5 + hs(st.seed, i + 70) * 3, 3.5, '#ddd', st.seed + 80 + i, 7, 0.1, 0.3, 2);
+  }
+}
 export function drawPool() {
   const p = S.pool, g = p.progress;
   if (g < 1) {   // being dug: a growing hole, then the rim goes on
@@ -154,7 +173,7 @@ const CANVAS = [[-22, -68], [22, -68], [22, -30], [-22, -30]];
 // activities/art.js). x/y are offsets from the easel in world units.
 function mini(el) {
   const px = el.x / VIEW.rx * 18, py = -43 + el.y / VIEW.ry * 11;   // leave headroom: things are drawn upwards from their base
-  if (el.k === 'pond' || el.k === 'pool') return miniShape(el, px, py);
+  if (el.k === 'pond' || el.k === 'pool' || el.k === 'stream') return miniShape(el, px, py);
   ctx.save(); ctx.translate(px, py); ctx.scale(1.6, 1.6);   // bigger than life, so it reads
   miniShape(el, 0, 0);
   ctx.restore();
@@ -164,6 +183,10 @@ function miniShape(el, x, y) {
   const oval = (cx, cy, rx, ry, c) => { ctx.beginPath(); ctx.ellipse(cx, cy, rx, ry, 0, 0, TAU); fill(c); };
   const rect = (rx, ry, w, h, c) => { ctx.fillStyle = c; ctx.fillRect(rx, ry, w, h); };
   switch (el.k) {
+    case 'stream':
+      ctx.beginPath();
+      el.pts.forEach(([sx, sy], i) => ctx[i ? 'lineTo' : 'moveTo'](sx / VIEW.rx * 18, -43 + sy / VIEW.ry * 11));
+      ctx.lineWidth = 3.4; ctx.strokeStyle = '#a8dcf5'; ctx.lineJoin = 'round'; return ctx.stroke();
     case 'pond': return oval(x, y, el.rx / VIEW.rx * 21, el.ry / VIEW.ry * 18, '#a8dcf5');
     case 'pool': oval(x, y, el.rx / VIEW.rx * 21 + 1, el.ry / VIEW.ry * 18 + 1, '#fff'); return oval(x, y, el.rx / VIEW.rx * 21, el.ry / VIEW.ry * 18, '#74dbe8');
     case 'tree': rect(x - 0.9, y - 5, 1.8, 5, '#b06634'); oval(x, y - 7.5, 4, 3.6, el.c); return oval(x + 1, y - 7, 0.8, 0.8, '#fb6540');

@@ -4,7 +4,7 @@
 
 A tiny town of little guys who walk around and do things. There isn't much to do except watch — it's something to leave running.
 
-The town starts as an empty meadow: trees, a pond, a few flowers. The critters build everything else themselves — first a campfire, then houses, a swing set and a pool — and a few more move in until it's a small, settled town. There are no scores and nothing to collect.
+The town starts as an empty meadow: trees, a pond, a few flowers. The critters build everything else themselves — first a campfire, then houses, a swing set and a pool — and a few more move in until it's a small, settled town. There are no scores. The **journal** button opens the town's diary (who moved in, what got built, what was painted) and a fish book: a picture and a few true facts about each kind of fish the critters have caught.
 
 The critters:
 
@@ -13,7 +13,7 @@ The critters:
 - swim in the pool
 - make sculptures, and paintings of whatever they can see from the easel (and go admire each other's)
 - dance, sometimes in groups
-- fish in the pond, plant flowers, pick fruit, kick a ball around
+- fish in the pond or the stream (a town has one or the other, sometimes both), plant flowers, pick apples, kick a ball around
 - build the campfire, houses, swing set and pool
 - gather at the campfire in the evening and go home to sleep at night
 
@@ -41,11 +41,15 @@ src/
   util.js            maths and random helpers
   ui.js              stats line, event log, hint
   input.js           tapping critters, dropping snacks
+  journal.js         the town's diary and fish records
+  journalPanel.js    the journal you open and read
+  data/fish.js       fish species and their facts
   radio.js           the lofi radio button
   draw/
     primitives.js    wobbly hand-drawn shapes ("line boil")
     critter.js       drawing a critter and its speech bubble
-    scenery.js       houses, trees, pond, pool, swing set, artworks...
+    scenery.js       houses, trees, pond, stream, pool, swing set, artworks...
+    fish.js          fish doodles
     render.js        one frame: depth sort, day/night wash, glows
   world/
     geometry.js      obstacles and finding empty spots

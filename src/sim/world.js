@@ -3,6 +3,7 @@ import { S, phase, dayNum, isNight, built } from '../state.js';
 import { clamp, rand, hash } from '../util.js';
 import { HOUSE, SWING } from '../config.js';
 import { log, setStats } from '../ui.js';
+import { note } from '../journal.js';
 import { inEllipse, rebuildObs, freePoint, topEdge } from '../world/geometry.js';
 import { newHouse, newCritter, assignHomes, planFire, planPool, planSwing, makeBall } from '../world/town.js';
 import { save } from '../world/save.js';
@@ -55,12 +56,12 @@ function growTown() {
     else if (beds < n && S.houses.length < 2) { newHouse(0); msg = 'A new house is going up.'; }
     else if (!S.pool) { planPool(); msg = 'The critters are digging a pool.'; }
     else if (beds < n && S.houses.length < 4) { newHouse(0); msg = 'A new house is going up.'; }
-    if (msg) { rebuildObs(); log(msg); }
+    if (msg) { rebuildObs(); note(msg); }
   }
   if (!S.ball && S.houses.some(built)) {   // turns up in the moving boxes
     const h = S.houses.find(built);
     S.ball = makeBall(h.x - 30, h.y + 14); S.ball.vx = -60; S.ball.vz = 120;
-    log('Someone found a ball!');
+    note('Someone found a ball!');
   }
   refreshStats();
 }
@@ -70,7 +71,7 @@ function arrive() {
   const c = newCritter(rand() < 0.5 ? -30 : S.W + 30, clamp(p.y, 130, S.H - 30));
   S.critters.push(c); assignHomes();
   goTo(c, p.x, p.y, () => { setAct(c, 'wave', 1.8); say(c, 'hi!'); });
-  log(`${c.name} moved in!`);
+  note(`${c.name} moved in.`);
 }
 
 export function updateWorld(dt) {

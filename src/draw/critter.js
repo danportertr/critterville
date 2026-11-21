@@ -6,12 +6,21 @@ import { S } from '../state.js';
 import { INK, LW, FONT } from '../config.js';
 import { TAU } from '../util.js';
 import { STATES } from '../sim/core.js';
+import { inStream } from '../world/geometry.js';
+
+const WADE = 8;   // how deep the stream is, in critter units
 import { jit, wob, smooth, polyPath, blob, box, line, dot } from './primitives.js';
 
 export function drawCritter(c) {
   const st = STATES[c.act] || {}, sd = c.seed, s = c.size;
+  let wading = false;
   ctx.save();
-  if (!(st.transform && st.transform(c))) {
+  if (st.transform && st.transform(c)) { /* the state placed the critter itself */ }
+  else if (c.hopY < 1 && inStream(c.x, c.y, -5)) {   // ankle-deep in the stream
+    wading = true;
+    ctx.translate(c.x, c.y + WADE * s); ctx.scale(s, s);
+    ctx.beginPath(); ctx.rect(-80, -160, 160, 160 - WADE); ctx.clip();
+  } else {
     ctx.fillStyle = 'rgba(0,0,0,.09)';
     ctx.beginPath(); ctx.ellipse(c.x, c.y + 1, 20 * s * (1 - Math.min(0.5, c.hopY / 120)), 5 * s, 0, 0, TAU); ctx.fill();
     ctx.translate(c.x, c.y - c.hopY);
@@ -67,6 +76,7 @@ export function drawCritter(c) {
   line([[fx(9), fy(1)], [fx(13), fy(3)]], sd + 15, 2.4, INK, 0.3);
   ctx.restore();
 
+  if (wading) line([[c.x - 15 * s, c.y + 1], [c.x - 7 * s, c.y - 1.5], [c.x, c.y + 1], [c.x + 7 * s, c.y - 1.5], [c.x + 15 * s, c.y + 1]], sd + 31, 2.4, '#fff', 0.7);
   if (st.after) st.after(c);
 }
 

@@ -3,13 +3,14 @@ import { S } from '../state.js';
 import { SAVE_KEY, SAVE_VERSION } from '../config.js';
 import { clamp } from '../util.js';
 import { rebuildObs } from './geometry.js';
+import { newJournal } from '../journal.js';
 import { hydrate, makeSwing, makeBall, assignHomes, scatterDecor } from './town.js';
 
 export function save() {
-  if (!S.W || !S.pond) return;
+  if (!S.W || !S.critters.length) return;
   try {
     localStorage.setItem(SAVE_KEY, JSON.stringify({
-      v: SAVE_VERSION, W: S.W, H: S.H, clock: S.clock, pond: S.pond, pool: S.pool, fire: S.fire,
+      v: SAVE_VERSION, W: S.W, H: S.H, clock: S.clock, journal: S.journal, pond: S.pond, stream: S.stream, pool: S.pool, fire: S.fire,
       swing: S.swing && { x: S.swing.x, y: S.swing.y, seed: S.swing.seed, progress: S.swing.progress },
       houses: S.houses, trees: S.trees,
       flowers: S.flowers.filter(f => f.dying === undefined),
@@ -24,11 +25,13 @@ export function save() {
 export function load() {
   let d;
   try { d = JSON.parse(localStorage.getItem(SAVE_KEY)); } catch (e) { return false; }
-  if (!d || d.v !== SAVE_VERSION || !d.critters || !d.critters.length || !(d.W > 50 && d.H > 50)) return false;
+  if (!d || !(d.v >= 3) || !d.critters || !d.critters.length || !(d.W > 50 && d.H > 50)) return false;
   const fx = S.W / d.W, fy = S.H / d.H;
   const mv = o => { if (o) { o.x *= fx; o.y *= fy; } return o; };
   S.clock = d.clock || 0;
-  S.pond = mv(d.pond); S.pond.rx *= fx; S.pond.ry = S.pond.rx * 0.5;
+  S.pond = mv(d.pond) || null; if (S.pond) { S.pond.rx *= fx; S.pond.ry = S.pond.rx * 0.5; }
+  S.stream = d.stream || null; if (S.stream) S.stream.pts = S.stream.pts.map(([x, y]) => [x * fx, y * fy]);
+  S.journal = { ...newJournal(), ...d.journal };
   S.pool = mv(d.pool) || null; if (S.pool) { S.pool.rx *= fx; S.pool.ry = S.pool.rx * 0.48; }
   S.fire = mv(d.fire) || null;
   S.swing = mv(d.swing) ? makeSwing(d.swing.x, d.swing.y, d.swing.seed, d.swing.progress) : null;

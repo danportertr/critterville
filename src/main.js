@@ -11,6 +11,8 @@ import { updateWorld } from './sim/world.js';
 import './activities/index.js';
 import './input.js';
 import './radio.js';
+import './journalPanel.js';
+import { startDiary } from './journal.js';
 
 const SPEED = clamp(parseFloat(new URLSearchParams(location.search).get('speed')) || 1, 0.1, 60);
 
@@ -22,12 +24,13 @@ function resize() {
   cv.width = Math.round(w * S.dpr); cv.height = Math.round(h * S.dpr);
   S.W = w / S.zoom; S.H = h / S.zoom;
   S.cap = clamp(Math.floor(S.W * S.H / 100000), 6, 9);   // a small town, on purpose
-  if (!oW || !S.pond) return;
+  if (!oW || !S.critters.length) return;
   // Stretch the existing town to fit the new window.
   const fx = S.W / oW, fy = S.H / oH;
   for (const o of [S.pond, S.pool, S.fire, S.ball, S.swing, ...S.houses, ...S.trees, ...S.flowers, ...S.apples, ...S.arts, ...S.critters].filter(Boolean)) { o.x *= fx; o.y *= fy; }
   for (const c of S.critters) { c.tx *= fx; c.ty *= fy; if (c.bobx) { c.bobx *= fx; c.boby *= fy; } }
-  S.pond.rx *= fx; S.pond.ry = S.pond.rx * 0.5;
+  if (S.pond) { S.pond.rx *= fx; S.pond.ry = S.pond.rx * 0.5; }
+  if (S.stream) S.stream.pts = S.stream.pts.map(([x, y]) => [x * fx, y * fy]);
   if (S.pool) { S.pool.rx *= fx; S.pool.ry = S.pool.rx * 0.48; }
   rebuildObs(); scatterDecor();
 }
@@ -50,7 +53,7 @@ document.addEventListener('visibilitychange', () => { if (document.hidden) save(
 function boot() {
   resize();
   if (!S.W) return void addEventListener('resize', boot, { once: true });
-  if (!load()) newTown();
+  if (!load()) { newTown(); startDiary(); }
   requestAnimationFrame(frame);
 }
 window.critterville = S;   // for poking around in the console

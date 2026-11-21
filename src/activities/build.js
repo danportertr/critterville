@@ -3,7 +3,7 @@
 import { S } from '../state.js';
 import { HOUSE, SWING, INK } from '../config.js';
 import { TAU, rand } from '../util.js';
-import { log } from '../ui.js';
+import { note } from '../journal.js';
 import { box, line } from '../draw/primitives.js';
 import { assignHomes } from '../world/town.js';
 import { currentSite } from '../sim/world.js';
@@ -44,7 +44,7 @@ export default {
         if (s.progress < 1) return;
         s.progress = 1;
         if (s.kind === 'house') assignHomes();
-        log(JOBS[s.kind].done); c.hopV = 150; say(c, '!');
+        note(JOBS[s.kind].done); c.hopV = 150; say(c, '!');
       },
       pose(c, p) { p.hand(p.d, p.d * 28, -34 + Math.sin(p.now * 11) * 11); },
       props(c, p) {   // hammer

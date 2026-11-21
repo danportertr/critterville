@@ -34,7 +34,8 @@ export function render() {
   ctx.lineCap = 'round'; ctx.lineJoin = 'round';
   ctx.fillStyle = PAPER; ctx.fillRect(0, 0, W, H);
   for (const t of S.tufts) sc.drawTuft(t);
-  sc.drawPond();
+  if (S.stream) sc.drawStream();
+  if (S.pond) sc.drawPond();
   if (S.pool) sc.drawPool();
 
   // Everything standing on the ground, back to front.
