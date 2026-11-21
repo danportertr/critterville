@@ -65,11 +65,11 @@ export const stargaze = {
         const d = p.d, sd = c.seed + 50;
         for (const x of [17, 28, 39]) line([[d * 28, -80], [d * x, 0]], sd + x, 2.2, INK, 0.2);
       },
-      over(c, p) {    // ...and the tube comes right up to the eye, pointing at the sky
-        const d = p.d, sd = c.seed + 50, eye = [d * 8, -65];
-        tube([eye, [d * 42, -94]], 5.5, '#b7a6ff', sd, 0.2);
-        tube([[d * 37, -90], [d * 44, -96]], 7.5, '#d9d0ff', sd + 1, 0.2);   // the wide end
-        tube([eye, [d * 11, -67.5]], 3.4, '#555', sd + 2, 0.1);                // the eyepiece
+      over(c, p) {    // ...and the tube comes up to the outer eye, leaving the other one showing
+        const d = p.d, sd = c.seed + 50, eye = [d * (9.8 + c.eyeGap), -63.6];
+        line([eye, [d * 14, -68]], sd + 2, 4, INK, 0.1);                       // the eyepiece
+        tube([[d * 14.5, -68.5], [d * 43, -95]], 5.5, '#b7a6ff', sd, 0.2);
+        tube([[d * 38, -91], [d * 45, -97]], 7.5, '#d9d0ff', sd + 1, 0.2);     // the wide end
         dot(d * 28, -80, 2.4);
       },
     },
