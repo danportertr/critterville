@@ -183,7 +183,10 @@ export function drawMonument(m) {
     ctx.save(); ctx.beginPath(); ctx.rect(-80, -172 * g - 2, 160, 172 * g + 12); ctx.clip();
     ctx.scale(2.2, 2.2);
     const c = STONE;
-    for (const k of [-1, 1]) { tube([[k * 6.5, -13], [k * 7, -3]], 10, c, sd + k, 0.3); tube([[k * 7, -3], [k * 15, -2.5]], 7, c, sd + k + 3, 0.3); tube([[k * 11, -33], [k * 24, -24], [k * 33, -16]], 6, c, sd + k + 6, 0.3); }
+    for (const k of [-1, 1]) { tube([[k * 6.5, -13], [k * 7, -3]], 10, c, sd + k, 0.3); tube([[k * 7, -3], [k * 15, -2.5]], 7, c, sd + k + 3, 0.3); }
+    // The arms go on whole, once the body has reached the shoulders. (Revealed from
+    // the ground up like the rest, the hands would appear first, hanging in mid-air.)
+    if (g > 0.52) for (const k of [-1, 1]) tube([[k * 11, -33], [k * 24, -24], [k * 33, -16]], 6, c, sd + k + 6, 0.3);
     box([[-12, -39], [12, -39], [12, -11], [-12, -11]], c, sd + 10, 0.4);
     blob(0, -57, 21, 20, c, sd + 11, 11, 0.06, 0.4);
     dot(4, -64, 1.6); dot(8.5, -62.6, 1.6);
