@@ -12,6 +12,9 @@ import { line, dot } from '../draw/primitives.js';
 import { findSpot, rebuildObs } from '../world/geometry.js';
 import { note } from '../journal.js';
 import { newSculpture, abandon, finished as sculptureFinished } from './sculpture.js';
+import { PLACES } from '../events/journeys.js';
+
+const placeOf = id => PLACES.find(p => p.id === id);
 import { goTo, setAct, say, tick } from '../sim/core.js';
 
 const artCap = () => clamp(Math.round(S.W * S.H / 220000), 2, 5);
@@ -89,7 +92,8 @@ function closeUpSubject(a, painter) {
   return options.length ? weighted(options) : null;
 }
 function chooseStyle(a, painter) {
-  const r = rand(), subject = r < 0.34 && closeUpSubject(a, painter);
+  const tale = painter.story && S.clock < painter.story.until && rand() < 0.75 && placeOf(painter.story.place);   // just back from somewhere
+  const r = rand(), subject = tale ? { k: 'adventure', place: tale.id, name: tale.name } : r < 0.34 && closeUpSubject(a, painter);
   a.bg = pick(BODIES.filter(c => c !== '#ffffff'));
   if (subject) { a.style = 'closeup'; a.subject = subject; a.title = titleOf(a); }   // named from the start, so a portrait always says who it's of
   else if (r < 0.52) {
@@ -127,6 +131,7 @@ function titleOf(a) {
   if (a.style === 'tinted') return `${subjectOf(a.view)} in ${a.tint.name}`;
   if (a.style !== 'closeup') return subjectOf(a.view);
   if (s.k === 'critter') return `a portrait of ${s.name}`;
+  if (s.k === 'adventure') return `${s.name}, from memory`;
   if (s.k === 'fish') return (SPECIES_BY_ID[s.id] || { call: 'a fish' }).call;
   if (s.k === 'event') return EVENT_TITLES[s.id === 'cart' ? s.kind : s.id] || 'something that happened';
   return s.k === 'flower' ? 'a flower, up close' : `${subjectOf([s])}, up close`;
@@ -145,13 +150,16 @@ function work(c, dt) {
 }
 function done(c) {
   const a = c.art;
-  a.progress = 1; c.cleanup = null; c.art = null;
+  a.progress = 1; a.busy = false; c.cleanup = null; c.art = null;
   c.hopV = 140; say(c, pick(['♥', 'ta-da', '!']));
   if (a.type === 'painting') a.title = titleOf(a);
   if (a.type === 'sculpture') sculptureFinished(a, c);
+  else if (a.over) { note(`${c.name} painted over ${a.over === c.name ? 'an old picture' : `${a.over}'s old picture`}: now it's ${a.name ? `“${a.name}”` : a.title}.`); delete a.over; }
   else note(a.name ? `${c.name} painted an abstract and called it “${a.name}”.` : `${c.name} painted ${a.title}.`);
   const finished = S.arts.filter(o => o.progress >= 1 && o.dying === undefined && !o.keep);   // (working pieces stay for good)
-  if (finished.length > artCap()) finished[0].dying = 1;
+  // Too much art about: the oldest piece is due to go. A painting may get
+  // painted over; otherwise somebody tidies it away (see `tidy` below).
+  if (finished.filter(o => !o.retire).length > artCap()) finished.find(o => !o.retire).retire = true;
 }
 
 export const art = {
@@ -181,6 +189,53 @@ export const art = {
       update: work, finish: done,
       pose(c, p) { p.hand(1, 17 + Math.sin(p.now * 11) * 5, -40 + c.art.progress * 14); },
       props(c, p) { line([p.HD, [p.HD[0] + 9, p.HD[1] + 1]], c.seed + 6, 2.6, INK, 0.2); },   // chisel
+    },
+  },
+};
+
+/** Paint over an old picture instead of starting a fresh canvas. */
+export const repaint = {
+  id: 'repaint',
+  weight() {
+    const old = S.arts.filter(a => a.type === 'painting' && a.progress >= 1 && a.dying === undefined && !a.busy);
+    return old.some(a => a.retire) ? 1.3 : old.length > 1 ? 0.25 : 0;
+  },
+  start(c) {
+    const old = S.arts.filter(a => a.type === 'painting' && a.progress >= 1 && a.dying === undefined && !a.busy);
+    const a = old.find(o => o.retire) || old[0];
+    a.busy = true;
+    c.cleanup = () => { a.busy = false; if (a.progress < 1) a.progress = 1; };   // left half done: it stays as it is
+    goTo(c, a.x - 35, a.y + 3, () => {
+      c.dir = 1; c.art = a;
+      a.over = a.by; a.by = c.name; a.seed = irand(1e6); a.progress = 0; a.retire = false;
+      for (const k of ['title', 'name', 'subject', 'tint', 'variant', 'palette']) delete a[k];
+      a.view = lookAround(a, c); chooseStyle(a, c);
+      setAct(c, 'paint', rand(12, 20)); c.artDur = c.t;
+    });
+  },
+};
+
+/** Take down an old painting, or clear away an old sculpture, that has had its day. */
+export const tidy = {
+  id: 'tidy',
+  weight: () => S.arts.some(a => a.retire && !a.busy && a.dying === undefined) ? 1.1 : 0,
+  start(c) {
+    const a = S.arts.find(a => a.retire && !a.busy && a.dying === undefined), side = c.x < a.x ? -1 : 1;
+    a.busy = true;
+    c.cleanup = () => { a.busy = false; };
+    goTo(c, a.x + side * 26, a.y + 4, () => { c.dir = -side; c.art = a; setAct(c, 'tidy', rand(4, 6)); });
+  },
+  states: {
+    tidy: {
+      mood: 'flat',
+      finish(c) {
+        const a = c.art;
+        c.art = null;
+        if (!a) return;
+        a.dying = 1;   // it's gone a moment later
+        log(a.type === 'painting' ? `${c.name} took down ${a.by === c.name ? 'an old painting' : `${a.by}'s old painting`}.` : `${c.name} cleared away an old sculpture.`);
+      },
+      pose(c, p) { p.bob = -3 + Math.sin(p.now * 7) * 1.5; p.hand(p.d, p.d * 24, -30 + Math.sin(p.now * 7) * 8); p.hand(-p.d, -p.d * 14, -24); },
     },
   },
 };

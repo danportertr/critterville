@@ -8,6 +8,7 @@ export const S = {
   critters: [], houses: [], trees: [], flowers: [], apples: [], arts: [], tufts: [], flies: [],
   pond: null, stream: null,        // nature: a town has a pond, a stream, or both
   bridge: null,                    // over the stream, once the critters build one
+  away: [],                        // critters off on an adventure: {who, place, back} (events/journeys.js)
   cairns: [],                      // piles of stones by the water: {x, y, seed, n}
   monument: null,                  // the big thing everyone builds together: {form: 'circle' | 'giant', progress}
   hammocks: [],                    // strung between pairs of trees: {a, b: tree indexes, progress, user}

@@ -18,6 +18,7 @@ const MOUTHS = {
   small: { curve: [[-2, 7], [0, 9.5], [3.5, 10], [6.5, 8]], caps: [] },
   flat: { curve: [[-2.5, 8], [2, 8.8], [7, 8]], caps: [] },
   tiny: { curve: [[0.5, 8.5], [4.5, 9]], caps: [] },
+  sad: { curve: [[-2, 10.5], [2.5, 7.8], [7, 10.5]], caps: [] },
   oh: { round: [2.5, 8.5, 3, 3.8] },
 };
 /** What a critter's face does when nothing in particular is going on: some are just smilier than others. */
@@ -25,7 +26,7 @@ const restingFace = c => (c.cheer > 0.8 ? 'big' : c.cheer > 0.45 ? 'smile' : c.c
 
 const ARM = 28.2;  // shoulder-to-hand length when the arm is straight
 const WADE = 8;   // how deep the stream is, in critter units
-import { jit, wob, smooth, polyPath, blob, box, line, dot } from './primitives.js';
+import { jit, wob, smooth, polyPath, blob, box, line, tube, dot } from './primitives.js';
 
 export function drawCritter(c) {
   const st = STATES[c.act] || {}, sd = c.seed, s = c.size;
@@ -94,6 +95,17 @@ export function drawCritter(c) {
   polyPath(torso); ctx.fillStyle = c.body; ctx.fill();
 
   if (st.props) st.props(c, p);
+  if (c.luggage === 'case') {            // a suitcase in the left hand
+    const [x, y] = HL;
+    box([[x - 8, y + 3], [x + 8, y + 3], [x + 8, y + 15], [x - 8, y + 15]], '#c9966b', sd + 40, 0.4, 2.2);
+    line([[x - 3, y + 3], [x - 2, y - 1], [x + 2, y - 1], [x + 3, y + 3]], sd + 41, 1.8, INK, 0.2);
+    line([[x - 8, y + 9], [x + 8, y + 9]], sd + 42, 1.6, INK, 0.2);
+  } else if (c.luggage === 'knapsack') { // a bundle on the back, with a rolled blanket on top
+    const x = -d * 13, y = -30 - bob;
+    blob(x, y, 8, 10, '#8fb8ff', sd + 40, 8, 0.06, 0.3, 2.2);
+    tube([[x - 6, y - 10], [x + 6, y - 10]], 3.4, '#ffab76', sd + 41, 0.3);
+    line([[x + d * 5, y - 6], [d * 4, -34 - bob]], sd + 42, 1.8, INK, 0.2);
+  }
   if (c.balloon) drawBalloon(c.balloon, HL[0], HL[1] - 4);
 
   // Head and face: two dot eyes off to one side and the big U.

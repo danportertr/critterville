@@ -329,6 +329,7 @@ const PAINTINGS = {
         () => { if (sp) drawFish(sp, 1, -49, Math.min(1.6, 36 / ((sp.L || 26) + 12)), a.seed); },
       ];
     }
+    if (el.k === 'adventure') return (FAR_PLACES[el.place] || FAR_PLACES.mountains)(a);
     if (el.k === 'event') return (EVENT_PICS[el.id === 'cart' ? el.kind : el.id] || EVENT_PICS.rain)(a, bg);
     const k = { tree: 3.3, house: 2.5, tank: 5, swing: 3.2, fire: 6, flower: 4.6 }[el.k] || 3;
     return [
@@ -421,6 +422,46 @@ const EVENT_PICS = {
     fillAll(bg),
     () => { ctx.fillStyle = '#f0c27a'; ctx.beginPath(); ctx.moveTo(-7, -46); ctx.lineTo(7, -46); ctx.lineTo(0, -31); ctx.fill(); },
     () => { disc(0, -50, 8, 7, '#ff8fc7'); disc(0, -59, 6, 5.5, '#fff3b0'); },
+  ],
+};
+// Places a critter has been on an adventure, painted from memory once they're home.
+const tri = (pts, c) => { ctx.fillStyle = c; ctx.beginPath(); pts.forEach(([x, y], i) => ctx[i ? 'lineTo' : 'moveTo'](x, y)); ctx.fill(); };
+const band = (c, y0, y1) => () => { ctx.fillStyle = c; ctx.fillRect(-24, y0, 48, y1 - y0); };
+const FAR_PLACES = {
+  mountains: () => [
+    fillAll('#dff0ff'), () => disc(14, -60, 4.5, 4.5, '#ffe66d'),
+    () => { tri([[-26, -28], [-8, -60], [8, -28]], '#aab2c8'); tri([[-13.5, -50], [-8, -60], [-2.6, -50], [-6, -47], [-9.5, -50.5]], '#fff'); },
+    () => { tri([[-4, -28], [11, -52], [26, -28]], '#c3c9da'); tri([[6.6, -45], [11, -52], [15.4, -45], [12, -43.5]], '#fff'); },
+    band('#b5e8a8', -32, -28),
+  ],
+  sea: () => [
+    fillAll('#dff0ff'), band('#7fc4fd', -48, -28),
+    () => { disc(-2, -46, 12, 6, '#4a78b8'); tri([[-13, -46], [-21, -53], [-19, -45], [-22, -41]], '#4a78b8'); disc(4, -48, 0.9, 0.9, '#fff'); },
+    () => { ctx.strokeStyle = '#fff'; ctx.lineWidth = 1.2; for (const k of [-1, 1]) { ctx.beginPath(); ctx.moveTo(0, -53); ctx.quadraticCurveTo(k * 2, -60, k * 5, -57); ctx.stroke(); } },
+    () => { ctx.strokeStyle = '#fff'; ctx.lineWidth = 1.2; for (const [x, y] of [[-16, -34], [10, -37], [16, -31], [-4, -31]]) { ctx.beginPath(); ctx.moveTo(x - 4, y); ctx.quadraticCurveTo(x, y - 2, x + 4, y); ctx.stroke(); } },
+  ],
+  desert: () => [
+    fillAll('#ffe9c2'), () => disc(-13, -59, 5.5, 5.5, '#ffab45'),
+    () => { disc(-10, -30, 24, 10, '#f2c879'); disc(16, -28, 20, 9, '#eab960'); },
+    () => { ctx.fillStyle = '#7fd66a'; ctx.fillRect(7, -52, 4, 18); ctx.fillRect(1.5, -46, 3, 7); ctx.fillRect(1.5, -41, 6, 3); ctx.fillRect(13.5, -49, 3, 6); ctx.fillRect(11, -45, 5, 3); },
+  ],
+  city: a => [
+    fillAll('#e9e4ff'),
+    ...[[-22, 9, 26], [-12, 8, 36], [-3, 9, 22], [7, 7, 32], [15, 9, 18]].map(([x, w, h], i) => () => {
+      ctx.fillStyle = i % 2 ? '#9aa3c4' : '#b7bfdc'; ctx.fillRect(x, -28 - h, w, h);
+      ctx.fillStyle = '#ffe98a'; for (let y = -30 - h + 5; y < -32; y += 6) for (let dx = 2; dx < w - 2; dx += 3.5) if (hs(a.seed, i * 50 + y + dx) > 0.35) ctx.fillRect(x + dx, y, 1.6, 2.4);
+    }),
+  ],
+  forest: () => [
+    fillAll('#d9f2c4'), band('#b8dba0', -34, -28),
+    ...[-17, -6, 5, 16].map((x, i) => () => { ctx.fillStyle = '#8a5a34'; ctx.fillRect(x - 2, -62, 4, 34); disc(x, -62 + (i % 2) * 4, 8, 9, i % 2 ? '#4f9a54' : '#3f8a4c'); }),
+    () => { disc(0, -44, 2.6, 3, '#8a5a34'); disc(-1, -45, 0.7, 0.7, '#fff'); disc(1, -45, 0.7, 0.7, '#fff'); },
+  ],
+  island: () => [
+    fillAll('#dff0ff'), band('#7fc4fd', -44, -28),
+    () => disc(-4, -34, 15, 5, '#f2dfa8'),
+    () => { ctx.strokeStyle = '#8a5a34'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(-5, -36); ctx.quadraticCurveTo(-2, -48, -6, -56); ctx.stroke(); for (const [dx, dy] of [[-8, -2], [8, -1], [-5, 4], [6, 4], [0, -5]]) disc(-6 + dx * 0.7, -56 + dy * 0.6, 5, 2, '#5fb86a'); },
+    () => { tri([[11, -38], [21, -38], [19, -35], [13, -35]], '#c9966b'); tri([[15.5, -39], [15.5, -48], [20, -40]], '#fff'); },
   ],
 };
 function bigFlower(el) {

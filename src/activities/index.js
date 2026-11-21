@@ -14,7 +14,7 @@ import campfire from './campfire.js';
 import sleep from './sleep.js';
 import swing from './swing.js';
 import swim from './swim.js';
-import { art, admire } from './art.js';
+import { art, admire, repaint, tidy } from './art.js';
 import tank from './tank.js';
 import hammock from './hammock.js';
 import { respond } from './sculpture.js';
@@ -23,5 +23,6 @@ import cairn from './cairn.js';
 import { stargaze } from '../events/star.js';
 import { ringDance } from '../events/ring.js';
 import { shop } from '../events/cart.js';
+import { story } from '../events/journeys.js';
 
-[wander, rest, chat, dance, fish, garden, snack, fruit, ball, build, campfire, sleep, swing, swim, art, admire, tank, hammock, respond, topiary, cairn, stargaze, ringDance, shop].forEach(register);
+[wander, rest, chat, dance, fish, garden, snack, fruit, ball, build, campfire, sleep, swing, swim, art, admire, repaint, tidy, tank, hammock, respond, topiary, cairn, stargaze, ringDance, shop, story].forEach(register);

@@ -12,6 +12,7 @@ import { updateEvents } from '../events/index.js';
 import { updateRings } from '../events/ring.js';
 import { updateVisitor } from '../events/cart.js';
 import { updateSculptures } from '../activities/sculpture.js';
+import { updateJourneys } from '../events/journeys.js';
 import { DAY_LEN } from '../config.js';
 import { planHammock, between, shape as hangHammock } from '../activities/hammock.js';
 
@@ -82,7 +83,7 @@ function growTown() {
   refreshStats();
 }
 function arrive() {
-  if (S.critters.length >= S.cap || isNight()) return;
+  if (S.critters.length + S.away.length >= S.cap || isNight()) return;   // (beds are kept for anyone off adventuring)
   const p = freePoint();
   const c = newCritter(rand() < 0.5 ? -30 : S.W + 30, clamp(p.y, 130, S.H - 30));
   S.critters.push(c); assignHomes();
@@ -100,7 +101,7 @@ export function updateWorld(dt) {
   lastPhase = p;
 
   for (const c of S.critters) updateCritter(c, dt);
-  updateEvents(dt); updateRings(dt); updateVisitor(dt); updateSculptures(dt);
+  updateEvents(dt); updateRings(dt); updateVisitor(dt); updateSculptures(dt); updateJourneys();
   for (const c of S.critters) if (c.balloon && S.clock > c.balloon.until) {   // a balloon gets away
     S.floaters.push({ ...c.balloon, x: c.x - 30 * c.size, y: c.y - 60 * c.size, t: 0 });
     c.balloon = null;

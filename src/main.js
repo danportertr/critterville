@@ -61,6 +61,6 @@ function boot() {
   requestAnimationFrame(frame);
 }
 S.version = VERSION; S.checkVersion = checkForNewer;   // critterville.checkVersion() asks the server right now
-S.trigger = trigger;       // e.g. critterville.trigger('rain') | 'star' | 'wind' | 'ducks' | 'ring' | 'cart'
+S.trigger = trigger;       // e.g. critterville.trigger('rain') | 'star' | 'wind' | 'ducks' | 'ring' | 'cart' | 'farewell' | 'adventure'
 window.critterville = S;   // for poking around in the console
 boot();

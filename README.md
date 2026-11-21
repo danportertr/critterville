@@ -14,6 +14,8 @@ The critters:
 - make sculptures: stone and wooden statues that gather moss, ones carved from a fallen star that glow, sandcastles that the next rain washes away, piles of found things, and working pieces (a sundial, a weathervane, a birdbath that fills in the rain, a bench to sit on)
 - hang hats on statues, lean on them, leave flowers at their feet, and strike the same pose
 - add stones to a cairn by the water, clip trees into shapes, and chip away for weeks at one big shared monument
+- sometimes paint over an old picture, or take old art down, so the town doesn't silt up
+- occasionally move away (everyone comes to wave them off), or set off on an adventure with a knapsack and come back days later with stories to tell and paint
 - make paintings of what they can see from the easel: sometimes the whole view, sometimes a close-up or portrait, a colour-washed version, or something abstract (and go admire each other's)
 - dance, sometimes in groups
 - fish in the pond or the stream (a town has one or the other, sometimes both), plant flowers, pick apples, kick a ball around
