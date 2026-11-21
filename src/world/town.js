@@ -46,6 +46,11 @@ export function makeStream() {
   return { pts, seed: irand(1e6), flow: rand() < 0.5 ? 1 : -1 };
 }
 
+/** The town's monument: far bigger than anything one critter could make. */
+export function planMonument() {
+  const form = pick(['circle', 'giant']), p = form === 'circle' ? findSpot(72, 40, 14) : findSpot(54, 80, 70);
+  return (S.monument = { kind: 'monument', form, x: p.x, y: p.y, seed: irand(1e6), progress: 0 });
+}
 export function planTank() {
   const p = findSpot(46, 42, 30);
   return (S.tank = { kind: 'tank', x: p.x, y: p.y, seed: irand(1e6), progress: 0, fish: [] });
@@ -115,7 +120,7 @@ export function scatterDecor() {
 
 export function newTown() {
   const { W, H } = S;
-  Object.assign(S, { critters: [], houses: [], trees: [], flowers: [], apples: [], arts: [], pond: null, stream: null, bridge: null, pool: null, swing: null, tank: null, event: null, nextEvent: 0, wind: 0, stones: [], rings: [], ducks: null, hammocks: [], visitor: null, floaters: [], recent: null });
+  Object.assign(S, { critters: [], houses: [], trees: [], flowers: [], apples: [], arts: [], pond: null, stream: null, bridge: null, pool: null, swing: null, tank: null, event: null, nextEvent: 0, wind: 0, stones: [], rings: [], ducks: null, hammocks: [], visitor: null, floaters: [], recent: null, cairns: [], monument: null });
   S.journal = newJournal();
   S.clock = DAY_LEN * 0.08;
 

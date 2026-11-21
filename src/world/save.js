@@ -12,7 +12,7 @@ export function save() {
   if (!S.W || !S.critters.length) return;
   try {
     localStorage.setItem(SAVE_KEY, JSON.stringify({
-      v: SAVE_VERSION, W: S.W, H: S.H, clock: S.clock, journal: S.journal, pond: S.pond, stream: S.stream, tank: S.tank, nextEvent: S.nextEvent, recent: S.recent, lastCart: S.lastCart,
+      v: SAVE_VERSION, W: S.W, H: S.H, clock: S.clock, journal: S.journal, pond: S.pond, stream: S.stream, tank: S.tank, nextEvent: S.nextEvent, cairns: S.cairns, monument: S.monument, recent: S.recent, lastCart: S.lastCart,
       visitor: S.visitor && S.visitor.state === 'open' ? { kind: S.visitor.kind, seed: S.visitor.seed, x: S.visitor.x, y: S.visitor.y, d: S.visitor.d, until: S.visitor.until } : null, hammocks: S.hammocks.map(h => ({ kind: 'hammock', a: h.a, b: h.b, seed: h.seed, progress: h.progress })), stones: S.stones, rings: S.rings, ducks: S.ducks, bridge: S.bridge && { kind: 'bridge', t: S.bridge.t, seed: S.bridge.seed, progress: S.bridge.progress }, pool: S.pool, fire: S.fire,
       swing: S.swing && { x: S.swing.x, y: S.swing.y, seed: S.swing.seed, progress: S.swing.progress },
       houses: S.houses, trees: S.trees,
@@ -46,6 +46,8 @@ export function load() {
   S.trees = d.trees.map(mv);
   for (const t of S.trees) if (!t.apples) t.apples = [Math.random(), Math.random(), Math.random()];   // towns saved before apples grew
   S.flowers = d.flowers.map(mv); S.arts = (d.arts || []).map(mv);
+  S.cairns = (d.cairns || []).map(mv); S.monument = mv(d.monument) || null;
+  for (const s of S.stones) s.claimed = false;
   S.apples = []; S.floaters = []; S.lastCart = d.lastCart || null;
   S.visitor = restoreVisitor(mv(d.visitor));
   S.hammocks = (d.hammocks || []).map(restoreHammock).filter(Boolean);

@@ -5,12 +5,13 @@ import { HOUSE, SWING } from '../config.js';
 import { log, setStats } from '../ui.js';
 import { note } from '../journal.js';
 import { inEllipse, rebuildObs, freePoint, topEdge } from '../world/geometry.js';
-import { newHouse, newCritter, assignHomes, planFire, planPool, planSwing, planBridge, planAddon, planTank, makeBall } from '../world/town.js';
+import { newHouse, newCritter, assignHomes, planFire, planPool, planSwing, planBridge, planAddon, planTank, planMonument, makeBall } from '../world/town.js';
 import { save } from '../world/save.js';
 import { updateCritter, goTo, setAct, say } from './core.js';
 import { updateEvents } from '../events/index.js';
 import { updateRings } from '../events/ring.js';
 import { updateVisitor } from '../events/cart.js';
+import { updateSculptures } from '../activities/sculpture.js';
 import { DAY_LEN } from '../config.js';
 import { planHammock, between, shape as hangHammock } from '../activities/hammock.js';
 
@@ -46,13 +47,14 @@ function fade(list, dt, onRemove) {
 }
 
 /** Anything planned but not finished. Critters work on one thing at a time. */
-export const currentSite = () => [S.fire, S.bridge, S.swing, S.tank, S.pool, ...S.hammocks, ...S.houses].find(o => o && (o.progress < 1 || o.adding));
+export const currentSite = () => [S.fire, S.bridge, S.swing, S.tank, S.pool, ...S.hammocks, ...S.houses, S.monument].find(o => o && (o.progress < 1 || o.adding));
 
 // The town plan: a fire to gather round, somewhere to sleep, then the fun stuff,
 // and enough houses for everyone. Once that's done the town is finished, apart
 // from the odd home improvement, and the critters just get on with enjoying it.
 function growTown() {
-  if (!currentSite()) {
+  const site = currentSite();
+  if (!site || site === S.monument) {   // (the monument is a long, slow job: other things get planned around it)
     const beds = S.houses.length * HOUSE.residents, n = S.critters.length;
     let msg = null, hammock;
     if (!S.fire) { planFire(); msg = 'The critters are making a campfire.'; }
@@ -64,6 +66,7 @@ function growTown() {
     else if (!S.pool) { planPool(); msg = 'The critters are digging a pool.'; }
     else if (beds < n && S.houses.length < 3) { newHouse(0); msg = 'A new house is going up.'; }
     else if ((hammock = planHammock())) msg = `There's just the right gap for a hammock ${between(hammock)}.`;
+    else if (!S.monument) { const m = planMonument(); msg = m.form === 'circle' ? 'The critters have started on something big: a ring of standing stones.' : 'The critters have started on something big: an enormous statue.'; }
     else if (S.clock > nextAddon) {   // the town is finished; now and then somebody improves a house
       nextAddon = S.clock + rand(240, 520);
       const h = planAddon();
@@ -97,7 +100,7 @@ export function updateWorld(dt) {
   lastPhase = p;
 
   for (const c of S.critters) updateCritter(c, dt);
-  updateEvents(dt); updateRings(dt); updateVisitor(dt);
+  updateEvents(dt); updateRings(dt); updateVisitor(dt); updateSculptures(dt);
   for (const c of S.critters) if (c.balloon && S.clock > c.balloon.until) {   // a balloon gets away
     S.floaters.push({ ...c.balloon, x: c.x - 30 * c.size, y: c.y - 60 * c.size, t: 0 });
     c.balloon = null;

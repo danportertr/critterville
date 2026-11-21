@@ -8,6 +8,7 @@ import { cv } from './draw/canvas.js';
 import { hideHint, log } from './ui.js';
 import { startDiary } from './journal.js';
 import { about as aboutCart } from './events/cart.js';
+import { label as sculptureLabel } from './activities/sculpture.js';
 import { inEllipse, inStream, rebuildObs } from './world/geometry.js';
 import { newTown } from './world/town.js';
 import { save } from './world/save.js';
@@ -63,7 +64,12 @@ cv.addEventListener('pointerdown', e => {
   const art = artAt(p);
   if (art) {
     if (art.type === 'painting') { S.viewing = { art, until: S.now + 8 }; S.sign = null; }
-    else S.sign = { x: art.x, y: art.y - 74, text: `A sculpture by ${art.by}.`, until: S.now + 4 };
+    else S.sign = { x: art.x, y: art.y - 74, text: sculptureLabel(art), until: S.now + 4 };
+    return;
+  }
+  const mon = S.monument;
+  if (mon && Math.abs(p.x - mon.x) < 62 && p.y > mon.y - (mon.form === 'giant' ? 170 : 60) && p.y < mon.y + 24) {
+    S.sign = { x: mon.x, y: mon.y - (mon.form === 'giant' ? 180 : 70), text: mon.progress < 1 ? `The town's monument, about ${Math.round(mon.progress * 100)}% done.` : "The town's monument. Everybody helped.", until: S.now + 4 };
     return;
   }
   const h = houseAt(p);

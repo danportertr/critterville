@@ -11,6 +11,7 @@ import { log } from '../ui.js';
 import { line, dot } from '../draw/primitives.js';
 import { findSpot, rebuildObs } from '../world/geometry.js';
 import { note } from '../journal.js';
+import { newSculpture, abandon, finished as sculptureFinished } from './sculpture.js';
 import { goTo, setAct, say, tick } from '../sim/core.js';
 
 const artCap = () => clamp(Math.round(S.W * S.H / 220000), 2, 5);
@@ -134,7 +135,7 @@ function titleOf(a) {
 function newArt(c) {
   const p = findSpot(22, 32, 25), type = rand() < 0.55 ? 'painting' : 'sculpture';
   const a = { type, x: p.x, y: p.y, seed: irand(1e6), progress: 0, by: c.name, c1: pick(PETALS), c2: pick(HEADS), c3: pick(PETALS) };
-  if (type === 'sculpture') a.style = pick(['critter', 'totem', 'arch']);
+  if (type === 'sculpture') return newSculpture(c);
   else { a.style = 'view'; a.view = []; }   // filled in when the painter gets there and looks around
   return a;
 }
@@ -147,8 +148,9 @@ function done(c) {
   a.progress = 1; c.cleanup = null; c.art = null;
   c.hopV = 140; say(c, pick(['♥', 'ta-da', '!']));
   if (a.type === 'painting') a.title = titleOf(a);
-  note(a.type === 'sculpture' ? `${c.name} finished a sculpture.` : a.name ? `${c.name} painted an abstract and called it “${a.name}”.` : `${c.name} painted ${a.title}.`);
-  const finished = S.arts.filter(o => o.progress >= 1 && o.dying === undefined);
+  if (a.type === 'sculpture') sculptureFinished(a, c);
+  else note(a.name ? `${c.name} painted an abstract and called it “${a.name}”.` : `${c.name} painted ${a.title}.`);
+  const finished = S.arts.filter(o => o.progress >= 1 && o.dying === undefined && !o.keep);   // (working pieces stay for good)
   if (finished.length > artCap()) finished[0].dying = 1;
 }
 
@@ -159,7 +161,7 @@ export const art = {
     const a = newArt(c);
     S.arts.push(a); rebuildObs();
     c.art = a;
-    c.cleanup = () => { const i = S.arts.indexOf(a); if (i >= 0 && a.progress < 1) { S.arts.splice(i, 1); rebuildObs(); } };   // abandoned
+    c.cleanup = () => { const i = S.arts.indexOf(a); if (i >= 0 && a.progress < 1) { S.arts.splice(i, 1); abandon(a); rebuildObs(); } };   // abandoned
     goTo(c, a.x - (a.type === 'painting' ? 35 : 29), a.y + 3, () => {
       c.dir = 1;
       if (a.type === 'painting') { a.view = lookAround(a, c); chooseStyle(a, c); }
@@ -183,11 +185,13 @@ export const art = {
   },
 };
 
+const hung = a => a.type === 'painting' && a.progress >= 1;   // (sculptures get their own attention: see sculpture.js)
+
 export const admire = {
   id: 'admire',
-  weight: () => S.arts.some(a => a.progress >= 1) ? 0.8 : 0,
+  weight: () => S.arts.some(hung) ? 0.8 : 0,
   start(c) {
-    const a = pick(S.arts.filter(a => a.progress >= 1)), side = c.x < a.x ? -1 : 1;
+    const a = pick(S.arts.filter(hung)), side = c.x < a.x ? -1 : 1;
     goTo(c, a.x + side * 32, a.y + 5, () => { c.dir = -side; setAct(c, 'admire', rand(3, 5)); say(c, pick(['♥', 'ooh', 'hm', 'wow', '?', 'nice'])); });
   },
   states: { admire: { mood: 'smile' } },

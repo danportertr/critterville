@@ -63,6 +63,8 @@ export function rebuildObs() {
   if (S.tank) S.obs.push({ x: S.tank.x, y: S.tank.y - 3, rx: 38, ry: 9 });
   for (const t of S.trees) S.obs.push({ x: t.x, y: t.y - 2, rx: 24 * t.size * (t.grow || 1), ry: 7 });
   for (const s of S.stones) S.obs.push({ x: s.x, y: s.y - 2, rx: 11, ry: 5 });
+  for (const c of S.cairns) S.obs.push({ x: c.x, y: c.y - 2, rx: 12, ry: 5 });
+  if (S.monument && S.monument.form === 'giant') S.obs.push({ x: S.monument.x, y: S.monument.y - 4, rx: 38, ry: 11 });
   for (const a of S.arts) S.obs.push({ x: a.x, y: a.y - 2, rx: 17, ry: 7 });
 }
 
@@ -83,6 +85,8 @@ function zones() {
   if (fire) z.push({ x: fire.x, y: fire.y - 5, rx: 62, ry: 38 });
   if (pool) z.push({ x: pool.x, y: pool.y, rx: pool.rx + 16, ry: pool.ry + 14 });
   if (pond) z.push({ x: pond.x, y: pond.y, rx: pond.rx + 6, ry: pond.ry + 6 });
+  for (const c of S.cairns) z.push({ x: c.x, y: c.y - 14, rx: 16, ry: 22 });
+  if (S.monument) z.push(S.monument.form === 'circle' ? { x: S.monument.x, y: S.monument.y - 14, rx: 74, ry: 42 } : { x: S.monument.x, y: S.monument.y - 70, rx: 56, ry: 84 });
   for (const s of S.stones) z.push({ x: s.x, y: s.y - 6, rx: 16, ry: 14 });
   for (const r of S.rings) z.push({ x: r.x, y: r.y, rx: 48, ry: 30 });
   if (S.visitor) z.push({ x: S.visitor.x, y: S.visitor.y - 30, rx: 60, ry: 46 });

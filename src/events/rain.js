@@ -7,6 +7,7 @@ import { ctx } from '../draw/canvas.js';
 import { freePoint } from '../world/geometry.js';
 import { note } from '../journal.js';
 import { say, isFree } from '../sim/core.js';
+import { washAway } from '../activities/sculpture.js';
 
 const RAIN = 55, RAINBOW = 70, BANDS = ['#ff6e6e', '#ffab5c', '#ffe66d', '#8fe3a0', '#8fc7ff', '#b7a6ff'];
 const falling = e => clamp(e.t / 4, 0, 1) * clamp((RAIN - e.t) / 5, 0, 1);
@@ -17,6 +18,7 @@ export default {
   start() {
     for (const c of S.critters) if (isFree(c) && rand() < 0.6) say(c, pick(['rain!', 'oh!', 'drip']), 1.6);
     note('It started to rain.');
+    washAway();
     return { dur: RAIN + RAINBOW, sproutT: 3, sprouted: 0 };
   },
   update(e, dt) {

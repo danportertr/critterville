@@ -5,6 +5,7 @@ import { INK, LW, HOUSE, SWING, TANK, VIEW, STREAM_HALF, BRIDGE, WOOD, STONE } f
 import { SPECIES_BY_ID } from '../data/fish.js';
 import { drawFish } from './fish.js';
 import { drawHat } from './cart.js';
+import { drawSculpture, drawTopiary } from './sculpture.js';
 import { streamPoint } from '../world/geometry.js';
 import { TAU, clamp, hs, shade } from '../util.js';
 import { jit, wob, smooth, polyPath, blobPts, paint, blob, box, line, tube, dot } from './primitives.js';
@@ -109,6 +110,7 @@ export function drawTree(t) {
   polyPath([...L, ...R.slice().reverse()]); ctx.fillStyle = '#b06634'; ctx.fill();
   ctx.lineWidth = LW; ctx.strokeStyle = INK;
   smooth(L, false); ctx.stroke(); smooth(R, false); ctx.stroke();
+  if (drawTopiary(t)) { ctx.restore(); return; }   // clipped into a shape: no lobes, no apples showing
   // crown: every lobe in fat ink, then every lobe in green, so they merge into one outline
   const lobes = LOBES.map((l, i) => blobPts(l[0], l[1], l[2], l[3], 9, sd + 2 + i, 0.06, 0.7));
   ctx.fillStyle = INK; ctx.strokeStyle = INK; ctx.lineWidth = LW * 2;
@@ -428,20 +430,6 @@ function bigFlower(el) {
   for (const [x, y] of [[0, -6.6], [1.5, -5.2], [0, -3.8], [-1.5, -5.2]]) { ctx.beginPath(); ctx.arc(x, y, 1.25, 0, TAU); ctx.fill(); }
   ctx.fillStyle = '#ffe833'; ctx.beginPath(); ctx.arc(0, -5.2, 0.95, 0, TAU); ctx.fill();
 }
-const SCULPTURES = {
-  critter: a => {
-    box([[-7, -10], [7, -10], [7, -30], [-7, -30]], STONE, a.seed + 3, 0.4, 2.2);
-    for (const k of [-1, 1]) line([[k * 7, -26], [k * 17, -18]], a.seed + 4 + k, 5, INK, 0.3), line([[k * 7, -26], [k * 17, -18]], a.seed + 4 + k, 2.2, STONE, 0.3);
-    blob(0, -42, 13, 12.5, STONE, a.seed + 6, 9, 0.06, 0.3, 2.2);
-    dot(2, -46, 1.1); dot(5, -45, 1.1); line([[-3, -42], [-3, -36], [1, -33], [6, -37], [6.5, -41]], a.seed + 7, 1.6, INK, 0.2);
-  },
-  totem: a => {
-    blob(0, -21, 12, 11, a.c1, a.seed + 3, 9, 0.1, 0.3, 2.2);
-    blob(0, -38, 9.5, 9, a.c2, a.seed + 4, 8, 0.1, 0.3, 2.2);
-    blob(0, -52, 7, 6.5, a.c3, a.seed + 5, 7, 0.1, 0.3, 2.2);
-  },
-  arch: a => tube([[-11, -11], [-13, -40], [0, -55], [13, -40], [11, -11]], 7, a.c1, a.seed + 3, 0.5),
-};
 /** The canvas itself: frame, and as much of the picture as has been painted so far. */
 function paintCanvas(a, lw) {
   box(CANVAS, '#fff', a.seed + 1, 0.4, lw);
@@ -459,23 +447,13 @@ export function drawPaintingLarge(a, x, y, k) {
   ctx.restore();
 }
 export function drawArt(a) {
+  if (a.type === 'sculpture') return drawSculpture(a);
   ctx.save(); ctx.translate(a.x, a.y);
   if (a.dying !== undefined) ctx.globalAlpha = clamp(a.dying, 0, 1);
   shadow(0, 1, 18, 4);
   if (a.type === 'painting') {
     for (const [x, y] of [[-16, 0], [16, 0], [3, -7]]) line([[0, -60], [x, y]], a.seed + x, 3, INK, 0.4);
     paintCanvas(a, 2.4);
-  } else {
-    box([[-15, 0], [15, 0], [13, -10], [-13, -10]], '#f1efe6', a.seed + 1, 0.4);
-    const cut = -60 + 50 * a.progress;   // carved from the top down
-    if (a.progress < 1) {
-      ctx.save(); ctx.beginPath(); ctx.rect(-40, cut, 80, -8 - cut); ctx.clip();
-      box([[-15, -10], [15, -10], [14, -58], [-14, -58]], STONE, a.seed + 2, 0.9);
-      ctx.restore();
-    }
-    ctx.save(); ctx.beginPath(); ctx.rect(-40, -80, 80, cut + 80); ctx.clip();
-    SCULPTURES[a.style](a);
-    ctx.restore();
   }
   ctx.restore();
 }

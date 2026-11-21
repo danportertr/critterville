@@ -6,6 +6,7 @@ import { rand, irand, pick, clamp, hs } from '../util.js';
 import { ctx } from '../draw/canvas.js';
 import { findSpot, rebuildObs } from '../world/geometry.js';
 import { note } from '../journal.js';
+import { topple } from '../activities/sculpture.js';
 
 export default {
   id: 'wind',
@@ -19,6 +20,7 @@ export default {
   },
   end() {
     S.wind = 0;
+    topple();
     if (S.trees.length >= 8) return void note('The wind dropped.');
     const size = rand(1.1, 1.4), p = findSpot(44 * size * 0.6, 54 * size * 0.6, 52 * size * 0.6);
     S.trees.push({ x: p.x, y: p.y, seed: irand(1e6), size, color: pick(GREENS), apples: [-1, -1.4, -1.8], grow: 0.12 });
