@@ -10,6 +10,7 @@ import * as sc from './scenery.js';
 import { drawStone, drawDucks, drawRing, drawHammock, drawPicnic, drawLostHat, drawRumour } from './props.js';
 import { drawCart, drawBalloon, drawHat } from './cart.js';
 import { drawCairn, drawMonument } from './sculpture.js';
+import { drawStageBack, drawStageFront } from './stage.js';
 import { drawEventOverlay } from '../events/index.js';
 
 const TINTS = [[0, [255, 233, 220]], [0.05, [255, 255, 255]], [0.58, [255, 255, 255]], [0.66, [255, 214, 186]], [0.74, [140, 147, 214]], [0.93, [140, 147, 214]], [1, [255, 233, 220]]];
@@ -89,7 +90,8 @@ export function render() {
   if (S.monument) items.push([S.monument.y, drawMonument, S.monument]);
   if (S.visitor) { items.push([S.visitor.y, drawCart, S.visitor]); items.push([S.visitor.owner.y, drawCritter, S.visitor.owner]); }
   for (const h of S.hammocks) if (h.A) items.push([h.y, drawHammock, h]);
-  for (const c of S.critters) if (!c.hidden) items.push([c.y, drawCritter, c]);
+  if (S.theatre) { items.push([S.theatre.y - 3, drawStageBack, S.theatre]); items.push([S.theatre.y - 0.5, drawStageFront, S.theatre]); }   // the cast stand in between
+  for (const c of S.critters) if (!c.hidden && !c.offstage) items.push([c.y, drawCritter, c]);
   items.sort((a, b) => a[0] - b[0]);
   for (const it of items) it[1](it[2], it[3]);
   for (const f of S.flies) sc.drawButterfly(f, n);
@@ -125,7 +127,7 @@ export function render() {
   for (const c of S.critters) {
     if (c.act === 'sleep' && !c.hidden) { ctx.fillStyle = INK; zzz(c.x + 16 * c.size, c.y - 80 * c.size, c.seed); }
     if (c.act === 'hammock') { ctx.fillStyle = INK; zzz(c.ham.M[0] + c.dir * 24 * c.size, c.ham.M[1] - 26, c.seed); }   // asleep in the hammock
-    if (c.bubble && !c.hidden) drawBubble(c);
+    if (c.bubble && !c.hidden && !c.offstage) drawBubble(c);
   }
   if (S.sign && S.now < S.sign.until) {   // the note over a tapped house
     const s = S.sign, w = ctx.measureText(s.text).width + 28;

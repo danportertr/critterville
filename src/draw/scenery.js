@@ -518,6 +518,12 @@ const FAR_PLACES = {
     () => { tri([[11, -38], [21, -38], [19, -35], [13, -35]], '#c9966b'); tri([[15.5, -39], [15.5, -48], [20, -40]], '#fff'); },
   ],
 };
+/** A scene for the theatre's backdrop, in the same 48×42 box paintings use. */
+export function drawBackdrop(id, seed) {
+  const a = { seed, c1: '#ff8fc7', c2: '#8fd3ff', c3: '#ffe66d' };
+  const steps = id === 'star' ? EVENT_PICS.star(a) : id === 'rain' ? EVENT_PICS.rain(a) : id === 'pond' ? EVENT_PICS.ducks(a).slice(0, 2) : (FAR_PLACES[id] || FAR_PLACES.forest)(a);
+  for (const step of steps) step();
+}
 function bigFlower(el) {
   ctx.fillStyle = '#7fd66a'; ctx.fillRect(-0.4, -4, 0.8, 4);
   ctx.beginPath(); ctx.ellipse(1.3, -1.6, 1.3, 0.7, -0.5, 0, TAU); ctx.fill();

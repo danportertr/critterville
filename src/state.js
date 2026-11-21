@@ -12,6 +12,7 @@ export const S = {
   mail: [],                        // postcards on their way: {from, to, line, due}
   lostHat: null, picnic: null, rumour: null,   // (events/ and activities/errands.js)
   away: [],                        // critters off on an adventure: {who, place, back} (events/journeys.js)
+  theatre: null,                   // a stage, while there's a play on (events/theatre.js)
   cairns: [],                      // piles of stones by the water: {x, y, seed, n}
   monument: null,                  // the big thing everyone builds together: {form: 'circle' | 'giant', progress}
   hammocks: [],                    // strung between pairs of trees: {a, b: tree indexes, progress, user}

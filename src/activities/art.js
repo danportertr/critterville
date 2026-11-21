@@ -164,7 +164,7 @@ function done(c) {
   c.hopV = 140; say(c, pick(['♥', 'ta-da', '!']));
   if (a.type === 'painting') a.title = titleOf(a);
   if (a.type === 'sculpture') sculptureFinished(a, c);
-  else if (a.over) { note(`${c.name} painted over ${a.over === c.name ? 'an old picture' : `${a.over}'s old picture`}: now it's ${a.name ? `“${a.name}”` : a.title}.`); delete a.over; }
+  else if (a.over) { log(`${c.name} painted over ${a.over === c.name ? 'an old picture' : `${a.over}'s old picture`}: now it's ${a.name ? `“${a.name}”` : a.title}.`); delete a.over; }
   else note(a.name ? `${c.name} painted an abstract and called it “${a.name}”.` : `${c.name} painted ${a.title}.`);
   const finished = S.arts.filter(o => o.progress >= 1 && o.dying === undefined && !o.keep);   // (working pieces stay for good)
   // Too much art about: the oldest piece is due to go. A painting may get

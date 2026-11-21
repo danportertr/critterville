@@ -16,6 +16,7 @@ import { updateJourneys } from '../events/journeys.js';
 import { updateTalk, news, nearby, anyone } from '../talk.js';
 import { deliverMail } from '../activities/errands.js';
 import { settleRumour } from '../events/rumour.js';
+import { updateTheatre } from '../events/theatre.js';
 import { DAY_LEN } from '../config.js';
 import { planHammock, between, shape as hangHammock } from '../activities/hammock.js';
 
@@ -51,7 +52,11 @@ function fade(list, dt, onRemove) {
 }
 
 /** Anything planned but not finished. Critters work on one thing at a time. */
-export const currentSite = () => [S.fire, S.bridge, S.swing, S.tank, S.pool, ...S.hammocks, ...S.houses, S.monument].find(o => o && (o.progress < 1 || o.adding));
+export const currentSite = () => {
+  const th = S.theatre;   // a stage going up, or coming down again, takes priority
+  if (th && (th.phase === 'building' || th.phase === 'striking')) return th;
+  return [S.fire, S.bridge, S.swing, S.tank, S.pool, ...S.hammocks, ...S.houses, S.monument].find(o => o && (o.progress < 1 || o.adding));
+};
 
 // The town plan: a fire to gather round, somewhere to sleep, then the fun stuff,
 // and enough houses for everyone. Once that's done the town is finished, apart
@@ -105,7 +110,7 @@ export function updateWorld(dt) {
   lastPhase = p;
 
   for (const c of S.critters) updateCritter(c, dt);
-  updateEvents(dt); updateRings(dt); updateVisitor(dt); updateSculptures(dt); updateJourneys(); updateTalk(); deliverMail(); settleRumour();
+  updateEvents(dt); updateRings(dt); updateVisitor(dt); updateSculptures(dt); updateJourneys(); updateTalk(); deliverMail(); settleRumour(); updateTheatre(dt);
   const lh = S.lostHat; if (lh && lh.fly > 0) lh.fly -= dt;   // a hat on the wind
   for (const c of S.critters) if (c.balloon && S.clock > c.balloon.until) {   // a balloon gets away
     S.floaters.push({ ...c.balloon, x: c.x - 30 * c.size, y: c.y - 60 * c.size, t: 0 });

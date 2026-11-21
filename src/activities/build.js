@@ -16,6 +16,7 @@ const JOBS = {
   fire: { step: 0.26, done: 'The campfire is ready.' },
   house: { step: 0.1, done: 'A new house is finished!' },
   swing: { step: 0.1, done: 'The swing set is finished!' },
+  stage: { step: 0.075, done: 'The stage is up, curtains and all.' },
   monument: { step: 0.024, done: 'The monument is finished. Everybody had a hand in it.' },   // weeks of odd moments
   hammock: { step: 0.34, done: 'The hammock is up.' },
   tank: { step: 0.15, done: 'The fish tank is ready for its first fish.' },
@@ -33,6 +34,7 @@ function standAt(s) {
     case 'fire': return { x: s.x + Math.cos(a) * 34, y: s.y + Math.sin(a) * 16 };
     case 'pool': return { x: s.x + Math.cos(a) * (s.rx + 24), y: s.y + Math.sin(a) * (s.ry + 18) };
     case 'bridge': { const e = s.ends[side < 0 ? 0 : 1]; return { x: e.x + rand(-10, 10), y: e.y + rand(-6, 6) }; }
+    case 'stage': return { x: s.x + side * rand(30, 104), y: s.y + rand(6, 16) };
     case 'monument': return { x: s.x + side * rand(20, 66), y: s.y + rand(6, 22) };
     case 'hammock': return { x: s.x + side * rand(10, 40), y: s.y + rand(6, 12) };
     case 'tank': return { x: s.x + side * rand(30, 46), y: s.y + rand(4, 12) };
@@ -60,13 +62,19 @@ export default {
           rebuildObs(); note(job.done); c.hopV = 150; say(c, '!');
           return;
         }
+        if (s.phase === 'striking') {   // the play's over: the stage comes down a bit at a time
+          if ((s.progress -= 0.12) > 0) return;
+          if (S.theatre === s) S.theatre = null;
+          rebuildObs(); note('The stage has been packed away until the next play.');
+          return;
+        }
         if (s.progress >= 1) return;
         s.progress += JOBS[s.kind].step;
         if (s.progress < 1) return;
         s.progress = 1;
         if (s.kind === 'house') assignHomes();
         note(JOBS[s.kind].done); c.hopV = 150; say(c, '!');
-        news({ fire: 'a campfire!', house: 'a new house!', bridge: 'the bridge is done', swing: 'swings!', tank: 'a fish tank!', pool: 'the pool is full!', hammock: 'a hammock!', monument: 'the monument!' }[s.kind], nearby(c, 300));
+        news({ fire: 'a campfire!', house: 'a new house!', bridge: 'the bridge is done', swing: 'swings!', tank: 'a fish tank!', pool: 'the pool is full!', hammock: 'a hammock!', monument: 'the monument!', stage: 'the stage is up!' }[s.kind], nearby(c, 300));
       },
       pose(c, p) { p.hand(p.d, p.d * 28, -34 + Math.sin(p.now * 11) * 11); },
       props(c, p) {   // hammer

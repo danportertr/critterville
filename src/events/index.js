@@ -21,8 +21,9 @@ import cart from './cart.js';
 import { farewell, adventure } from './journeys.js';
 import picnic from './picnic.js';
 import rumour from './rumour.js';
+import theatre from './theatre.js';
 
-const EVENTS = [rain, star, wind, ducks, ring, cart, farewell, adventure, picnic, rumour];
+const EVENTS = [rain, star, wind, ducks, ring, cart, farewell, adventure, picnic, rumour, theatre];
 const later = () => S.clock + rand(1.2, 2.6) * DAY_LEN;
 
 function begin(def) {

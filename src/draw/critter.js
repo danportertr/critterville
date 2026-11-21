@@ -8,6 +8,7 @@ import { TAU } from '../util.js';
 import { STATES } from '../sim/core.js';
 import { inStream, onBridge } from '../world/geometry.js';
 import { drawHat, drawBalloon } from './cart.js';
+import { costumeBack, costumeFront, stageProp } from './costume.js';
 
 // Mouths. The big U is the full grin from the original doodle; most of the
 // time a critter wears something quieter. Each is the curve, plus whether it
@@ -83,6 +84,7 @@ export function drawCritter(c) {
   ];
   const torso = wob([[-12, -39 - bob], [12, -39 - bob], [12, -11 - bob], [-12, -11 - bob]], sd + 5, 0.5);
 
+  if (c.costume) costumeBack(c.costume, sd + 70, -57 - bob);
   // Everything in ink first, slightly fat, then the fill colour on top:
   // the result is one continuous outlined body, like the original doodle.
   ctx.strokeStyle = INK; ctx.fillStyle = INK;
@@ -95,6 +97,7 @@ export function drawCritter(c) {
   polyPath(torso); ctx.fillStyle = c.body; ctx.fill();
 
   if (st.props) st.props(c, p);
+  if (c.stageProp) stageProp(c.stageProp, p.HD[0], p.HD[1], d, sd + 75);
   if (c.luggage === 'case') {            // a suitcase in the left hand
     const [x, y] = HL;
     box([[x - 8, y + 3], [x + 8, y + 3], [x + 8, y + 15], [x - 8, y + 15]], '#c9966b', sd + 40, 0.4, 2.2);
@@ -123,7 +126,8 @@ export function drawCritter(c) {
     line(mouth.curve.map(face), sd + 13, 2.4, INK, 0.4);
     mouth.caps.forEach((cap, i) => line(cap.map(face), sd + 14 + i, 2.4, INK, 0.3));
   }
-  if (c.hat) { ctx.save(); ctx.translate(0, hy - 17 * c.hh); drawHat(c.hat, m, sd + 60); ctx.restore(); }
+  if (c.costume) costumeFront(c.costume, sd + 72, hy, d);   // in costume, their own hat comes off
+  else if (c.hat) { ctx.save(); ctx.translate(0, hy - 17 * c.hh); drawHat(c.hat, m, sd + 60); ctx.restore(); }
   if (st.over) st.over(c, p);   // things held in front of the face
   ctx.restore();
 
