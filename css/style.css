@@ -42,3 +42,10 @@ h1 { pointer-events: auto; cursor: pointer; }
 #version.show, #version.stale { display: block; }   /* click the title to see it; it also appears by itself when out of date */
 #version.stale { opacity: 1; }
 #version a { color: inherit; background: #ffe66d; border: 2px solid #000; border-radius: 10px 8px 11px 7px; padding: 0 7px 1px; text-decoration: none; cursor: pointer; }
+
+#sound-btn { position: fixed; right: 14px; bottom: 114px; }
+#sound-btn.off { text-decoration: line-through; }
+#journal .song { display: flex; align-items: center; gap: 10px; border: 2.5px solid #000; border-radius: 14px 18px 12px 16px; padding: 8px 12px; margin: 8px 0; background: #fff; }
+#journal .song h3 { margin: 0; }
+#journal .song .meta { margin: 2px 0 0; opacity: .65; font-size: 13px; }
+#journal .song button { margin-left: auto; white-space: nowrap; }

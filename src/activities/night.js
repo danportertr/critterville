@@ -24,6 +24,7 @@ export function nightLife(c) {
   if (phase() >= BEDTIME) return false;
   const options = [[3, () => stargaze.start(c)], [1.4, () => ACT.wander.start(c)], [1.2, () => ACT.fish.start(c)], [1.2, () => fireflies(c)]];
   if (built(S.fire)) options.push([1.6, () => ACT.campfire.start(c)]);
+  if (c.instrument && !S.band && phase() < 0.84) options.push([1.4, () => ACT.perform.start(c)]);   // a quiet tune in the small hours
   if (S.critters.some(o => o !== c && !o.hidden && o.act === 'idle')) options.push([2, () => ACT.chat.start(c)]);   // company, if anyone else is up
   let r = rand(options.reduce((s, o) => s + o[0], 0));
   for (const [w, go] of options) if ((r -= w) <= 0) { if (go() !== false) return true; break; }

@@ -11,6 +11,8 @@ audio.preload = 'none';
 audio.volume = 0.6;
 
 let station = 0, failures = 0;
+/** Turn the radio right down while the critters are playing, and back up after. */
+export function duckRadio(on) { audio.volume = on ? 0.1 : 0.6; }
 try { station = (parseInt(localStorage.getItem('critterville-station'), 10) || 0) % STATIONS.length; } catch (e) { /* no storage */ }
 
 function show() {
@@ -45,3 +47,17 @@ audio.addEventListener('error', () => {
 $toggle.addEventListener('click', () => (S.music ? stop() : play()));
 $next.addEventListener('click', () => tune(1));
 show();
+
+// ---- the critters' own music: can it be heard? ----
+import { unlockAudio } from './audio.js';
+const $sound = document.getElementById('sound-btn');
+try { S.sound = localStorage.getItem('critterville-sound') !== 'off'; } catch (e) { /* no storage */ }
+function showSound() { $sound.textContent = S.sound ? '♫ on' : '♫ off'; $sound.classList.toggle('off', !S.sound); $sound.setAttribute('aria-pressed', S.sound); }
+$sound.addEventListener('click', () => {
+  S.sound = !S.sound;
+  try { localStorage.setItem('critterville-sound', S.sound ? 'on' : 'off'); } catch (e) { /* no storage */ }
+  showSound();
+});
+showSound();
+// Browsers won't play anything until the visitor has done something, so wake the audio on the first click or key.
+for (const ev of ['pointerdown', 'keydown']) addEventListener(ev, unlockAudio, { passive: true });

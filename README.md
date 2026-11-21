@@ -4,7 +4,7 @@
 
 A tiny town of little guys who walk around and do things. There isn't much to do except watch — it's something to leave running.
 
-The town starts as an empty meadow: trees, a pond, a few flowers. The critters build everything else themselves — first a campfire, then houses, a swing set and a pool — and a few more move in until it's a small, settled town. There are no scores. The **journal** button opens the town's diary (who moved in, what got built, what was painted) a fish book (a picture and a few true facts about each kind of fish the critters have caught), and a night-sky page for what the night owls find through the telescope.
+The town starts as an empty meadow: trees, a pond, a few flowers. The critters build everything else themselves — first a campfire, then houses, a swing set and a pool — and a few more move in until it's a small, settled town. There are no scores. The **journal** button opens the town's diary (who moved in, what got built, what was painted) the town's songs (with a play button for each), a fish book (a picture and a few true facts about each kind of fish the critters have caught), and a night-sky page for what the night owls find through the telescope.
 
 The critters:
 
@@ -25,6 +25,7 @@ The critters:
 - jump the stream until there's a bridge, then mostly use that
 - keep a few of the fish they catch in the tank for a while, and come by to watch them
 - string a hammock between two trees, two houses, or a house and a tree, if a pair happens to be the right distance apart, and take turns lying in it
+- make themselves instruments (no two sound alike), make up tunes that become the town's songs, and play them in the evening, alone or together in parts, while the others listen and dance
 - gather at the campfire in the evening and go home to sleep at night, except for the one or two night owls, who set up a telescope, fish in the dark, follow fireflies, and sleep in
 
 Every day or three something rare happens that leaves the town a little different: a shower brings up flowers (and a rainbow), a shooting star lands and stays as a glowing stone, a windy spell leaves a seedling that grows into a new tree, a duck family moves onto the water, or a ring of mushrooms appears and everyone dances in it. Once in a while they build a stage and put on a play about something that really happened in town, with a twist added (a dragon, a ghost, a duel), in costume, in front of everyone; then they take the stage down again. Now and then there's a picnic, a hat blows away and gets brought back, a postcard arrives from someone who left, or a rumour goes round about something big in the water. Sometimes a traveller wheels a cart into town for a few days: a hatmaker (critters keep their hats), a balloon seller, or an ice cream cart.
@@ -63,7 +64,9 @@ src/
   journalPanel.js    the journal you open and read
   data/fish.js       fish species and their facts
   data/sky.js        planets and constellations and their facts
-  radio.js           the lofi radio button
+  radio.js           the lofi radio button, and the sound on/off button
+  audio.js           the synthesiser behind the critters' instruments
+  data/music.js      making up instruments and songs
   draw/
     primitives.js    wobbly hand-drawn shapes ("line boil")
     critter.js       drawing a critter and its speech bubble

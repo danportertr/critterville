@@ -6,6 +6,8 @@ import { drawFish, drawMystery } from './draw/fish.js';
 import { localSpecies, waters, onJournalChange } from './journal.js';
 import { SKY } from './data/sky.js';
 import { drawSkyPicture } from './draw/sky.js';
+import { partFor } from './data/music.js';
+import { playNote, unlockAudio } from './audio.js';
 
 const $btn = document.getElementById('journal-btn');
 const $panel = document.getElementById('journal');
@@ -63,6 +65,29 @@ function renderSky() {
   $body.append(grid);
 }
 
+/** Play a song through once: the tune on its composer's instrument if they still have it, over a simple bass. */
+function playSong(song) {
+  unlockAudio();
+  const by = S.critters.find(c => c.name === song.by && c.instrument && c.instrument.family !== 'drum');
+  const lead = by ? by.instrument.voice : { family: 'flute', wave: 'triangle', oct: 1, vib: 4, vibRate: 5, attack: 0.04, detune: 0 };
+  const low = { family: 'strings', wave: 'triangle', oct: 0, decay: 0.7, cutoff: 1500, detune: 0 }, spb = 60 / song.bpm;
+  setTimeout(() => {   // (a beat's grace for the audio to wake up on the first press)
+    for (const n of partFor(song, 'melody')) playNote(lead, n.midi, 0.1 + n.b * spb, n.d * spb, n.vel);
+    for (const n of partFor(song, 'bass')) playNote(low, n.midi, 0.1 + n.b * spb, n.d * spb, 0.5);
+  }, 120);
+}
+function renderSongs() {
+  if (!S.songs.length) return void $body.append(el('p', 'lede', 'No songs yet. Somebody has to make an instrument first, and then wait for evening.'));
+  $body.append(el('p', 'lede', 'Tunes the critters have made up. They play them in the evening, and you can hear one here.'));
+  for (const song of S.songs) {
+    const row = el('div', 'song'), text = el('div'), btn = el('button', '', '▶ play');
+    text.append(el('h3', '', song.name), el('p', 'meta', `Made up by ${song.by} on day ${song.day}.`));
+    btn.addEventListener('click', () => playSong(song));
+    row.append(text, btn); $body.append(row);
+  }
+  if (!S.sound) $body.append(el('p', 'meta', 'Sound is switched off (the ♫ button).'));
+}
+
 function renderDiary() {
   const diary = S.journal.diary;
   if (!diary.length) return void $body.append(el('p', 'lede', 'Nothing much has happened yet.'));
@@ -77,7 +102,7 @@ function renderDiary() {
 function render() {
   $body.textContent = '';
   for (const t of $tabs) t.classList.toggle('sel', t.dataset.tab === tab);
-  (tab === 'fish' ? renderFish : tab === 'sky' ? renderSky : renderDiary)();
+  (tab === 'fish' ? renderFish : tab === 'sky' ? renderSky : tab === 'songs' ? renderSongs : renderDiary)();
 }
 function open() { $panel.hidden = false; $btn.classList.remove('new'); $btn.textContent = 'journal'; render(); }
 function close() { $panel.hidden = true; }
@@ -89,5 +114,5 @@ addEventListener('keydown', e => { if (e.key === 'Escape') close(); });
 
 onJournalChange(kind => {
   if (!$panel.hidden) { if (kind === tab || kind === 'reset') render(); }
-  else if (kind === 'fish' || kind === 'sky') { $btn.classList.add('new'); $btn.textContent = 'journal •'; }   // something new to read
+  else if (kind === 'fish' || kind === 'sky' || kind === 'songs') { $btn.classList.add('new'); $btn.textContent = 'journal •'; }   // something new to read
 });

@@ -13,7 +13,7 @@ export function save() {
   if (!S.W || !S.critters.length) return;
   try {
     localStorage.setItem(SAVE_KEY, JSON.stringify({
-      v: SAVE_VERSION, W: S.W, H: S.H, clock: S.clock, journal: S.journal, pond: S.pond, stream: S.stream, tank: S.tank, nextEvent: S.nextEvent, away: S.away,
+      v: SAVE_VERSION, W: S.W, H: S.H, clock: S.clock, journal: S.journal, pond: S.pond, stream: S.stream, tank: S.tank, nextEvent: S.nextEvent, away: S.away, songs: S.songs, songId: S.songId,
       theatre: S.theatre && { kind: 'stage', x: S.theatre.x, y: S.theatre.y, seed: S.theatre.seed, progress: S.theatre.progress, phase: S.theatre.phase === 'show' ? 'ready' : S.theatre.phase, wait: 8 }, news: S.news, newsId: S.newsId, mail: S.mail, rumour: S.rumour,
       lostHat: S.lostHat && { ...S.lostHat, taken: null, held: false }, cairns: S.cairns, monument: S.monument, recent: S.recent, lastCart: S.lastCart,
       visitor: S.visitor && S.visitor.state === 'open' ? { kind: S.visitor.kind, seed: S.visitor.seed, x: S.visitor.x, y: S.visitor.y, d: S.visitor.d, until: S.visitor.until } : null, hammocks: S.hammocks.map(h => ({ kind: 'hammock', a: h.a, b: h.b, seed: h.seed, progress: h.progress })), stones: S.stones, rings: S.rings, ducks: S.ducks, bridge: S.bridge && { kind: 'bridge', t: S.bridge.t, seed: S.bridge.seed, progress: S.bridge.progress }, pool: S.pool, fire: S.fire,
@@ -50,6 +50,7 @@ export function load() {
   for (const t of S.trees) if (!t.apples) t.apples = [Math.random(), Math.random(), Math.random()];   // towns saved before apples grew
   S.flowers = d.flowers.map(mv); S.arts = (d.arts || []).map(mv);
   S.theatre = mv(d.theatre) || null;
+  S.songs = d.songs || []; S.songId = d.songId || 0; S.band = null;
   S.away = d.away || []; S.news = d.news || []; S.newsId = d.newsId || 0; S.mail = d.mail || []; S.rumour = d.rumour || null; S.picnic = null;
   S.lostHat = mv(d.lostHat) || null;
   for (const a of S.arts) a.busy = false;

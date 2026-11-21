@@ -27,7 +27,7 @@ export const PLACES = [
 ];
 const placeOf = id => PLACES.find(p => p.id === id) || PLACES[0];
 /** The fields that describe a critter for good (also what gets saved). */
-export const keep = c => ({ name: c.name, seed: c.seed, size: c.size, head: c.head, body: c.body, hat: c.hat, hatFrom: c.hatFrom, story: c.story, friends: c.friends, knows: c.knows, x: c.x, y: c.y });
+export const keep = c => ({ name: c.name, seed: c.seed, size: c.size, head: c.head, body: c.body, hat: c.hat, hatFrom: c.hatFrom, instrument: c.instrument, story: c.story, friends: c.friends, knows: c.knows, x: c.x, y: c.y });
 
 // ---- leaving ----
 function setOff(kind) {

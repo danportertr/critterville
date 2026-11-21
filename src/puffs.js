@@ -10,6 +10,7 @@ const KINDS = {
   dirt: { n: 3, colors: ['#b08a5a', '#9a744a'], r: [2, 3.4], up: [90, 150], out: 70, g: 420, life: 0.8 },      // thrown over the shoulder
   chips: { n: 3, colors: ['#c6c8d2', '#aeb1bd'], r: [1.4, 2.4], up: [50, 110], out: 60, g: 380, life: 0.6 },
   paint: { n: 2, colors: null, r: [1.2, 2], up: [0, 20], out: 14, g: 200, life: 0.5 },
+  note: { n: 1, colors: ['#000'], r: [1, 1], up: [26, 40], out: 10, g: -6, life: 1.4, glyph: '♪' },          // drifts up off an instrument
   confetti: { n: 16, colors: ['#ff8fc7', '#ffe66d', '#8fd3ff', '#b7a6ff', '#8fe3b0', '#ff8f8f'], r: [1.6, 2.6], up: [120, 240], out: 110, g: 300, life: 1.6 },
 };
 /** Throw up a puff of `kind` at (x, y). `dir` biases which way it flies; `color` overrides the usual colours. */
@@ -18,7 +19,7 @@ export function puff(kind, x, y, dir = 0, color) {
   if (S.puffs.length > 160) return;
   for (let i = 0; i < k.n; i++) S.puffs.push({
     x, y, vx: rand(-1, 1) * k.out + dir * k.out * 0.6, vy: -rand(k.up[0], k.up[1]), g: k.g,
-    r: rand(k.r[0], k.r[1]), color: color || pick(k.colors), life: k.life * rand(0.7, 1.2), age: 0,
+    r: rand(k.r[0], k.r[1]), color: color || pick(k.colors), life: k.life * rand(0.7, 1.2), age: 0, glyph: k.glyph,
   });
 }
 export function updatePuffs(dt) {
@@ -31,7 +32,9 @@ export function updatePuffs(dt) {
 export function drawPuffs() {
   for (const p of S.puffs) {
     ctx.globalAlpha = Math.min(1, (1 - p.age / p.life) * 2);
-    ctx.fillStyle = p.color; ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, TAU); ctx.fill();
+    ctx.fillStyle = p.color;
+    if (p.glyph) { ctx.font = '700 17px "Chalkboard SE","Comic Sans MS",cursive'; ctx.textAlign = 'center'; ctx.fillText(p.glyph, p.x + Math.sin(p.age * 5) * 4, p.y); continue; }
+    ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, TAU); ctx.fill();
   }
   ctx.globalAlpha = 1;
 }
