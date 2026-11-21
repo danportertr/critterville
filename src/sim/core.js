@@ -6,7 +6,8 @@
 //   finish(c)       the countdown ran out; return true if you set the next state yourself
 //   mood            the face it wears: 'big', 'smile', 'small', 'flat', 'tiny' or 'oh'
 //   pose(c, p)      adjust the drawn pose          (see draw/critter.js)
-//   props(c, p)     draw held things, in critter-local coordinates
+//   props(c, p)     draw held things, in critter-local coordinates (behind the head)
+//   over(c, p)      the same, but in front of the head and face
 //   transform(c)    take over where/how the critter is drawn; return true
 //   after(c)        draw on top afterwards, in world coordinates
 //

@@ -124,6 +124,7 @@ export function drawCritter(c) {
     mouth.caps.forEach((cap, i) => line(cap.map(face), sd + 14 + i, 2.4, INK, 0.3));
   }
   if (c.hat) { ctx.save(); ctx.translate(0, hy - 17 * c.hh); drawHat(c.hat, m, sd + 60); ctx.restore(); }
+  if (st.over) st.over(c, p);   // things held in front of the face
   ctx.restore();
 
   if (wading) line([[c.x - 15 * s, c.y + 1], [c.x - 7 * s, c.y - 1.5], [c.x, c.y + 1], [c.x + 7 * s, c.y - 1.5], [c.x + 15 * s, c.y + 1]], sd + 31, 2.4, '#fff', 0.7);
