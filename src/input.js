@@ -3,7 +3,7 @@ import { S } from './state.js';
 import { irand, dist } from './util.js';
 import { cv } from './draw/canvas.js';
 import { hideHint, log } from './ui.js';
-import { inEllipse } from './world/geometry.js';
+import { inEllipse, rebuildObs } from './world/geometry.js';
 import { newTown } from './world/town.js';
 import { save } from './world/save.js';
 import { ACT, say, setAct, isFree } from './sim/core.js';
@@ -38,7 +38,17 @@ cv.addEventListener('pointerdown', e => {
 });
 cv.addEventListener('pointermove', e => { cv.style.cursor = critterAt(toWorld(e)) ? 'pointer' : 'default'; });
 
-document.getElementById('reset').addEventListener('click', () => {
-  if (!confirm('Start over with a brand new town?')) return;
-  newTown(); save(); refreshStats(); log('A brand new town!');
+// "new town" asks for a second tap instead of using a confirm() dialog,
+// which embedded browsers tend to block.
+const $reset = document.getElementById('reset');
+let armed = null;
+function disarm() { clearTimeout(armed); armed = null; $reset.textContent = 'new town'; $reset.classList.remove('armed'); }
+$reset.addEventListener('click', () => {
+  if (!armed) {
+    $reset.textContent = 'start over?'; $reset.classList.add('armed');
+    armed = setTimeout(disarm, 3500);
+    return;
+  }
+  disarm();
+  newTown(); rebuildObs(); save(); refreshStats(); log('A brand new meadow.');
 });

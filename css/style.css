@@ -12,5 +12,6 @@ h1 { margin: 0; font-size: 26px; line-height: 1; letter-spacing: .5px; }
 button { font: 13px var(--hand); background: none; border: 2.5px solid #000; border-radius: 14px 11px 15px 10px; padding: 3px 10px 4px; cursor: pointer; opacity: .35; color: #000; }
 button:hover, button:focus-visible { opacity: 1; background: #ffe66d; }
 #reset { position: fixed; right: 14px; bottom: 12px; }
+#reset.armed { opacity: 1; background: #ffab76; }
 #radio { position: fixed; right: 14px; bottom: 46px; display: flex; gap: 6px; }
 #radio-toggle.on { opacity: 1; background: #ff8fc7; }
