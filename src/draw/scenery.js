@@ -206,16 +206,27 @@ export function drawArt(a) {
   ctx.restore();
 }
 
+// Flower: four soft petals round a yellow middle, a stubby stem and one leaf
+// with a darker edge. No ink outline. It sprouts (stem and leaf) and then blooms.
+const PETAL_AT = [[0.3, -4.2], [3.9, 0], [0.5, 4], [-4, 0.8]];
+const LEAF = [[0, -4], [2.5, -6.5], [6.2, -7], [4.5, -3.5], [3.5, -0.8], [0.8, 0]];
 export function drawFlower(f) {
-  const g = clamp(f.age / 14, 0.15, 1);
+  const g = clamp(f.age / 14, 0.15, 1), bloom = clamp((g - 0.4) / 0.6, 0, 1), sd = f.seed;
+  const color = f.color === '#ffffff' ? '#ff6e45' : f.color;
+  ctx.save(); ctx.translate(f.x, f.y);
+  const k = 1.25 * (0.5 + 0.5 * g) * (hs(sd, 1) < 0.5 ? -1 : 1);
+  ctx.scale(k, Math.abs(k));
   ctx.globalAlpha = f.dying !== undefined ? clamp(f.dying, 0, 1) : 1;
-  line([[f.x, f.y], [f.x + 1, f.y - 8 * g], [f.x, f.y - 16 * g]], f.seed, 2.4, '#5fb86a', 0.4);
-  if (g > 0.4) {
-    const r = 5.5 * g, cy = f.y - 16 * g - 2;
-    blob(f.x, cy, r, r, f.color, f.seed + 1, 7, 0.14, 0.4, 2);
-    dot(f.x, cy, 1.6 * g, '#ffb300');
+  smooth(wob(LEAF, sd, 0.2), true); ctx.fillStyle = '#adeb3c'; ctx.fill();
+  line(LEAF, sd, 1.2, '#77dd1a', 0.2);
+  line([[0.5, 0], [-0.5, -3], [-1.5, -6.5]], sd + 1, 3.6, '#adeb3c', 0.2);
+  if (bloom > 0) {
+    ctx.translate(-2.2, -11); ctx.scale(bloom, bloom);
+    ctx.fillStyle = color;
+    for (const [n, [px, py]] of PETAL_AT.entries()) { smooth(blobPts(px, py, 3.6, 3.6, 7, sd + 2 + n, 0.1, 0.25), true); ctx.fill(); }
+    smooth(blobPts(0, 0, 2.8, 2.6, 7, sd + 8, 0.08, 0.2), true); ctx.fillStyle = '#ffe833'; ctx.fill();
   }
-  ctx.globalAlpha = 1;
+  ctx.restore();
 }
 export function drawApple(a) {
   const y = a.y - a.z;
