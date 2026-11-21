@@ -9,6 +9,7 @@ export default {
   weight: c => nearestBall(c) ? 0.55 : 0,
   start(c) {
     const b = nearestBall(c);
+    if (!b) return false;   // (a friend may suggest a kickabout when the ball's on a roof or in a game)
     c.nextWalk = 'skip';
     goTo(c, b.x, b.y + 1, () => {
       if (dist(c, b) > 26 || b.game || b.fly || b.held || b.roof != null) return;   // somebody else got there first

@@ -98,7 +98,8 @@ export const ring = {
   id: 'ballRing',
   weight: c => nearestBall(c) ? 0.9 : 0,
   start(c) {
-    const b = nearestBall(c), mates = S.critters.filter(o => o !== c && isFree(o) && dist(o, b) < 430).sort((p, q) => dist(p, b) - dist(q, b)).slice(0, pick([1, 1, 2, 3]));
+    const b = nearestBall(c); if (!b) return false;
+    const mates = S.critters.filter(o => o !== c && isFree(o) && dist(o, b) < 430).sort((p, q) => dist(p, b) - dist(q, b)).slice(0, pick([1, 1, 2, 3]));
     if (!mates.length) return false;
     const o = centre(b), n = mates.length + 1, R = n === 2 ? 64 : 72;
     begin(c, 'ring', mates, [c, ...mates].map((p, i) => { const a = n === 2 ? (i ? 0 : Math.PI) : -Math.PI / 2 + i / n * TAU; return { x: o.x + Math.cos(a) * R, y: o.y + Math.sin(a) * R * 0.55 }; }), { ball: b, need: 2, goal: 8 + irand(9) });
@@ -107,13 +108,14 @@ export const ring = {
 export const keepy = {
   id: 'ballKeepy',
   weight: c => nearestBall(c) ? 0.4 : 0,
-  start(c) { const b = nearestBall(c); begin(c, 'keepy', [], [{ x: b.x, y: b.y + 1 }], { ball: b, need: 1, goal: 8 + irand(14) }); },
+  start(c) { const b = nearestBall(c); if (!b) return false; begin(c, 'keepy', [], [{ x: b.x, y: b.y + 1 }], { ball: b, need: 1, goal: 8 + irand(14) }); },
 };
 export const bat = {
   id: 'ballBat',
   weight: c => nearestBall(c) ? 0.45 : 0,
   start(c) {
-    const b = nearestBall(c), mate = S.critters.filter(o => o !== c && isFree(o) && dist(o, b) < 430).sort((p, q) => dist(p, b) - dist(q, b))[0];
+    const b = nearestBall(c); if (!b) return false;
+    const mate = S.critters.filter(o => o !== c && isFree(o) && dist(o, b) < 430).sort((p, q) => dist(p, b) - dist(q, b))[0];
     if (!mate) return false;
     const o = centre(b), side = o.x > S.W / 2 ? -1 : 1;   // hit towards the roomier side
     begin(c, 'bat', [mate], [{ x: o.x - side * 55, y: o.y }, { x: o.x + side * 55, y: o.y }], { ball: b, need: 2, side, strikes: 0 });   // players[0] bats, players[1] pitches
@@ -193,6 +195,7 @@ export const dribble = {
   weight: c => nearestBall(c) ? 0.4 : 0,
   start(c) {
     const b = nearestBall(c);
+    if (!b) return false;
     goTo(c, b.x - 20, b.y, () => {
       if (!spare(b) || dist(c, b) > 40) return;
       b.held = c; c.dribbling = b;
@@ -208,6 +211,7 @@ export const balance = {
   weight: c => nearestBall(c) ? 0.3 : 0,
   start(c) {
     const b = nearestBall(c);
+    if (!b) return false;
     goTo(c, b.x, b.y + 1, () => {
       if (!spare(b) || dist(c, b) > 30) return;
       b.held = c; c.onBall = b; c.x = b.x; c.y = b.y + 0.5; c.sink = -15;

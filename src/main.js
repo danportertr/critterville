@@ -48,8 +48,8 @@ function frame(ts) {
   try {
     const steps = Math.ceil(SPEED);
     for (let i = 0; i < steps; i++) updateWorld(dt * SPEED / steps);
-    render();
   } catch (e) { console.error(e); }
+  try { render(); } catch (e) { console.error(e); }
   requestAnimationFrame(frame);
 }
 

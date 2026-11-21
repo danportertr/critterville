@@ -35,7 +35,7 @@ const PRANKS = [
     can: () => built(S.pool) && !(S.pool.junk && S.pool.junk.length),
     at: () => ({ x: S.pool.x + S.pool.rx + 26, y: S.pool.y + 10 }),
     go() { const what = S.tank && S.tank.fish.length && rand() < 0.5 ? 'fish' : 'apple'; S.pool.junk = Array.from({ length: 5 + irand(4) }, (_, i) => ({ what, a: rand(TAU), r: rand(0.15, 0.75), seed: irand(1000) })); S.pool.prankAt = S.clock; return what === 'fish' ? 'filled the pool with fish' : 'filled the pool with apples'; },
-    where: () => S.pool.junk && S.pool.junk.length ? S.pool : null, when: () => S.pool.prankAt,
+    where: () => S.pool && S.pool.junk && S.pool.junk.length ? S.pool : null, when: () => S.pool.prankAt,
     undo() { S.pool.junk = []; return 'fished everything out of the pool'; } },
   { id: 'dye', w: 1.6,
     can: () => built(S.pool) && !S.pool.dye,
