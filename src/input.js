@@ -25,6 +25,11 @@ function critterAt(p) {
   return best;
 }
 
+function artAt(p) {
+  let best = null;
+  for (const a of S.arts) if (a.progress >= 1 && a.dying === undefined && Math.abs(p.x - a.x) < 26 && p.y > a.y - 72 && p.y < a.y + 4 && (!best || a.y > best.y)) best = a;
+  return best;
+}
 function houseAt(p) {
   let best = null;
   for (const h of S.houses) {
@@ -45,10 +50,17 @@ function whoLivesIn(h) {
 cv.addEventListener('pointerdown', e => {
   const p = toWorld(e), c = critterAt(p);
   hideHint();
+  if (S.viewing && S.now < S.viewing.until) { S.viewing = null; return; }   // tap anywhere to put the painting down
   if (c) {
     say(c, c.name, 2); c.surprise = 0.5;
     if (c.act !== 'swing' && c.act !== 'swim') c.hopV = 170;
     if (isFree(c)) setAct(c, 'wave', 1.6);
+    return;
+  }
+  const art = artAt(p);
+  if (art) {
+    if (art.type === 'painting') { S.viewing = { art, until: S.now + 8 }; S.sign = null; }
+    else S.sign = { x: art.x, y: art.y - 74, text: `A sculpture by ${art.by}.`, until: S.now + 4 };
     return;
   }
   const h = houseAt(p);
@@ -62,7 +74,7 @@ cv.addEventListener('pointerdown', e => {
   const near = S.critters.filter(c => isFree(c) && !c.apple).sort((x, y) => dist(x, a) - dist(y, a))[0];
   if (near && dist(near, a) < 500) { ACT.snack.fetch(near, a); say(near, '!', 0.9); }
 });
-cv.addEventListener('pointermove', e => { const p = toWorld(e); cv.style.cursor = critterAt(p) || houseAt(p) ? 'pointer' : 'default'; });
+cv.addEventListener('pointermove', e => { const p = toWorld(e); cv.style.cursor = critterAt(p) || artAt(p) || houseAt(p) ? 'pointer' : 'default'; });
 
 // "new town" asks for a second tap instead of using a confirm() dialog,
 // which embedded browsers tend to block.

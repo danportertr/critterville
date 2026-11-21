@@ -10,7 +10,7 @@ export const FONT = '700 15px "Chalkboard SE","Comic Sans MS","Comic Neue","Mark
 export const HOUSE = { w: 96, h: 80, roof: 50, upstairs: 32, scale: 1.2, residents: 3 };   // upstairs: extra wall height from that add-on
 export const ADDONS = ['chimney', 'annex', 'upstairs'];
 // How far a painter can "see" from the easel, in world units.
-export const VIEW = { rx: 200, ry: 135 };
+export const VIEW = { rx: 260, ry: 175 };
 export const STREAM_HALF = 17;      // half the width of a stream
 export const BRIDGE = { reach: STREAM_HALF + 16, half: 13, detour: 320 };   // reach: centre to each end; detour: how far they'll walk to use it
 export const TANK = { w: 66, h: 40, legs: 22, holds: 6 };   // the fish tank: glass size, stand height, how many it holds

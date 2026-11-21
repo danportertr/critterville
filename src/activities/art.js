@@ -26,7 +26,8 @@ function lookAround(a, painter) {
     if (Math.abs(x) < VIEW.rx && Math.abs(y) < VIEW.ry) els.push({ k, x: Math.round(x), y: Math.round(y), ...extra });
   };
   for (const t of S.trees) see('tree', t, { c: t.color });
-  for (const h of S.houses) if (built(h)) see('house', h, { c: h.color, c2: h.roof });
+  for (const h of S.houses) if (built(h)) see('house', h, { c: h.color, c2: h.roof, add: h.addons.slice() });
+  if (built(S.tank)) see('tank', S.tank);
   for (const f of S.flowers) see('flower', f, { c: f.color });
   for (const o of S.arts) if (o !== a && o.progress >= 1) see('art', o);
   for (const o of S.critters) if (o !== painter && !o.hidden) see('critter', o, { c: o.head, c2: o.body, name: o.name });
@@ -40,12 +41,17 @@ function lookAround(a, painter) {
     const pts = S.stream.pts.map(([x, y]) => [Math.round(x - a.x), Math.round(y - a.y)]).filter(([x, y]) => Math.abs(x) < VIEW.rx * 1.6 && Math.abs(y) < VIEW.ry * 1.3);
     if (pts.length > 1 && pts.some(([x, y]) => Math.abs(x) < VIEW.rx && Math.abs(y) < VIEW.ry)) els.push({ k: 'stream', x: pts[0][0], y: Math.min(...pts.map(q => Math.abs(q[1]))), pts });
   }
-  const flat = e => e.k === 'pond' || e.k === 'pool' || e.k === 'stream';
-  return els.filter(flat).concat(els.filter(e => !flat(e)));
+  if (built(S.bridge)) {   // drawn as a plank across the stream
+    const b = S.bridge, r = 30, x = b.x - a.x, y = b.y - a.y;
+    if (Math.abs(x) < VIEW.rx && Math.abs(y) < VIEW.ry) els.push({ k: 'bridge', x: Math.round(x), y: Math.round(y), pts: [[x - b.nx * r, y - b.ny * r], [x + b.nx * r, y + b.ny * r]].map(q => q.map(Math.round)) });
+  }
+  const flat = e => e.k === 'pond' || e.k === 'pool' || e.k === 'stream' || e.k === 'bridge';
+  const order = { stream: 0, pond: 0, pool: 0, bridge: 1 };
+  return els.filter(flat).sort((p, q) => order[p.k] - order[q.k]).concat(els.filter(e => !flat(e)));
 }
 /** A few words for what a painting is mostly of: the nearest thing worth naming. */
 function subjectOf(view) {
-  const NAMES = { stream: 'the stream', pond: 'the pond', pool: 'the pool', tree: 'an apple tree', house: 'a house', swing: 'the swing set', fire: 'the campfire', art: 'someone else\'s art' };
+  const NAMES = { stream: 'the stream', bridge: 'the bridge', tank: 'the fish tank', pond: 'the pond', pool: 'the pool', tree: 'an apple tree', house: 'a house', swing: 'the swing set', fire: 'the campfire', art: 'someone else\'s art' };
   const far = e => e.k === 'stream' ? e.y : Math.hypot(e.x, e.y);
   const near = view.filter(e => e.k !== 'flower').sort((p, q) => far(p) - far(q))[0];
   if (!near) return view.length ? 'some flowers' : 'the meadow';
@@ -67,7 +73,8 @@ function done(c) {
   const a = c.art;
   a.progress = 1; c.cleanup = null; c.art = null;
   c.hopV = 140; say(c, pick(['♥', 'ta-da', '!']));
-  note(a.type === 'sculpture' ? `${c.name} finished a sculpture.` : `${c.name} painted ${subjectOf(a.view)}.`);
+  if (a.type === 'painting') a.title = subjectOf(a.view);
+  note(a.type === 'sculpture' ? `${c.name} finished a sculpture.` : `${c.name} painted ${a.title}.`);
   const finished = S.arts.filter(o => o.progress >= 1 && o.dying === undefined);
   if (finished.length > artCap()) finished[0].dying = 1;
 }

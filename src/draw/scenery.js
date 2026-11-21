@@ -261,8 +261,8 @@ const CANVAS = [[-22, -68], [22, -68], [22, -30], [-22, -30]];
 // activities/art.js). x/y are offsets from the easel in world units.
 function mini(el) {
   const px = el.x / VIEW.rx * 18, py = -43 + el.y / VIEW.ry * 11;   // leave headroom: things are drawn upwards from their base
-  if (el.k === 'pond' || el.k === 'pool' || el.k === 'stream') return miniShape(el, px, py);
-  ctx.save(); ctx.translate(px, py); ctx.scale(1.6, 1.6);   // bigger than life, so it reads
+  if (el.k === 'pond' || el.k === 'pool' || el.k === 'stream' || el.k === 'bridge') return miniShape(el, px, py);
+  ctx.save(); ctx.translate(px, py); ctx.scale(1.25, 1.25);   // a little bigger than life, so it reads
   miniShape(el, 0, 0);
   ctx.restore();
 }
@@ -277,10 +277,20 @@ function miniShape(el, x, y) {
       ctx.lineWidth = 3.4; ctx.strokeStyle = '#a8dcf5'; ctx.lineJoin = 'round'; return ctx.stroke();
     case 'pond': return oval(x, y, el.rx / VIEW.rx * 21, el.ry / VIEW.ry * 18, '#a8dcf5');
     case 'pool': oval(x, y, el.rx / VIEW.rx * 21 + 1, el.ry / VIEW.ry * 18 + 1, '#fff'); return oval(x, y, el.rx / VIEW.rx * 21, el.ry / VIEW.ry * 18, '#74dbe8');
-    case 'tree': rect(x - 0.9, y - 5, 1.8, 5, '#b06634'); oval(x, y - 7.5, 4, 3.6, el.c); return oval(x + 1, y - 7, 0.8, 0.8, '#fb6540');
-    case 'house':
-      rect(x - 4, y - 5, 8, 5, el.c);
-      ctx.beginPath(); ctx.moveTo(x - 5, y - 5); ctx.lineTo(x, y - 9); ctx.lineTo(x + 5, y - 5); ctx.closePath(); return fill(el.c2);
+    case 'tree': rect(x - 0.9, y - 5, 1.8, 5, '#b06634'); oval(x - 2, y - 6.6, 2.6, 2.3, el.c); oval(x + 2, y - 6.6, 2.6, 2.3, el.c); oval(x, y - 8.6, 2.8, 2.6, el.c); oval(x - 1, y - 7, 0.7, 0.7, '#fb6540'); return oval(x + 1.4, y - 6.4, 0.7, 0.7, '#fb6540');
+    case 'house': {
+      const add = el.add || [], top = add.includes('upstairs') ? 8 : 5.5;
+      if (add.includes('annex')) { rect(x - 7.5, y - 3.2, 4, 3.2, el.c); ctx.beginPath(); ctx.moveTo(x - 8.2, y - 3); ctx.lineTo(x - 3.6, y - 5.2); ctx.lineTo(x - 3.6, y - 3); ctx.closePath(); fill(el.c2); }
+      if (add.includes('chimney')) rect(x + 1.6, y - top - 5, 1.8, 4, el.c);
+      rect(x - 4, y - top, 8, top, el.c);
+      rect(x - 1.2, y - 3.2, 2.4, 3.2, shade(el.c, 0.8));
+      ctx.beginPath(); ctx.moveTo(x - 5.4, y - top + 0.6); ctx.lineTo(x, y - top - 4.2); ctx.lineTo(x + 5.4, y - top + 0.6); ctx.closePath(); return fill(el.c2);
+    }
+    case 'bridge':
+      ctx.beginPath();
+      el.pts.forEach(([sx, sy], i) => ctx[i ? 'lineTo' : 'moveTo'](sx / VIEW.rx * 18, -43 + sy / VIEW.ry * 11));
+      ctx.lineWidth = 2.6; ctx.strokeStyle = WOOD; ctx.lineCap = 'butt'; ctx.stroke(); ctx.lineCap = 'round'; return;
+    case 'tank': rect(x - 2.6, y - 1.6, 0.8, 1.6, WOOD); rect(x + 1.8, y - 1.6, 0.8, 1.6, WOOD); rect(x - 3.2, y - 5.2, 6.4, 3.6, '#8fd8ee'); return oval(x + 0.6, y - 3.4, 1, 0.6, '#ffa23d');
     case 'swing': ctx.beginPath(); ctx.moveTo(x - 6, y); ctx.lineTo(x - 5, y - 9); ctx.lineTo(x + 5, y - 9); ctx.lineTo(x + 6, y); ctx.lineWidth = 1.3; ctx.strokeStyle = '#ff8f8f'; return ctx.stroke();
     case 'fire': rect(x - 2, y - 0.6, 4, 1.2, '#b06634'); return oval(x, y - 2, 1.4, 2, '#ffab45');
     case 'critter': rect(x - 1.2, y - 3.4, 2.4, 3.4, el.c2); return oval(x, y - 5, 2, 1.9, el.c);
@@ -323,18 +333,29 @@ const SCULPTURES = {
   },
   arch: a => tube([[-11, -11], [-13, -40], [0, -55], [13, -40], [11, -11]], 7, a.c1, a.seed + 3, 0.5),
 };
+/** The canvas itself: frame, and as much of the picture as has been painted so far. */
+function paintCanvas(a, lw) {
+  box(CANVAS, '#fff', a.seed + 1, 0.4, lw);
+  const els = PAINTINGS[a.style](a), n = Math.ceil(a.progress * els.length - 0.001);
+  ctx.save(); polyPath(wob(CANVAS, a.seed + 1, 0.4)); ctx.clip();
+  for (let i = 0; i < n; i++) els[i]();
+  ctx.restore();
+  polyPath(wob(CANVAS, a.seed + 1, 0.4)); paint(null, lw);
+}
+/** A painting held up close: the same picture, k times bigger, centred on (x, y). */
+export function drawPaintingLarge(a, x, y, k) {
+  ctx.save(); ctx.translate(x, y); ctx.scale(k, k); ctx.translate(0, 49);
+  ctx.fillStyle = 'rgba(0,0,0,.12)'; ctx.fillRect(-21, -66, 46, 40);   // drop shadow
+  paintCanvas(a, 3.2 / k);
+  ctx.restore();
+}
 export function drawArt(a) {
   ctx.save(); ctx.translate(a.x, a.y);
   if (a.dying !== undefined) ctx.globalAlpha = clamp(a.dying, 0, 1);
   shadow(0, 1, 18, 4);
   if (a.type === 'painting') {
     for (const [x, y] of [[-16, 0], [16, 0], [3, -7]]) line([[0, -60], [x, y]], a.seed + x, 3, INK, 0.4);
-    box(CANVAS, '#fff', a.seed + 1, 0.4, 2.4);
-    const els = PAINTINGS[a.style](a), n = Math.ceil(a.progress * els.length - 0.001);
-    ctx.save(); polyPath(wob(CANVAS, a.seed + 1, 0.4)); ctx.clip();
-    for (let i = 0; i < n; i++) els[i]();
-    ctx.restore();
-    polyPath(wob(CANVAS, a.seed + 1, 0.4)); paint(null, 2.4);
+    paintCanvas(a, 2.4);
   } else {
     box([[-15, 0], [15, 0], [13, -10], [-13, -10]], '#f1efe6', a.seed + 1, 0.4);
     const cut = -60 + 50 * a.progress;   // carved from the top down
