@@ -20,7 +20,7 @@ function resize() {
   S.zoom = clamp(Math.sqrt(w * h) / 1000, 0.5, 1.5);
   cv.width = Math.round(w * S.dpr); cv.height = Math.round(h * S.dpr);
   S.W = w / S.zoom; S.H = h / S.zoom;
-  S.cap = clamp(Math.floor(S.W * S.H / 55000), 6, 22);
+  S.cap = clamp(Math.floor(S.W * S.H / 100000), 6, 9);   // a small town, on purpose
   if (!oW || !S.pond) return;
   // Stretch the existing town to fit the new window.
   const fx = S.W / oW, fy = S.H / oH;

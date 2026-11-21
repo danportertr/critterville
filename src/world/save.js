@@ -9,7 +9,7 @@ export function save() {
   if (!S.W || !S.pond) return;
   try {
     localStorage.setItem(SAVE_KEY, JSON.stringify({
-      v: SAVE_VERSION, W: S.W, H: S.H, clock: S.clock, stats: S.stats, pond: S.pond, pool: S.pool, fire: S.fire,
+      v: SAVE_VERSION, W: S.W, H: S.H, clock: S.clock, pond: S.pond, pool: S.pool, fire: S.fire,
       swing: S.swing && { x: S.swing.x, y: S.swing.y, seed: S.swing.seed, progress: S.swing.progress },
       houses: S.houses, trees: S.trees,
       flowers: S.flowers.filter(f => f.dying === undefined),
@@ -28,7 +28,6 @@ export function load() {
   const fx = S.W / d.W, fy = S.H / d.H;
   const mv = o => { if (o) { o.x *= fx; o.y *= fy; } return o; };
   S.clock = d.clock || 0;
-  S.stats = { fish: 0, planted: 0, art: 0, ...d.stats };
   S.pond = mv(d.pond); S.pond.rx *= fx; S.pond.ry = S.pond.rx * 0.5;
   S.pool = mv(d.pool) || null; if (S.pool) { S.pool.rx *= fx; S.pool.ry = S.pool.rx * 0.48; }
   S.fire = mv(d.fire) || null;

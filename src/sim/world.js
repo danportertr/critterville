@@ -11,7 +11,9 @@ import { updateCritter, goTo, setAct, say } from './core.js';
 let lastPhase = null, townT = 0, arriveT = 45, saveT = 15;
 
 export function refreshStats() {
-  setStats(`day ${dayNum()} · ${S.critters.length} critters · ${S.flowers.length} flowers · ${S.stats.fish} fish · ${S.stats.art} artworks`);
+  // No scores: this isn't a game about getting more of anything.
+  const p = phase();
+  setStats(`day ${dayNum()} · ${p < 0.3 ? 'morning' : p < 0.6 ? 'afternoon' : p < 0.72 ? 'evening' : p < 0.96 ? 'night' : 'dawn'}`);
 }
 
 function updateBall(dt) {
@@ -41,7 +43,8 @@ function fade(list, dt, onRemove) {
 export const currentSite = () => [S.fire, S.swing, S.pool, ...S.houses].find(o => o && o.progress < 1);
 
 // The town plan: a fire to gather round, somewhere to sleep, then the fun stuff,
-// then more houses whenever there are more critters than beds.
+// and enough houses for everyone. Once that's done the town is finished and
+// the critters just get on with enjoying it.
 function growTown() {
   if (!currentSite()) {
     const beds = S.houses.length * HOUSE.residents, n = S.critters.length;
@@ -51,7 +54,7 @@ function growTown() {
     else if (!S.swing) { planSwing(); msg = 'Somebody had an idea: a swing set.'; }
     else if (beds < n && S.houses.length < 2) { newHouse(0); msg = 'A new house is going up.'; }
     else if (!S.pool) { planPool(); msg = 'The critters are digging a pool.'; }
-    else if (beds < n && S.houses.length < 10) { newHouse(0); msg = 'A new house is going up.'; }
+    else if (beds < n && S.houses.length < 4) { newHouse(0); msg = 'A new house is going up.'; }
     if (msg) { rebuildObs(); log(msg); }
   }
   if (!S.ball && S.houses.some(built)) {   // turns up in the moving boxes
@@ -101,6 +104,6 @@ export function updateWorld(dt) {
   }
 
   if ((townT -= dt) <= 0) { townT = 5; growTown(); }
-  if ((arriveT -= dt) <= 0) { arriveT = rand(70, 150); arrive(); }
+  if ((arriveT -= dt) <= 0) { arriveT = rand(90, 200); arrive(); }
   if ((saveT -= dt) <= 0) { saveT = 15; save(); }
 }

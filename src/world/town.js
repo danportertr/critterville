@@ -75,7 +75,6 @@ export function scatterDecor() {
 export function newTown() {
   const { W, H } = S;
   Object.assign(S, { critters: [], houses: [], trees: [], flowers: [], apples: [], arts: [], pond: null, pool: null, swing: null });
-  S.stats = { fish: 0, planted: 0, art: 0 };
   S.clock = DAY_LEN * 0.08;
 
   // Only nature to begin with. The critters build the rest (see sim/world.js).

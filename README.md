@@ -4,7 +4,7 @@
 
 A tiny town of little guys who walk around and do things. There isn't much to do except watch — it's something to leave running.
 
-The town starts as an empty meadow: trees, a pond, a few flowers. The critters build everything else themselves — first a campfire, then houses, a swing set and a pool — and more of them move in over time.
+The town starts as an empty meadow: trees, a pond, a few flowers. The critters build everything else themselves — first a campfire, then houses, a swing set and a pool — and a few more move in until it's a small, settled town. There are no scores and nothing to collect.
 
 The critters:
 

@@ -24,8 +24,8 @@ export default {
         c.fishAnim -= dt;
         if (!c.caught && (c.catchT -= dt) <= 0) {
           c.caught = true; c.fishAnim = 1.2; c.t = Math.min(c.t, 2.2);
-          S.stats.fish++; say(c, '!'); c.hopV = 90;
-          if (rand() < 0.5) log(`${c.name} caught a fish!`);
+          say(c, '!'); c.hopV = 90;
+          if (rand() < 0.3) log(`${c.name} caught a fish and let it go.`);
         }
         tick(c, dt);
       },

@@ -9,8 +9,7 @@ export const S = {
   pond: null,                      // nature: there from the start (with the trees)
   fire: null, pool: null, swing: null, ball: null,   // made by the critters; null until someone starts on them
   obs: [],                         // ellipses critters walk around
-  stats: { fish: 0, planted: 0, art: 0 },
-  cap: 10,                         // max population for this screen size
+  cap: 8,                          // how many critters live here once everyone has moved in
 };
 
 /** Has this thing been planned *and* finished? (Buildables carry a 0..1 progress.) */

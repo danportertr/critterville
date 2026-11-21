@@ -16,7 +16,6 @@ export default {
     plant: {
       finish(c) {
         S.flowers.push({ x: c.x + rand(-4, 4), y: c.y + 3, seed: irand(1e6), color: pick(PETALS), age: 0 });
-        S.stats.planted++;
         if (S.flowers.length > flowerCap()) { const old = S.flowers.find(f => f.dying === undefined); if (old) old.dying = 1; }
         if (rand() < 0.2) log(`${c.name} planted a flower.`);
       },

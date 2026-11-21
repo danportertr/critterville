@@ -30,7 +30,6 @@ function work(c, dt) {
 function done(c) {
   const a = c.art;
   a.progress = 1; c.cleanup = null; c.art = null;
-  S.stats.art++;
   c.hopV = 140; say(c, pick(['♥', 'ta-da', '!']));
   log(a.type === 'sculpture' ? `${c.name} finished a sculpture.` : `${c.name} painted ${a.of || (a.style === 'landscape' ? 'a landscape' : 'something abstract')}.`);
   const finished = S.arts.filter(o => o.progress >= 1 && o.dying === undefined);
