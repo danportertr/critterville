@@ -27,6 +27,12 @@ Every day or three something rare happens that leaves the town a little differen
 
 You can tap a critter to say hi, tap a house to see who lives there, tap a painting to see it up close, or tap the ground to drop a snack. There's also a little ♪ radio button that plays a lofi internet radio stream (the critters dance more when it's on); the stations are listed in `src/config.js`. The town is saved in your browser, so it's still there when you come back.
 
+## Which build am I looking at?
+
+The small `build N` under the title is the version the page is actually running. GitHub Pages lets browsers cache files for about ten minutes, so after an update the page checks for itself and shows a "build N is out: reload" button if it's behind. In the console, `critterville.version` gives the same number.
+
+The number lives in `src/version.js`. Bump it by one whenever you commit a change.
+
 ## Running it
 
 No build step and no dependencies: it's plain ES modules drawn on a canvas. Serve the folder with anything, for example:

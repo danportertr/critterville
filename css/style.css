@@ -36,3 +36,7 @@ button:hover, button:focus-visible { opacity: 1; background: #ffe66d; }
 #journal .card p { margin: 4px 0 0; }
 #journal .card .meta { opacity: .65; font-size: 13px; }
 #journal .card.unseen { border-style: dashed; background: none; }
+
+#version { margin-top: 3px; font-size: 12px; opacity: .45; pointer-events: auto; }
+#version.stale { opacity: 1; }
+#version a { color: inherit; background: #ffe66d; border: 2px solid #000; border-radius: 10px 8px 11px 7px; padding: 0 7px 1px; text-decoration: none; cursor: pointer; }
