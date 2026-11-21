@@ -35,12 +35,23 @@ export default {
     const { W, H } = S, k = falling(e);
     if (k > 0) {
       ctx.fillStyle = `rgba(105,125,170,${0.16 * k})`; ctx.fillRect(0, 0, W, H);
-      ctx.strokeStyle = `rgba(80,110,170,${0.6 * k})`; ctx.lineWidth = 1.7; ctx.beginPath();
-      for (let i = 0; i < 80; i++) {
-        const x = ((hs(11, i) * 1.2 + S.now * 0.03) % 1.2) * W - 20, y = ((hs(12, i) + S.now * (1.3 + hs(13, i) * 0.7)) % 1) * (H + 40) - 20;
-        ctx.moveTo(x, y); ctx.lineTo(x - 4, y + 13);
+      // Teardrops, falling at a gentle pace (a couple of seconds from top to bottom).
+      ctx.fillStyle = `rgba(95,150,220,${0.75 * k})`; ctx.beginPath();
+      for (let i = 0; i < 85; i++) {
+        const x = hs(11, i) * W + Math.sin(S.now * 0.8 + i) * 3, y = ((hs(12, i) + S.now * (0.38 + hs(13, i) * 0.18)) % 1) * (H + 30) - 15, r = 3 + hs(14, i) * 1.4;
+        ctx.moveTo(x, y - r * 2.6);
+        ctx.quadraticCurveTo(x + r * 1.5, y + r * 0.3, x, y + r);
+        ctx.quadraticCurveTo(x - r * 1.5, y + r * 0.3, x, y - r * 2.6);
       }
-      ctx.stroke();
+      ctx.fill();
+      // ...and the little rings where they land
+      ctx.strokeStyle = `rgba(95,150,220,${0.5 * k})`; ctx.lineWidth = 1.4;
+      for (let i = 0; i < 14; i++) {
+        const t = (S.now * 0.9 + hs(15, i) * 5) % 1, n = Math.floor(S.now * 0.9 + hs(15, i) * 5);
+        ctx.globalAlpha = 1 - t;
+        ctx.beginPath(); ctx.ellipse(hs(16, i + n * 7) * W, 80 + hs(17, i + n * 7) * (H - 90), 2 + t * 9, 1 + t * 3.5, 0, 0, 7); ctx.stroke();
+      }
+      ctx.globalAlpha = 1;
     }
     if (e.t > RAIN - 4) {   // the rainbow fades in as the rain thins, and out at the end
       const a = clamp((e.t - RAIN + 4) / 8, 0, 1) * clamp((e.dur - e.t) / 10, 0, 1) * 0.42;
