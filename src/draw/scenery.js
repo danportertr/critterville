@@ -4,6 +4,7 @@ import { S } from '../state.js';
 import { INK, LW, HOUSE, SWING, TANK, VIEW, STREAM_HALF, BRIDGE, WOOD, STONE } from '../config.js';
 import { SPECIES_BY_ID } from '../data/fish.js';
 import { drawFish } from './fish.js';
+import { drawHat } from './cart.js';
 import { streamPoint } from '../world/geometry.js';
 import { TAU, clamp, hs, shade } from '../util.js';
 import { jit, wob, smooth, polyPath, blobPts, paint, blob, box, line, tube, dot } from './primitives.js';
@@ -306,21 +307,127 @@ const PAINTINGS = {
     () => { ctx.fillStyle = '#f3fbdc'; ctx.fillRect(-24, -70, 48, 42); },
     ...a.view.map(el => () => mini(el)),
   ],
+  // The same scene with a wash of one colour over it.
+  tinted: a => [
+    ...PAINTINGS.view(a),
+    () => { ctx.globalCompositeOperation = 'multiply'; ctx.fillStyle = a.tint.color; ctx.fillRect(-24, -70, 48, 42); ctx.globalCompositeOperation = 'source-over'; },
+  ],
+  // One thing from the view, filling the canvas.
+  closeup: a => {
+    const el = a.subject, bg = a.bg || '#fff3b0';
+    if (el.k === 'critter') return [
+      ...PAINTINGS.portrait({ ...a, c1: el.c, c2: el.c2, c3: bg }),
+      () => { if (el.hat) { ctx.save(); ctx.translate(0, -56.5); ctx.scale(0.55, 0.55); drawHat(el.hat, 1, a.seed + 9); ctx.restore(); } },
+    ];
+    if (el.k === 'fish') {
+      const sp = SPECIES_BY_ID[el.id];
+      return [
+        () => { ctx.fillStyle = '#c9ecf8'; ctx.fillRect(-24, -70, 48, 42); },
+        () => { for (let i = 0; i < 5; i++) dot(-18 + hs(a.seed, i) * 36, -64 + hs(a.seed, i + 9) * 30, 1 + hs(a.seed, i + 20), '#fff'); },
+        () => { if (sp) drawFish(sp, 1, -49, Math.min(1.6, 36 / ((sp.L || 26) + 12)), a.seed); },
+      ];
+    }
+    if (el.k === 'event') return (EVENT_PICS[el.id === 'cart' ? el.kind : el.id] || EVENT_PICS.rain)(a, bg);
+    const k = { tree: 3.3, house: 2.5, tank: 5, swing: 3.2, fire: 6, flower: 4.6 }[el.k] || 3;
+    return [
+      () => { ctx.fillStyle = bg; ctx.fillRect(-24, -70, 48, 42); },
+      () => { ctx.fillStyle = shade(bg, 0.9); ctx.fillRect(-24, -37, 48, 9); },
+      () => { ctx.save(); ctx.translate(0, -34); ctx.scale(k, k); if (el.k === 'flower') bigFlower(el); else miniShape(el, 0, 0); ctx.restore(); },
+    ];
+  },
   portrait: a => [
-    () => { ctx.fillStyle = a.c3; ctx.fillRect(-20, -62, 40, 36); },
-    () => box([[-7, -36], [7, -36], [8, -26], [-8, -26]], a.c2, a.seed + 3, 0.3, 1.6),
-    () => blob(0, -46, 9.5, 9, a.c1, a.seed + 4, 8, 0.06, 0.3, 1.8),
-    () => { dot(1.5, -49, 1); dot(4, -48.4, 1); line([[-2, -46], [-2, -41], [1, -39], [4, -42], [4.5, -45.5]], a.seed + 5, 1.4, INK, 0.2); },
+    () => { ctx.fillStyle = a.c3; ctx.fillRect(-24, -70, 48, 42); },
+    () => box([[-9, -37], [9, -37], [11, -27], [-11, -27]], a.c2, a.seed + 3, 0.3, 1.6),
+    () => blob(0, -46.5, 12, 11.5, a.c1, a.seed + 4, 8, 0.06, 0.3, 1.8),
+    () => { dot(2, -50.5, 1.2); dot(5.2, -49.7, 1.2); line([[-2.5, -46.5], [-2.5, -40.5], [1.5, -38], [5.5, -41.5], [6, -46]], a.seed + 5, 1.6, INK, 0.2); },
   ],
   landscape: a => [
-    () => { ctx.fillStyle = '#c8f0ff'; ctx.fillRect(-20, -62, 40, 36); },
+    () => { ctx.fillStyle = '#c8f0ff'; ctx.fillRect(-24, -70, 48, 42); },
     () => blob(8, -51, 5, 5, '#ffe66d', a.seed + 3, 7, 0.04, 0.3, 1.6),
     () => blob(-6, -27, 20, 12, a.c1, a.seed + 4, 9, 0.1, 0.3, 1.8),
     () => blob(12, -25, 14, 9, a.c2, a.seed + 5, 8, 0.1, 0.3, 1.8),
   ],
-  abstract: a => [0, 1, 2, 3, 4].map(i => () =>
-    blob((hs(a.seed, i) - 0.5) * 24, -44 + (hs(a.seed, i + 9) - 0.5) * 22, 4 + hs(a.seed, i + 20) * 6, 4 + hs(a.seed, i + 30) * 6, [a.c1, a.c2, a.c3][i % 3], a.seed + 3 + i, 7, 0.2, 0.3, 1.6)),
+  // No subject at all: just the colours of whatever was around, arranged.
+  abstract: a => {
+    const pal = a.palette || [a.c1, a.c2, a.c3], col = i => pal[i % pal.length], r = i => hs(a.seed, i);
+    const fillBox = (c, x0, y0, x1, y1) => { ctx.fillStyle = c; ctx.fillRect(x0, y0, x1 - x0, y1 - y0); };
+    switch (a.variant) {
+      case 'stripes':
+        return [0, 1, 2, 3, 4, 5].map(i => () => {
+          const x = -24 + i * 8;
+          ctx.fillStyle = col(i); ctx.beginPath();
+          ctx.moveTo(x + r(i) * 3, -70); ctx.lineTo(x + 9 + r(i + 9) * 3, -70); ctx.lineTo(x + 9 + r(i + 20) * 3, -28); ctx.lineTo(x + r(i + 30) * 3, -28); ctx.fill();
+        });
+      case 'grid': {
+        const xs = [-24, -15 + r(1) * 8, 2 + r(2) * 8, 24], ys = [-70, -60 + r(3) * 6, -46 + r(4) * 6, -28], cells = [];
+        for (let i = 0; i < 3; i++) for (let j = 0; j < 3; j++) if (r(10 + i * 3 + j) < 0.55) cells.push(() => fillBox(col(i * 3 + j), xs[i], ys[j], xs[i + 1], ys[j + 1]));
+        return [
+          () => fillBox('#fff', -24, -70, 24, -28),
+          ...cells,
+          () => { ctx.strokeStyle = INK; ctx.lineWidth = 1.6; ctx.beginPath(); for (const x of xs.slice(1, 3)) { ctx.moveTo(x, -70); ctx.lineTo(x, -28); } for (const y of ys.slice(1, 3)) { ctx.moveTo(-24, y); ctx.lineTo(24, y); } ctx.stroke(); },
+        ];
+      }
+      case 'rings': {
+        const cx = (r(1) - 0.5) * 16, cy = -49 + (r(2) - 0.5) * 10;
+        return [0, 1, 2, 3, 4, 5].map(i => () => { ctx.fillStyle = col(i); ctx.beginPath(); ctx.ellipse(cx, cy, 34 - i * 5.5, 30 - i * 5, 0, 0, TAU); ctx.fill(); });
+      }
+      default:
+        return [() => fillBox('#fff', -24, -70, 24, -28), ...[0, 1, 2, 3, 4, 5].map(i => () =>
+          blob((r(i) - 0.5) * 30, -49 + (r(i + 9) - 0.5) * 26, 4 + r(i + 20) * 8, 4 + r(i + 30) * 7, col(i), a.seed + 3 + i, 7, 0.2, 0.3, 1.6))];
+    }
+  },
 };
+// Paintings of rare events (see src/events/), done from memory.
+const fillAll = c => () => { ctx.fillStyle = c; ctx.fillRect(-24, -70, 48, 42); };
+const disc = (x, y, rx, ry, c) => { ctx.fillStyle = c; ctx.beginPath(); ctx.ellipse(x, y, rx, ry, 0, 0, TAU); ctx.fill(); };
+const EVENT_PICS = {
+  rain: () => [
+    fillAll('#e4f1ff'),
+    () => ['#ff6e6e', '#ffab5c', '#ffe66d', '#8fe3a0', '#8fc7ff', '#b7a6ff'].forEach((c, i) => { ctx.strokeStyle = c; ctx.lineWidth = 3.4; ctx.beginPath(); ctx.arc(0, -30, 32 - i * 3.2, Math.PI, TAU); ctx.stroke(); }),
+    () => { for (const [x, y, r] of [[-15, -60, 5], [-9, -63, 6], [-3, -60, 5]]) disc(x, y, r, r * 0.8, '#fff'); },
+    () => { for (const [x, y] of [[-14, -52], [-8, -50], [-3, -53]]) disc(x, y, 0.9, 1.6, '#6fa8e6'); },
+  ],
+  star: a => [
+    fillAll('#3b3f73'),
+    () => { for (let i = 0; i < 9; i++) disc(-22 + hs(a.seed, i) * 44, -68 + hs(a.seed, i + 9) * 34, 0.7, 0.7, '#fff'); },
+    () => { ctx.strokeStyle = '#fff3a8'; ctx.lineWidth = 2.2; ctx.lineCap = 'round'; ctx.beginPath(); ctx.moveTo(-20, -66); ctx.lineTo(0, -51); ctx.stroke(); },
+    () => { ctx.fillStyle = '#fff3a8'; ctx.beginPath(); for (let i = 0; i < 10; i++) { const t = -Math.PI / 2 + i / 10 * TAU, r = i % 2 ? 4 : 9.5; ctx.lineTo(5 + Math.cos(t) * r, -46 + Math.sin(t) * r); } ctx.fill(); },
+  ],
+  wind: () => [
+    fillAll('#eef7ff'),
+    ...[-60, -49, -38].map((y, i) => () => { ctx.strokeStyle = '#8fa3b8'; ctx.lineWidth = 1.8; ctx.lineCap = 'round'; ctx.beginPath(); ctx.moveTo(-20, y); ctx.quadraticCurveTo(0, y - 5, 12 - i * 5, y); ctx.arc(12 - i * 5, y - 3, 3, Math.PI / 2, -Math.PI * 0.9, true); ctx.stroke(); }),
+    () => { disc(15, -58, 3, 1.6, '#adeb3c'); disc(-10, -43, 3, 1.6, '#ff8fc7'); disc(8, -34, 3, 1.6, '#adeb3c'); },
+  ],
+  ducks: () => [
+    fillAll('#a8dcf5'),
+    () => { ctx.strokeStyle = '#fff'; ctx.lineWidth = 1.4; for (const [x, y] of [[-14, -34], [10, -36], [-2, -62]]) { ctx.beginPath(); ctx.moveTo(x - 5, y); ctx.quadraticCurveTo(x, y - 2, x + 5, y); ctx.stroke(); } },
+    () => { disc(2, -44, 11, 7, '#fff'); disc(11, -54, 5, 5, '#fff'); ctx.fillStyle = '#ffa23d'; ctx.beginPath(); ctx.moveTo(15, -55); ctx.lineTo(21, -53); ctx.lineTo(15, -51); ctx.fill(); disc(12.5, -55, 0.9, 0.9, INK); },
+    () => { disc(-14, -40, 5.5, 3.6, '#ffe66d'); disc(-10, -45, 2.8, 2.8, '#ffe66d'); },
+  ],
+  ring: (a, bg) => [
+    fillAll(bg),
+    () => { ctx.fillStyle = shade(bg, 0.9); ctx.fillRect(-24, -37, 48, 9); },
+    () => { ctx.fillStyle = '#fff'; ctx.fillRect(-3.5, -47, 7, 14); },
+    () => { ctx.fillStyle = '#ff6b6b'; ctx.beginPath(); ctx.ellipse(0, -46, 14, 11, 0, Math.PI, TAU); ctx.fill(); disc(-6, -51, 2, 1.6, '#fff'); disc(4, -53, 1.8, 1.4, '#fff'); disc(7, -48.5, 1.4, 1.1, '#fff'); },
+  ],
+  hat: (a, bg) => [fillAll(bg), () => { ctx.save(); ctx.translate(0, -40); ctx.scale(1.5, 1.5); drawHat({ kind: 'top', color: a.c1 }, 1, a.seed); ctx.restore(); }],
+  balloon: a => [
+    fillAll('#e4f1ff'),
+    ...[[-10, -52, a.c1], [0, -57, a.c2], [10, -51, a.c3]].map(([x, y, c]) => () => { ctx.strokeStyle = INK; ctx.lineWidth = 0.8; ctx.beginPath(); ctx.moveTo(x, y + 7); ctx.lineTo(0, -31); ctx.stroke(); disc(x, y, 6, 7.5, c); }),
+  ],
+  ice: (a, bg) => [
+    fillAll(bg),
+    () => { ctx.fillStyle = '#f0c27a'; ctx.beginPath(); ctx.moveTo(-7, -46); ctx.lineTo(7, -46); ctx.lineTo(0, -31); ctx.fill(); },
+    () => { disc(0, -50, 8, 7, '#ff8fc7'); disc(0, -59, 6, 5.5, '#fff3b0'); },
+  ],
+};
+function bigFlower(el) {
+  ctx.fillStyle = '#7fd66a'; ctx.fillRect(-0.4, -4, 0.8, 4);
+  ctx.beginPath(); ctx.ellipse(1.3, -1.6, 1.3, 0.7, -0.5, 0, TAU); ctx.fill();
+  ctx.fillStyle = el.c === '#ffffff' ? '#ff6e45' : el.c;
+  for (const [x, y] of [[0, -6.6], [1.5, -5.2], [0, -3.8], [-1.5, -5.2]]) { ctx.beginPath(); ctx.arc(x, y, 1.25, 0, TAU); ctx.fill(); }
+  ctx.fillStyle = '#ffe833'; ctx.beginPath(); ctx.arc(0, -5.2, 0.95, 0, TAU); ctx.fill();
+}
 const SCULPTURES = {
   critter: a => {
     box([[-7, -10], [7, -10], [7, -30], [-7, -30]], STONE, a.seed + 3, 0.4, 2.2);

@@ -11,7 +11,7 @@ The critters:
 - talk to each other
 - swing on the swing set
 - swim in the pool
-- make sculptures, and paintings of whatever they can see from the easel (and go admire each other's)
+- make sculptures, and paintings of what they can see from the easel: sometimes the whole view, sometimes a close-up or portrait, a colour-washed version, or something abstract (and go admire each other's)
 - dance, sometimes in groups
 - fish in the pond or the stream (a town has one or the other, sometimes both), plant flowers, pick apples, kick a ball around
 - build the campfire, houses (and later add chimneys, side rooms and upstairs), a bridge, the swing set, a fish tank and the pool

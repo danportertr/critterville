@@ -105,7 +105,7 @@ export function render() {
     ctx.globalAlpha = al * 0.35; ctx.fillStyle = '#000'; ctx.fillRect(0, 0, W, H);
     ctx.globalAlpha = al;
     sc.drawPaintingLarge(vw.art, W / 2, H / 2 - 14, k);
-    const cap = `${(vw.art.title || 'a painting').replace(/^./, ch => ch.toUpperCase())}, painted by ${vw.art.by}`, tw = ctx.measureText(cap).width + 28, cy = H / 2 - 14 + 21 * k + 26;
+    const cap = vw.art.name ? `“${vw.art.name}”, by ${vw.art.by}` : `${(vw.art.title || vw.art.of || 'a painting').replace(/^./, ch => ch.toUpperCase())}, painted by ${vw.art.by}`, tw = ctx.measureText(cap).width + 28, cy = H / 2 - 14 + 21 * k + 26;
     box([[W / 2 - tw / 2, cy - 14], [W / 2 + tw / 2, cy - 15], [W / 2 + tw / 2 + 1, cy + 14], [W / 2 - tw / 2 - 1, cy + 13]], '#fff', 4243, 0.6, 2.2);
     ctx.fillStyle = INK; ctx.fillText(cap, W / 2, cy + 1);
     ctx.globalAlpha = 1;

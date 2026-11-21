@@ -14,6 +14,7 @@ export const S = {
   fire: null, pool: null, swing: null, ball: null,   // made by the critters; null until someone starts on them
   obs: [],                         // ellipses critters walk around
   // Rare events (src/events/) and what they leave behind:
+  recent: null,                         // the last event: {id, kind, clock}
   event: null, nextEvent: 0, wind: 0,   // what's happening now, when the next one is due, how hard it's blowing (-1..1)
   stones: [], rings: [], ducks: null,   // fallen stars, mushroom rings, the duck family
   visitor: null, lastCart: null,        // a traveller with a cart, in town for a few days (events/cart.js)

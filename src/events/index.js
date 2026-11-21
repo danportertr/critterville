@@ -24,6 +24,7 @@ const later = () => S.clock + rand(1.2, 2.6) * DAY_LEN;
 
 function begin(def) {
   S.event = { def, t: 0, ...def.start() };
+  S.recent = { id: def.id, kind: def.id === 'cart' && S.visitor ? S.visitor.kind : undefined, clock: S.clock };   // painters remember it for a while
 }
 /** Make something happen right now (handy from the console: critterville.trigger('rain')). */
 export function trigger(id) {

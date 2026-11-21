@@ -1,9 +1,11 @@
-// Make a painting or a sculpture. A painting shows what the painter can see
-// from the easel: the trees, water, houses and critters around it. Finished pieces stay around town as a
+// Make a painting or a sculpture. A painting starts from what the painter can
+// see from the easel (the trees, water, houses and critters around it), though
+// what they make of it varies: see chooseStyle. Finished pieces stay around town as a
 // little open-air gallery (oldest ones fade once there are too many), and
 // other critters wander over to admire them.
 import { S, built } from '../state.js';
-import { INK, VIEW, HEADS, PETALS } from '../config.js';
+import { INK, VIEW, DAY_LEN, HEADS, BODIES, PETALS } from '../config.js';
+import { SPECIES_BY_ID } from '../data/fish.js';
 import { clamp, rand, irand, pick } from '../util.js';
 import { log } from '../ui.js';
 import { line, dot } from '../draw/primitives.js';
@@ -58,6 +60,77 @@ function subjectOf(view) {
   return near.k === 'critter' ? near.name : NAMES[near.k];
 }
 
+// Not every painting is a faithful view. Having looked around, the painter
+// settles on a style:
+//   view      the whole scene, as it is
+//   closeup   one subject filling the canvas: something nearby, a portrait of
+//             anyone in town, a fish, or a recent rare event (see closeUpSubject)
+//   tinted    the scene under a wash of one colour
+//   abstract  no subject, just the colours of what was around: blobs, stripes, a grid or rings
+const WASHES = [['blue', '#a9c8ff'], ['pink', '#ffb3d6'], ['green', '#b5e8a8'], ['gold', '#ffe08a'], ['violet', '#c9bbff']];
+const CLOSE = ['tree', 'house', 'critter', 'tank', 'swing', 'fire', 'flower'];
+function weighted(options) {
+  let r = rand(options.reduce((s, o) => s + o[0], 0));
+  for (const [w, v] of options) if ((r -= w) <= 0) return v;
+  return options[0][1];
+}
+/**
+ * Something to paint a close-up of: a thing near the easel, anyone in town
+ * (a portrait, hat and all), a fish from the fish book, or whatever unusual
+ * thing happened lately.
+ */
+function closeUpSubject(a, painter) {
+  const far = e => Math.hypot(e.x, e.y), options = [];
+  a.view.filter(e => CLOSE.includes(e.k)).sort((p, q) => far(p) - far(q)).slice(0, 3).forEach(e => options.push([1.5, e]));
+  for (const o of S.critters) if (o !== painter) options.push([0.45, { k: 'critter', c: o.head, c2: o.body, name: o.name, hat: o.hat }]);
+  for (const id of Object.keys(S.journal.fish)) options.push([0.5, { k: 'fish', id }]);
+  if (S.recent && S.clock - S.recent.clock < 2.5 * DAY_LEN) options.push([4, { k: 'event', id: S.recent.id, kind: S.recent.kind }]);
+  return options.length ? weighted(options) : null;
+}
+function chooseStyle(a, painter) {
+  const r = rand(), subject = r < 0.34 && closeUpSubject(a, painter);
+  a.bg = pick(BODIES.filter(c => c !== '#ffffff'));
+  if (subject) { a.style = 'closeup'; a.subject = subject; a.title = titleOf(a); }   // named from the start, so a portrait always says who it's of
+  else if (r < 0.52) {
+    a.style = 'abstract'; a.variant = pick(['blobs', 'stripes', 'grid', 'rings']);
+    const seen = [...new Set(a.view.flatMap(e => [e.c, e.c2]).filter(c => c && c !== '#ffffff'))];
+    a.palette = [...seen, a.c1, a.c2, a.c3].sort(() => rand() - 0.5).slice(0, 5);
+    a.name = abstractName(a, painter);
+  } else if (r < 0.66 && a.view.length > 1) { a.style = 'tinted'; const w = pick(WASHES); a.tint = { name: w[0], color: w[1] }; }
+  else a.style = 'view';
+}
+// Abstract paintings get proper titles, the way abstract paintings do.
+const HUES = { '#ff6e45': 'orange', '#ff8fc7': 'pink', '#b7a6ff': 'violet', '#8fd3ff': 'blue', '#7fc4fd': 'blue', '#ffab76': 'peach', '#f5a8ff': 'lilac', '#adeb3c': 'green', '#9fe64a': 'green', '#bdee4c': 'green', '#ffe66d': 'yellow', '#ff8f8f': 'red', '#ffd6e6': 'pink', '#ee9450': 'orange' };
+function abstractName(a, painter) {
+  const things = ['the pond', 'apples', 'the wind', 'soup', 'a hat', 'the ball', 'Tuesday', 'rain', 'the swings', 'ducks', 'the moon', 'nothing much'];
+  if (S.stream) things.push('the stream');
+  const thing = pick(things), n = 1 + irand(40), hue = HUES[a.palette[0]] || 'several colours';
+  return pick([
+    `Composition No. ${n}`,
+    `Untitled (${pick(['again', 'but pink', 'for now', 'ask me later', 'it has a title really'])})`,
+    `What ${thing} was thinking`,
+    `${pick(['Two', 'Three', 'Five', 'Eleven'])} feelings about ${thing}`,
+    `The sound of ${thing}`,
+    `Study in ${hue}`,
+    `${pick(['Afternoon', 'Breakfast', 'A nap', 'Yesterday', 'The meadow'])}, ${pick(['sideways', 'from memory', 'roughly', 'if you squint', 'in a hurry'])}`,
+    `Not ${thing}`,
+    `${painter.name}'s mood, ${pick(['mornings', 'lately', 'on the whole'])}`,
+    `${hue[0].toUpperCase() + hue.slice(1)}, then ${pick(['more of it', 'a surprise', 'a long pause', 'lunch'])}`,
+    `Everything at once (small version)`,
+  ]);
+}
+const EVENT_TITLES = { rain: 'the rainbow', star: 'the shooting star', wind: 'a windy day', ducks: 'the ducks', ring: 'a mushroom', hat: 'a very fine hat', balloon: 'some balloons', ice: 'an ice cream' };
+function titleOf(a) {
+  const s = a.subject;
+  if (a.style === 'abstract') return a.name || 'something abstract';
+  if (a.style === 'tinted') return `${subjectOf(a.view)} in ${a.tint.name}`;
+  if (a.style !== 'closeup') return subjectOf(a.view);
+  if (s.k === 'critter') return `a portrait of ${s.name}`;
+  if (s.k === 'fish') return (SPECIES_BY_ID[s.id] || { call: 'a fish' }).call;
+  if (s.k === 'event') return EVENT_TITLES[s.id === 'cart' ? s.kind : s.id] || 'something that happened';
+  return s.k === 'flower' ? 'a flower, up close' : `${subjectOf([s])}, up close`;
+}
+
 function newArt(c) {
   const p = findSpot(22, 32, 25), type = rand() < 0.55 ? 'painting' : 'sculpture';
   const a = { type, x: p.x, y: p.y, seed: irand(1e6), progress: 0, by: c.name, c1: pick(PETALS), c2: pick(HEADS), c3: pick(PETALS) };
@@ -73,8 +146,8 @@ function done(c) {
   const a = c.art;
   a.progress = 1; c.cleanup = null; c.art = null;
   c.hopV = 140; say(c, pick(['♥', 'ta-da', '!']));
-  if (a.type === 'painting') a.title = subjectOf(a.view);
-  note(a.type === 'sculpture' ? `${c.name} finished a sculpture.` : `${c.name} painted ${a.title}.`);
+  if (a.type === 'painting') a.title = titleOf(a);
+  note(a.type === 'sculpture' ? `${c.name} finished a sculpture.` : a.name ? `${c.name} painted an abstract and called it “${a.name}”.` : `${c.name} painted ${a.title}.`);
   const finished = S.arts.filter(o => o.progress >= 1 && o.dying === undefined);
   if (finished.length > artCap()) finished[0].dying = 1;
 }
@@ -89,7 +162,7 @@ export const art = {
     c.cleanup = () => { const i = S.arts.indexOf(a); if (i >= 0 && a.progress < 1) { S.arts.splice(i, 1); rebuildObs(); } };   // abandoned
     goTo(c, a.x - (a.type === 'painting' ? 35 : 29), a.y + 3, () => {
       c.dir = 1;
-      if (a.type === 'painting') a.view = lookAround(a, c);
+      if (a.type === 'painting') { a.view = lookAround(a, c); chooseStyle(a, c); }
       setAct(c, a.type === 'painting' ? 'paint' : 'sculpt', rand(12, 20)); c.artDur = c.t;
     });
   },
