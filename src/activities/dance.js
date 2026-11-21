@@ -5,7 +5,7 @@ import { setAct, say, tick, isFree } from '../sim/core.js';
 
 export default {
   id: 'dance',
-  weight: () => isEvening() ? 1.5 : 0.7,
+  weight: () => (isEvening() ? 1.5 : 0.7) * (S.music ? 3 : 1),   // they like the radio
   start(c) {
     const t = rand(6, 11);
     setAct(c, 'dance', t); c.noteT = 0;

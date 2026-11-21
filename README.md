@@ -17,7 +17,7 @@ The critters:
 - build the campfire, houses, swing set and pool
 - gather at the campfire in the evening and go home to sleep at night
 
-You can tap a critter to say hi, or tap the ground to drop a snack. The town is saved in your browser, so it's still there when you come back.
+You can tap a critter to say hi, or tap the ground to drop a snack. There's also a little ♪ radio button that plays a lofi internet radio stream (the critters dance more when it's on); the stations are listed in `src/config.js`. The town is saved in your browser, so it's still there when you come back.
 
 ## Running it
 
@@ -41,6 +41,7 @@ src/
   util.js            maths and random helpers
   ui.js              stats line, event log, hint
   input.js           tapping critters, dropping snacks
+  radio.js           the lofi radio button
   draw/
     primitives.js    wobbly hand-drawn shapes ("line boil")
     critter.js       drawing a critter and its speech bubble

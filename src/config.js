@@ -19,6 +19,13 @@ export const GREENS = ['#9fe0a0', '#b5e88f', '#86d9b0'];
 export const WOOD = '#c9966b';
 export const STONE = '#d8d8e0';
 
+// Internet radio streams for the ♪ radio button (src/radio.js). Any direct
+// MP3/AAC stream URL works here.
+export const STATIONS = [
+  { name: 'lofi', url: 'https://lofi.stream.laut.fm/lofi', credit: 'lofi on laut.fm' },
+  { name: 'chillhop', url: 'https://streams.ilovemusic.de/iloveradio17.mp3', credit: 'I Love Chillhop (ilovemusic.de)' },
+];
+
 export const CHAT = ['♥', '♪', '?', '!', 'ha', 'oh!', 'hm', 'hehe', 'wow', 'ok!', 'fish?', 'nice', 'bloop', 'yes', 'no!', '...'];
 export const NAME_A = ['Bo', 'Mi', 'Pu', 'Ta', 'Lo', 'Ki', 'Nu', 'Fe', 'Zu', 'Wa', 'Do', 'Pi', 'Mo', 'Gu', 'Bee', 'To', 'Ni', 'Yo', 'Ha', 'Bli'];
 export const NAME_B = ['bo', 'mi', 'p', 'ko', 'lu', 'ffy', 'ble', 'ns', 'zu', 'dle', 'b', 'mo', 't', 'nk', 'mbo', 'ppa', 'x', ''];

@@ -10,6 +10,7 @@ import { save, load } from './world/save.js';
 import { updateWorld } from './sim/world.js';
 import './activities/index.js';
 import './input.js';
+import './radio.js';
 
 const SPEED = clamp(parseFloat(new URLSearchParams(location.search).get('speed')) || 1, 0.1, 60);
 
