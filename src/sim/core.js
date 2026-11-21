@@ -15,7 +15,7 @@
 // weight() says how appealing it is right now (0 = not possible) and start()
 // sends the critter off, usually with goTo(...) and then setAct(...).
 import { S, isNight, built } from '../state.js';
-import { rand, dist } from '../util.js';
+import { rand, dist, clamp } from '../util.js';
 import { BRIDGE } from '../config.js';
 import { inEllipse, inStream, onBridge, bankSide } from '../world/geometry.js';
 
@@ -31,7 +31,7 @@ export function register(activity) {
 
 export function say(c, text, t = 1.5) { c.bubble = { text, t }; }
 export function setAct(c, act, t) { c.act = act; c.t = t; }
-export function goTo(c, x, y, then) { c.act = 'walk'; c.tx = x; c.ty = y; c.then = then || null; c.walkT = 0; c.path = null; c.jump = null; }
+export function goTo(c, x, y, then) { if (c.act !== 'walk') c.v = 0; c.act = 'walk'; c.tx = x; c.ty = y; c.then = then || null; c.walkT = 0; c.path = null; c.jump = null; }
 // (c.carry, if set, is a function that draws whatever the critter is carrying as it walks.)
 /** Can we interrupt this critter without breaking something it's in the middle of? */
 export const isFree = c => !c.hidden && !c.partner && (c.act === 'idle' || (c.act === 'walk' && !c.then));
@@ -113,6 +113,14 @@ function crossStream(c, wx, wy) {
   return true;
 }
 
+/** Where a foot is in its cycle: [along the stride from 1 (front) to -1 (back), lift 0..1]. */
+function footAt(phase) {
+  const u = ((phase / Math.PI) % 2 + 2) % 2;
+  if (u < 1) return [1 - 2 * u, 0];                    // planted, sliding back under the body
+  const s = u - 1, e = s * s * (3 - 2 * s);
+  return [-1 + 2 * e, Math.sin(Math.PI * s)];           // lifted, swinging forward
+}
+
 // ---- states every critter has, whatever it's up to ----
 Object.assign(STATES, {
   idle: {},
@@ -127,18 +135,32 @@ Object.assign(STATES, {
         if (j.t >= 1) { c.jump = null; c.hopY = 0; }
         return;
       }
-      c.phase += dt * c.speed * 0.24;
-      const wp = c.path && c.path[0];
+      const wp = c.path && c.path[0];   // a waypoint (the bridge) on the way to the real target
       if (crossStream(c, wp ? wp.x : c.tx, wp ? wp.y : c.ty)) return;
-      if (wp) {   // heading for a waypoint (the bridge) on the way to the real target
+
+      // Ease up to speed, and slow down coming in to the destination.
+      const left = wp ? Infinity : Math.hypot(c.tx - c.x, c.ty - c.y);
+      c.v += (c.speed * clamp(left / 26, 0.25, 1) - c.v) * Math.min(1, dt * 5);
+
+      const ox = c.x, oy = c.y;
+      let arrived = false;
+      if (wp) {
         const tx = c.tx, ty = c.ty;
         c.tx = wp.x; c.ty = wp.y;
-        if (step(c, dt)) c.path.shift();
+        if (step(c, dt, c.v)) c.path.shift();
         c.tx = tx; c.ty = ty;
-        return;
+      } else arrived = step(c, dt, c.v);
+
+      // The legs are driven by ground covered, not by time: one step per stride
+      // length, so a planted foot stays where it is while the body moves over it.
+      const mx = c.x - ox, my = c.y - oy, moved = Math.hypot(mx, my);
+      if (moved > 1e-4) {
+        c.phase += Math.PI * moved / (2 * c.gait.stride * c.size);
+        const k = Math.min(1, dt * 8);   // heading turns smoothly
+        c.hx += (mx / moved - c.hx) * k; c.hy += (my / moved - c.hy) * k;
       }
-      if (step(c, dt)) { const f = c.then; c.then = null; setAct(c, 'idle', rand(0.4, 1.4)); if (f) f(); }
-      else if ((c.walkT += dt) > 60) { c.then = null; setAct(c, 'idle', 1); }   // stuck: give up
+      if (arrived) { const f = c.then; c.then = null; c.settle = 1; setAct(c, 'idle', rand(0.4, 1.4)); if (f) f(); }
+      else if ((c.walkT += dt) > 90) { c.then = null; setAct(c, 'idle', 1); }   // stuck: give up
     },
     pose(c, p) {
       if (c.jump) {   // arms up, knees up
@@ -148,12 +170,21 @@ Object.assign(STATES, {
         p.hl = [-30, -30 - a * 26]; p.hr = [30, -30 - a * 26];
         return;
       }
-      // One foot lifts and swings forward while the other pushes back; arms swing opposite.
-      const sn = Math.sin(c.phase), cs = Math.cos(c.phase);
-      p.rock = sn * 0.06; p.bob = Math.abs(cs) * 2;
-      p.lf = Math.max(0, sn) * 6; p.rf = Math.max(0, -sn) * 6;
-      p.lx = cs * 4.5 * p.d; p.rx = -cs * 4.5 * p.d;
-      p.hl = [-31 - cs * 4 * p.d, -15 - sn * 5]; p.hr = [31 - cs * 4 * p.d, -15 + sn * 5];
+      // Each foot is planted for half the cycle (sliding back under the body at
+      // exactly walking pace) and swings forward in an arc for the other half.
+      // The stride points along the heading: sideways when walking across the
+      // screen, mostly an up-and-down step when walking towards or away from us.
+      const g = c.gait, k = Math.sqrt(clamp(c.v / c.speed, 0, 1));   // smaller steps while speeding up or slowing down
+      const [la, ll] = footAt(c.phase), [ra, rl] = footAt(c.phase + Math.PI);
+      const A = g.stride * k, up = Math.abs(c.hy);
+      p.lx = la * A * c.hx; p.ly = la * A * c.hy * 0.4; p.lf = ll * g.lift * k;
+      p.rx = ra * A * c.hx; p.ry = ra * A * c.hy * 0.4; p.rf = rl * g.lift * k;
+      p.bob = Math.abs(Math.sin(c.phase)) * g.bounce * k;
+      p.rock = (Math.sin(c.phase) * (0.025 + 0.045 * up) + c.hx * 0.04) * k;      // waddle, plus a lean into the walk
+      const sw = g.swing * k;                                                       // arms swing opposite the legs
+      p.hl = [-31 + ra * 5 * sw * c.hx, -15 - Math.abs(ra) * sw + ra * 3 * sw * up];
+      p.hr = [31 + la * 5 * sw * c.hx, -15 - Math.abs(la) * sw + la * 3 * sw * up];
+      c.feet = [p.lx, p.ly, p.lf, p.rx, p.ry, p.rf];                                // so they can settle when the walk ends
       if (c.carry) p.hr = [27, -40];   // holding something up
     },
     props(c, p) { if (c.carry && !c.jump) c.carry(c, p);
@@ -165,6 +196,8 @@ Object.assign(STATES, {
 export function updateCritter(c, dt) {
   if (!c.jump && (c.hopV || c.hopY)) { c.hopY += c.hopV * dt; c.hopV -= 700 * dt; if (c.hopY <= 0) { c.hopY = 0; c.hopV = 0; } }
   c.blinkT -= dt; c.blink -= dt; c.surprise -= dt;
+  c.settle = Math.max(0, c.settle - dt * 5);              // feet coming to rest after a walk
+  c.look += (c.dir - c.look) * Math.min(1, dt * 10);      // head turning to face the other way
   if (c.blinkT <= 0) { c.blink = 0.13; c.blinkT = rand(2, 6); }
   if (c.bubble && (c.bubble.t -= dt) <= 0) c.bubble = null;
   const st = STATES[c.act];

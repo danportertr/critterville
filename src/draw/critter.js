@@ -43,21 +43,25 @@ export function drawCritter(c) {
 
   // p is the pose: hand positions are relative to the feet, before body bob.
   const p = {
-    now: S.now, d: c.dir, bob: Math.sin(S.now * 2 + sd) * 0.5, rock: 0, lf: 0, rf: 0, lx: 0, rx: 0,   // lf/rf: foot lift, lx/rx: foot stride
+    now: S.now, d: c.dir, bob: Math.sin(S.now * 2 + sd) * 0.5, rock: 0, lf: 0, rf: 0, lx: 0, rx: 0, ly: 0, ry: 0,   // per foot: lift, and stride offset across (x) and towards us (y)
     hl: [-33, -16], hr: [33, -16], eyesClosed: c.blink > 0,
     mouth: st.mood || restingFace(c),          // a state can set a mood, or change p.mouth in its pose
     hand(side, x, y) { if (side > 0) this.hr = [x, y]; else this.hl = [x, y]; },
   };
   if (st.pose) st.pose(c, p);
   if (c.surprise > 0) p.mouth = 'oh';
-  const { bob, lf, rf, d } = p;
+  if (c.settle > 0 && c.feet && c.act !== 'walk') {   // just stopped walking: feet ease back under the body
+    const f = c.feet, k = c.settle;
+    p.lx += f[0] * k; p.ly += f[1] * k; p.lf += f[2] * k; p.rx += f[3] * k; p.ry += f[4] * k; p.rf += f[5] * k;
+  }
+  const { bob, d } = p;
   ctx.rotate(p.rock);
 
   const arm = (sh, h, k) => wob([sh, [(sh[0] + h[0]) / 2, (sh[1] + h[1]) / 2 + 2], h], sd + k, 0.5);
   const armL = arm([-11, -33 - bob], [p.hl[0], p.hl[1] - bob], 1), armR = arm([11, -33 - bob], [p.hr[0], p.hr[1] - bob], 2);
   const HL = p.HL = armL[2], HR = p.HR = armR[2];
   p.HD = d > 0 ? HR : HL;
-  const fl = [-7 + p.lx + jit(sd + 3, 0, 0.4), -3 - lf], fr = [7 + p.rx + jit(sd + 4, 0, 0.4), -3 - rf];
+  const fl = [-7 + p.lx + jit(sd + 3, 0, 0.4), -3 - p.lf + p.ly], fr = [7 + p.rx + jit(sd + 4, 0, 0.4), -3 - p.rf + p.ry];
   const tubes = [
     [armL, 6], [armR, 6],
     [[HL, [HL[0] + 2.5, HL[1] - 7]], 3.5], [[HR, [HR[0] - 2.5, HR[1] - 7]], 3.5],     // thumbs
@@ -82,7 +86,8 @@ export function drawCritter(c) {
   // Head and face: two dot eyes off to one side and the big U.
   const hy = -57 - bob;
   blob(0, hy, 21 * c.hw, 20 * c.hh, c.head, sd + 10, 11, 0.07, 0.5);
-  const m = d >= 0 ? 1 : -1, fx = x => m * x * 0.95 + m * 1.5, fy = y => hy + y * 0.95 - 1;
+  // The face sits to one side; when the critter turns, it slides across (c.look eases from -1 to 1).
+  const m = Math.abs(c.look) < 0.35 ? (c.look < 0 ? -0.35 : 0.35) : c.look, fx = x => m * x * 0.95 + m * 1.5, fy = y => hy + y * 0.95 - 1;
   for (const [ex, ey] of [[3, -7], [7.6 + c.eyeGap, -5.6]]) {
     if (p.eyesClosed) line([[fx(ex - 1.6), fy(ey)], [fx(ex + 1.6), fy(ey + 0.4)]], sd + 11, 1.8, INK, 0.2);
     else dot(fx(ex) + jit(sd + 12, ex | 0, 0.2), fy(ey), 1.6);

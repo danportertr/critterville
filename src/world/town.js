@@ -20,10 +20,15 @@ export function newCritter(x, y, original) {
 }
 /** Turn saved critter data into a live critter. */
 export function hydrate(d) {
+  const r = i => hs(d.seed, i), dir = r(5) < 0.5 ? -1 : 1;
   return {
     ...d, home: S.houses[d.home] || null,
     hw: 0.94 + hs(d.seed, 1) * 0.14, hh: 0.94 + hs(d.seed, 2) * 0.14, eyeGap: hs(d.seed, 3) * 1.6 - 0.4, cheer: hs(d.seed, 6),
-    speed: 22 + hs(d.seed, 4) * 10, dir: hs(d.seed, 5) < 0.5 ? -1 : 1,
+    speed: 22 + r(4) * 10, dir,
+    // Everyone walks a bit differently: how long their steps are, how much they
+    // bounce, how high they pick their feet up and how much their arms swing.
+    gait: { stride: 6 + r(20) * 2.6, bounce: 1 + r(21) * 2, lift: 4 + r(22) * 3.5, swing: 0.5 + r(23) * 0.9 },
+    v: 0, hx: dir, hy: 0, look: dir, settle: 0, feet: null,
     act: 'idle', t: rand(0.5, 4), tx: 0, ty: 0, then: null, walkT: 0, phase: 0,
     hopY: 0, hopV: 0, sink: 0, surprise: 0, blink: 0, blinkT: rand(1, 5), bubble: null, hidden: false,
     partner: null, apple: null, cleanup: null, owl: false,
