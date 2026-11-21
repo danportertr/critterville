@@ -13,7 +13,7 @@ import { ctx } from '../draw/canvas.js';
 import { STAGE } from '../draw/stage.js';
 import { findSpot, rebuildObs } from '../world/geometry.js';
 import { buildPlay } from '../data/plays.js';
-import { note } from '../journal.js';
+import { note, journalChanged } from '../journal.js';
 import { news, outdoors } from '../talk.js';
 import { goTo, setAct, say, release, isFree } from '../sim/core.js';
 
@@ -143,6 +143,10 @@ function playBeat(th, b) {
 }
 function curtainDown(th) {
   const names = th.cast.map((c, i) => `${c.name} as ${th.play.cast[i].role}`);
+  // Keep the playbill (the journal's shows page lists them).
+  S.plays.push({ title: th.title, day: Math.floor(S.clock / 300) + 1, cast: th.cast.map((c, i) => ({ name: c.name, role: th.play.cast[i].role })), twist: th.twist, ending: th.ending });
+  if (S.plays.length > 20) S.plays.shift();
+  journalChanged('songs');
   for (const c of th.cast) {
     c.costume = c.stageProp = c.role = null; c.luggage = null; c.offstage = false; c.acting = null; c.sink = 0;
     c.y = th.y + 10; setAct(c, 'idle', rand(1, 3)); c.hopV = 90;

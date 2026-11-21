@@ -49,3 +49,8 @@ h1 { pointer-events: auto; cursor: pointer; }
 #journal .song h3 { margin: 0; }
 #journal .song .meta { margin: 2px 0 0; opacity: .65; font-size: 13px; }
 #journal .song button { margin-left: auto; white-space: nowrap; }
+
+#journal .playbill { border: 2.5px solid #000; border-radius: 16px 12px 18px 14px; padding: 8px 12px 10px; margin: 8px 0; background: #fff; }
+#journal .playbill h3 { margin: 0; }
+#journal .playbill ul { margin: 6px 0; }
+#journal .playbill p { margin: 4px 0 0; }

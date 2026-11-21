@@ -4,7 +4,7 @@
 
 A tiny town of little guys who walk around and do things. There isn't much to do except watch — it's something to leave running.
 
-The town starts as an empty meadow: trees, a pond, a few flowers. The critters build everything else themselves — first a campfire, then houses, a swing set and a pool — and a few more move in until it's a small, settled town. There are no scores. The **journal** button opens the town's diary (who moved in, what got built, what was painted) the town's songs (with a play button for each), a fish book (a picture and a few true facts about each kind of fish the critters have caught), and a night-sky page for what the night owls find through the telescope.
+The town starts as an empty meadow: trees, a pond, a few flowers. The critters build everything else themselves — first a campfire, then houses, a swing set and a pool — and a few more move in until it's a small, settled town. There are no scores. The **journal** button opens the town's diary (who moved in, what got built, what was painted) a shows page (the town's songs, each with a play button, and the playbills of its plays), a fish book (a picture and a few true facts about each kind of fish the critters have caught), and a night-sky page for what the night owls find through the telescope.
 
 The critters:
 

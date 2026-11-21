@@ -76,16 +76,31 @@ function playSong(song) {
     for (const n of partFor(song, 'bass')) playNote(low, n.midi, 0.1 + n.b * spb, n.d * spb, 0.5);
   }, 120);
 }
+// The shows page: the town's songs (a repertoire, played again and again), and
+// the playbills of its plays (each performed once).
 function renderSongs() {
-  if (!S.songs.length) return void $body.append(el('p', 'lede', 'No songs yet. Somebody has to make an instrument first, and then wait for evening.'));
-  $body.append(el('p', 'lede', 'Tunes the critters have made up. They play them in the evening, and you can hear one here.'));
+  $body.append(el('h3', 'day', 'Songs'));
+  if (!S.songs.length) $body.append(el('p', 'lede', 'No songs yet. Somebody has to make an instrument first, and then wait for evening.'));
+  else $body.append(el('p', 'lede', 'Tunes the critters have made up. They play them in the evening, and you can hear one here.'));
   for (const song of S.songs) {
     const row = el('div', 'song'), text = el('div'), btn = el('button', '', '▶ play');
     text.append(el('h3', '', song.name), el('p', 'meta', `Made up by ${song.by} on day ${song.day}.`));
     btn.addEventListener('click', () => playSong(song));
     row.append(text, btn); $body.append(row);
   }
-  if (!S.sound) $body.append(el('p', 'meta', 'Sound is switched off (the ♫ button).'));
+  if (S.songs.length && !S.sound) $body.append(el('p', 'meta', 'Sound is switched off (the ♫ button).'));
+
+  $body.append(el('h3', 'day', 'Plays'));
+  if (!S.plays.length) return void $body.append(el('p', 'lede', 'No plays yet. Every so often the critters build a stage and put one on.'));
+  $body.append(el('p', 'lede', 'Each one was written for the occasion and performed once.'));
+  for (let i = S.plays.length - 1; i >= 0; i--) {   // newest first
+    const p = S.plays[i], bill = el('div', 'playbill');
+    bill.append(el('h3', '', p.title), el('p', 'meta', `Performed on day ${p.day}.`));
+    const cast = el('ul');
+    for (const c of p.cast) cast.append(el('li', '', `${c.role}: ${c.name}`));
+    bill.append(cast, el('p', '', `Featuring ${p.twist}. ${p.ending}`));
+    $body.append(bill);
+  }
 }
 
 function renderDiary() {
