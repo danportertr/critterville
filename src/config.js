@@ -25,20 +25,11 @@ export const GREENS = ['#adeb3c', '#9fe64a', '#bdee4c'];
 export const WOOD = '#c9966b';
 export const STONE = '#d8d8e0';
 
-// Channels for the ♪ radio button (src/radio.js), all from SomaFM. To add one,
-// look up its id at somafm.com/channels.json.
-export const STATIONS = [   // SomaFM channels (somafm.com): `id` is the channel's id there, `name` is what the button says
-  { id: 'groovesalad', name: 'groove salad', title: 'Groove Salad' },
-  { id: 'gsclassic', name: 'gs classic', title: 'Groove Salad Classic' },
-  { id: 'spacestation', name: 'space station', title: 'Space Station Soma' },
-  { id: 'folkfwd', name: 'folk forward', title: 'Folk Forward' },
-  { id: 'christmas', name: 'xmas lounge', title: 'Christmas Lounge' },
-  { id: 'dronezone', name: 'drone zone', title: 'Drone Zone' },
-  { id: 'lush', name: 'lush', title: 'Lush' },
-  { id: 'secretagent', name: 'secret agent', title: 'Secret Agent' },
-  { id: 'fluid', name: 'fluid', title: 'Fluid' },
-  { id: 'illstreet', name: 'lounge', title: 'Illinois Street Lounge' },
-  { id: 'seventies', name: '70s', title: 'Left Coast 70s' },
+// Internet radio streams for the ♪ radio button (src/radio.js). Any direct
+// MP3/AAC stream URL works here.
+export const STATIONS = [
+  { name: 'lofi', url: 'https://lofi.stream.laut.fm/lofi', credit: 'lofi on laut.fm' },
+  { name: 'chillhop', url: 'https://streams.ilovemusic.de/iloveradio17.mp3', credit: 'I Love Chillhop (ilovemusic.de)' },
 ];
 
 export const CHAT = ['♥', '♪', '?', '!', 'ha', 'oh!', 'hm', 'hehe', 'wow', 'ok!', 'fish?', 'nice', 'bloop', 'yes', 'no!', '...'];

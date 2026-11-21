@@ -32,7 +32,7 @@ The critters:
 
 Every day or three something rare happens that leaves the town a little different: a shower brings up flowers (and a rainbow), a shooting star lands and stays as a glowing stone, a windy spell leaves a seedling that grows into a new tree, a duck family moves onto the water, a ring of mushrooms appears and everyone dances in it, or a bag of extra balls turns up for a day. Every few days they build a stage and put on a play about something that really happened in town, with a twist added (a dragon, a ghost, a duel), in costume, in front of everyone; then they take the stage down again. Now and then there's a picnic, a hat blows away and gets brought back, a postcard arrives from someone who left, or a rumour goes round about something big in the water. Sometimes a traveller wheels a cart into town for a few days: a hatmaker (critters keep their hats), a balloon seller, or an ice cream cart.
 
-You can tap a critter to say hi, tap a house to see who lives there, tap a painting to see it up close, or tap the ground to drop a snack. There's also a little ♪ radio button that plays [SomaFM](https://somafm.com), listener-supported internet radio: Groove Salad, Space Station Soma, Folk Forward, Christmas Lounge and a few more, with a next button to change channel (the critters dance more when it's on, and the ticker says what's playing). The channels are listed in `src/config.js`. The town is saved in your browser, so it's still there when you come back.
+You can tap a critter to say hi, tap a house to see who lives there, tap a painting to see it up close, or tap the ground to drop a snack. There's also a little ♪ radio button that plays a lofi internet radio stream (the critters dance more when it's on); the stations are listed in `src/config.js`. The town is saved in your browser, so it's still there when you come back.
 
 ## Which build am I looking at?
 
@@ -90,7 +90,7 @@ src/
   data/fish.js       fish species and their facts
   data/sky.js        planets and constellations and their facts
   data/plays.js      the plots, parts and twists plays are made from
-  radio.js           the SomaFM radio button, and the sound on/off button
+  radio.js           the lofi radio button, and the sound on/off button
   audio.js           the synthesiser behind the critters' instruments
   data/music.js      making up instruments and songs
   draw/
