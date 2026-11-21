@@ -28,7 +28,7 @@ export function hydrate(d) {
     // Everyone walks a bit differently: how long their steps are, how much they
     // bounce, how high they pick their feet up and how much their arms swing.
     gait: { stride: 6 + r(20) * 2.6, bounce: 1 + r(21) * 2, lift: 4 + r(22) * 3.5, swing: 0.5 + r(23) * 0.9 },
-    v: 0, hx: dir, hy: 0, look: dir, settle: 0, feet: null,
+    v: 0, hx: dir, hy: 0, look: dir, settle: 0, feet: null, walk: 'stroll',
     act: 'idle', t: rand(0.5, 4), tx: 0, ty: 0, then: null, walkT: 0, phase: 0,
     hopY: 0, hopV: 0, sink: 0, surprise: 0, blink: 0, blinkT: rand(1, 5), bubble: null, hidden: false,
     partner: null, apple: null, cleanup: null, owl: false,

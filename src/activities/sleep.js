@@ -9,8 +9,9 @@ export default {
   id: 'sleep',
   start(c) {
     const h = c.home, f = S.fire;
+    c.nextWalk = 'trudge';
     if (h) return goTo(c, h.x, h.y + 7, () => { setAct(c, 'sleep', rand(0, 16)); c.hidden = true; });
-    if (!built(f)) return setAct(c, 'sleep', rand(0, 10));
+    if (!built(f)) { c.nextWalk = null; return setAct(c, 'sleep', rand(0, 10)); }   // nowhere to go: sleep on the spot
     const a = rand(TAU);
     goTo(c, f.x + Math.cos(a) * 52, f.y + Math.sin(a) * 26, () => { setAct(c, 'sleep', rand(0, 10)); c.dir = f.x > c.x ? 1 : -1; });
   },

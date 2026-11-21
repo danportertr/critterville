@@ -31,8 +31,18 @@ export function register(activity) {
 
 export function say(c, text, t = 1.5) { c.bubble = { text, t }; }
 export function setAct(c, act, t) { c.act = act; c.t = t; }
-export function goTo(c, x, y, then) { if (c.act !== 'walk') c.v = 0; c.act = 'walk'; c.tx = x; c.ty = y; c.then = then || null; c.walkT = 0; c.path = null; c.jump = null; }
+export function goTo(c, x, y, then) { if (c.act !== 'walk') c.v = 0; c.walk = c.nextWalk || 'stroll'; c.nextWalk = null; c.act = 'walk'; c.tx = x; c.ty = y; c.then = then || null; c.walkT = 0; c.path = null; c.jump = null; }
 // (c.carry, if set, is a function that draws whatever the critter is carrying as it walks.)
+
+// How a critter walks depends on where it's off to. An activity can set
+// c.nextWalk to one of these just before calling goTo(); each scales the
+// critter's own gait.
+export const WALKS = {
+  stroll: { speed: 1, bounce: 1, lift: 1, swing: 1, lean: 1, droop: 0 },
+  skip: { speed: 1.25, bounce: 2.6, lift: 1.5, swing: 1.7, lean: 0.6, droop: 0 },      // off to do something fun
+  trot: { speed: 1.55, bounce: 1.2, lift: 1.1, swing: 1.3, lean: 2.2, droop: 0 },      // in a hurry (snacks)
+  trudge: { speed: 0.68, bounce: 0.35, lift: 0.45, swing: 0.3, lean: 1.4, droop: 4 },  // tired, heading for bed
+};
 /** Can we interrupt this critter without breaking something it's in the middle of? */
 export const isFree = c => !c.hidden && !c.partner && (c.act === 'idle' || (c.act === 'walk' && !c.then));
 
@@ -140,7 +150,8 @@ Object.assign(STATES, {
 
       // Ease up to speed, and slow down coming in to the destination.
       const left = wp ? Infinity : Math.hypot(c.tx - c.x, c.ty - c.y);
-      c.v += (c.speed * clamp(left / 26, 0.25, 1) - c.v) * Math.min(1, dt * 5);
+      const top = c.speed * WALKS[c.walk].speed;
+      c.v += (top * clamp(left / 26, 0.25, 1) - c.v) * Math.min(1, dt * 5);
 
       const ox = c.x, oy = c.y;
       let arrived = false;
@@ -174,16 +185,18 @@ Object.assign(STATES, {
       // exactly walking pace) and swings forward in an arc for the other half.
       // The stride points along the heading: sideways when walking across the
       // screen, mostly an up-and-down step when walking towards or away from us.
-      const g = c.gait, k = Math.sqrt(clamp(c.v / c.speed, 0, 1));   // smaller steps while speeding up or slowing down
+      const g = c.gait, w = WALKS[c.walk], k = Math.sqrt(clamp(c.v / (c.speed * w.speed), 0, 1));   // smaller steps while speeding up or slowing down
       const [la, ll] = footAt(c.phase), [ra, rl] = footAt(c.phase + Math.PI);
       const A = g.stride * k, up = Math.abs(c.hy);
-      p.lx = la * A * c.hx; p.ly = la * A * c.hy * 0.4; p.lf = ll * g.lift * k;
-      p.rx = ra * A * c.hx; p.ry = ra * A * c.hy * 0.4; p.rf = rl * g.lift * k;
-      p.bob = Math.abs(Math.sin(c.phase)) * g.bounce * k;
-      p.rock = (Math.sin(c.phase) * (0.025 + 0.045 * up) + c.hx * 0.04) * k;      // waddle, plus a lean into the walk
-      const sw = g.swing * k;                                                       // arms swing opposite the legs
-      p.hl = [-31 + ra * 5 * sw * c.hx, -15 - Math.abs(ra) * sw + ra * 3 * sw * up];
-      p.hr = [31 + la * 5 * sw * c.hx, -15 - Math.abs(la) * sw + la * 3 * sw * up];
+      p.lx = la * A * c.hx; p.ly = la * A * c.hy * 0.4; p.lf = ll * g.lift * w.lift * k;
+      p.rx = ra * A * c.hx; p.ry = ra * A * c.hy * 0.4; p.rf = rl * g.lift * w.lift * k;
+      p.bob = Math.abs(Math.sin(c.phase)) * g.bounce * w.bounce * k - w.droop * 0.6;
+      p.rock = (Math.sin(c.phase) * (0.025 + 0.045 * up) + c.hx * 0.04 * w.lean) * k;   // waddle, plus a lean into the walk
+      const sw = g.swing * w.swing * k, hang = w.droop;                                  // arms swing opposite the legs; tired arms hang
+      p.hl = [-31 + hang * 1.5 + ra * 5 * sw * c.hx, -15 + hang * 1.6 - Math.abs(ra) * sw + ra * 3 * sw * up];
+      p.hr = [31 - hang * 1.5 + la * 5 * sw * c.hx, -15 + hang * 1.6 - Math.abs(la) * sw + la * 3 * sw * up];
+      if (c.walk === 'trudge') { p.mouth = 'tiny'; p.eyesClosed = p.eyesClosed || Math.sin(p.now * 0.9 + c.seed) > 0.55; }   // nodding off
+      if (c.walk === 'skip') p.mouth = 'big';
       c.feet = [p.lx, p.ly, p.lf, p.rx, p.ry, p.rf];                                // so they can settle when the walk ends
       if (c.carry) p.hr = [27, -40];   // holding something up
     },

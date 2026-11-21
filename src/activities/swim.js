@@ -14,6 +14,7 @@ export default {
   weight: () => built(S.pool) && !isEvening() && S.critters.filter(o => o.act === 'swim').length < 4 ? 1.3 : 0,
   start(c) {
     const { pool } = S, a = rand(TAU);
+    c.nextWalk = 'skip';
     goTo(c, pool.x + Math.cos(a) * (pool.rx + 24), pool.y + Math.sin(a) * (pool.ry + 18), () => {
       Object.assign(c, edge(a, 0.72));
       c.sink = DEPTH * c.size;

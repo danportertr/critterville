@@ -13,6 +13,7 @@ export default {
     const sw = S.swing, seat = pick(sw.seats.filter(s => !s.user));
     seat.user = c; c.seat = seat;
     c.cleanup = () => { seat.user = null; };
+    c.nextWalk = 'skip';
     goTo(c, sw.x + seat.dx, sw.y + 5, () => {
       c.x = sw.x + seat.dx; c.y = sw.y + 1; c.sink = -36;   // sink: where bubbles sit while off the ground
       setAct(c, 'swing', rand(12, 24));

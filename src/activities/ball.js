@@ -8,6 +8,7 @@ export default {
   weight: () => S.ball ? 0.9 : 0,
   start(c) {
     const b = S.ball;
+    c.nextWalk = 'skip';
     goTo(c, b.x, b.y + 1, () => {
       if (dist(c, b) > 26) return;   // somebody else got there first
       const a = rand(TAU), v = rand(150, 260);

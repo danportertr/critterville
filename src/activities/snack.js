@@ -9,6 +9,7 @@ export const snack = {
   fetch(c, a) {
     release(c);
     a.claimed = c; c.apple = a;
+    c.nextWalk = 'trot';
     goTo(c, a.x + (c.x < a.x ? -9 : 9), a.y + 1, () => { c.dir = a.x > c.x ? 1 : -1; a.eaten = true; setAct(c, 'eat', 2.4); say(c, 'yum'); });
   },
   states: {
