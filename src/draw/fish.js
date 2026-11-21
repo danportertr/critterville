@@ -27,7 +27,7 @@ const KINDS = {
     dot(11.5, -0.2, 1);
   },
   tadpole(sp, sd) {
-    line([[-3, 0], [-8, -2.5], [-12, 1.5], [-15, -1]], sd + 1, 2.4, INK, 0.3);
+    tube([[-3, 0], [-8, -2.5], [-12, 1.5], [-15, -1]], 1.6, sp.color, sd + 1, 0.3);   // a green tail to match
     blob(1, 0, 5, 4.2, sp.color, sd, 8, 0.05, 0.3, LW);
     dot(3.4, -1, 0.9, '#fff');
   },

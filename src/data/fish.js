@@ -31,7 +31,7 @@ export const SPECIES = [
   { id: 'catfish', name: 'Channel catfish', call: 'a catfish', where: ['pond'], when: 'dusk', w: 4, L: 26, h: 11, color: '#9aa3ad', fin: '#7d8690', pat: ['whiskers'], pc: '#4a5058',
     size: 'As long as an arm.',
     fact: 'Covered in taste buds from its whiskers to its tail, so it can find food in the dark by taste alone. Its skin is smooth, with no scales at all.' },
-  { id: 'tadpole', name: 'Tadpole', call: 'a tadpole', kind: 'tadpole', where: ['pond'], when: 'any', w: 2, color: '#5b6b5a',
+  { id: 'tadpole', name: 'Tadpole', call: 'a tadpole', kind: 'tadpole', where: ['pond'], when: 'any', w: 2, color: '#6fbf4a',
     size: 'Smaller than a fingertip.',
     fact: 'Not a fish! A baby frog. It breathes with gills at first, grows its back legs before its front ones, and slowly absorbs its own tail.' },
 
