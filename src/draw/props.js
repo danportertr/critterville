@@ -67,23 +67,37 @@ export function hammockClip(h) {
   ctx.lineTo(B[0] + 80, B[1] + 4); ctx.lineTo(B[0] + 80, B[1] - 300); ctx.closePath();
   ctx.clip();
 }
-/** A hammock between two trees: ropes at each end and a striped sling that sags in the middle. */
+// The cloth is one crescent that comes to a point at each end, where the rope
+// ties on. `top` and `bottom` say how far its two edges sit above/below the
+// hammock's low point M in the middle.
+function sling(h, top, bottom, lw = 2.4) {
+  const { A, B, M } = h, at = (p, q, k) => [p[0] + (q[0] - p[0]) * k, p[1] + (q[1] - p[1]) * k];
+  const a = at(A, M, SLING), b = at(B, M, SLING), base = (a[1] + b[1]) / 2;
+  const ctrl = y => 2 * (M[1] + y) - base;   // control point that makes the curve pass through M + y
+  ctx.beginPath();
+  ctx.moveTo(a[0], a[1]);
+  ctx.quadraticCurveTo(M[0], ctrl(top), b[0], b[1]);
+  ctx.quadraticCurveTo(M[0], ctrl(bottom), a[0], a[1]);
+  ctx.closePath();
+  ctx.fillStyle = '#ffd1e8'; ctx.fill();
+  ctx.lineWidth = lw; ctx.strokeStyle = INK; ctx.stroke();
+  return { a, b, ctrl };
+}
+function stripe(h, s, y) {
+  ctx.beginPath(); ctx.moveTo(s.a[0], s.a[1]); ctx.quadraticCurveTo(h.M[0], s.ctrl(y), s.b[0], s.b[1]);
+  ctx.lineWidth = 1.6; ctx.strokeStyle = '#ff8fc7'; ctx.stroke();
+}
+/** A hammock: a rope at each end and a sling that sags in the middle, deeper and wider with someone in it. */
 export function drawHammock(h) {
-  const { A, B, M } = h, at = (p, q, k) => [p[0] + (q[0] - p[0]) * k, p[1] + (q[1] - p[1]) * k];
+  const { A, B, M } = h;
   if (h.progress < 1) return void tube([A, [M[0], M[1] - 8], B], 0.6, INK, h.seed, 0.3);     // just the rope so far
-  const a = at(A, M, SLING), b = at(B, M, SLING), full = h.user && h.user.act === 'hammock';
-  const spread = full ? 9 : 4;   // with someone in it the sling opens out
-  for (const [end, near] of [[A, a], [B, b]]) for (const dy of [-spread, spread]) { ctx.beginPath(); ctx.moveTo(end[0], end[1]); ctx.lineTo(near[0], near[1] + dy); ctx.lineWidth = 1.6; ctx.strokeStyle = INK; ctx.stroke(); }
-  tube([a, M, b], full ? 20 : 9, '#ffd1e8', h.seed, 0.3);
-  if (!full) stripes(a, M, b, [-2.6, 2.6]);
+  const full = h.user && h.user.act === 'hammock';
+  const s = full ? sling(h, -13, 15) : sling(h, -3, 6);
+  for (const [end, tie] of [[A, s.a], [B, s.b]]) { ctx.beginPath(); ctx.moveTo(end[0], end[1]); ctx.lineTo(tie[0], tie[1]); ctx.lineWidth = 1.8; ctx.strokeStyle = INK; ctx.stroke(); }
+  if (!full) stripe(h, s, 1.5);
 }
-function stripes(a, M, b, offsets) {
-  for (const dy of offsets) { smooth([[a[0], a[1] + dy], [M[0], M[1] + dy], [b[0], b[1] + dy]], false); ctx.lineWidth = 1.6; ctx.strokeStyle = '#ff8fc7'; ctx.stroke(); }
-}
-/** The near edge of an occupied hammock, drawn over whoever is in it so they're tucked inside. */
+/** The near side of an occupied hammock, drawn over whoever is in it so they're tucked inside. */
 export function drawHammockFront(h) {
-  const { A, B, M } = h, at = (p, q, k) => [p[0] + (q[0] - p[0]) * k, p[1] + (q[1] - p[1]) * k];
-  const a = at(A, M, SLING), b = at(B, M, SLING), down = p => [p[0], p[1] + 3];
-  tube([down(a), [M[0], M[1] + 6], down(b)], 14, '#ffd1e8', h.seed + 1, 0.3);
-  stripes(down(a), [M[0], M[1] + 6], down(b), [-4, 4]);
+  const s = sling(h, -2, 15);
+  stripe(h, s, 5); stripe(h, s, 10);
 }
