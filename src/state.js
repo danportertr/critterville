@@ -12,6 +12,7 @@ export const S = {
   journal: { fish: {}, diary: [] },   // see journal.js
   fire: null, pool: null, swing: null, ball: null,   // made by the critters; null until someone starts on them
   obs: [],                         // ellipses critters walk around
+  sign: null,                      // a note floating over something you tapped: {x, y, text, until}
   music: false,                    // is the radio on?
   cap: 8,                          // how many critters live here once everyone has moved in
 };

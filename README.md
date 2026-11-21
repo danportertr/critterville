@@ -19,7 +19,7 @@ The critters:
 - keep a few of the fish they catch in the tank for a while, and come by to watch them
 - gather at the campfire in the evening and go home to sleep at night
 
-You can tap a critter to say hi, or tap the ground to drop a snack. There's also a little ♪ radio button that plays a lofi internet radio stream (the critters dance more when it's on); the stations are listed in `src/config.js`. The town is saved in your browser, so it's still there when you come back.
+You can tap a critter to say hi, tap a house to see who lives there, or tap the ground to drop a snack. There's also a little ♪ radio button that plays a lofi internet radio stream (the critters dance more when it's on); the stations are listed in `src/config.js`. The town is saved in your browser, so it's still there when you come back.
 
 ## Running it
 

@@ -5,6 +5,7 @@ import { INK, PAPER, FONT, HOUSE } from '../config.js';
 import { wallTop } from './scenery.js';
 import { clamp, lerp, smoothstep, hs } from '../util.js';
 import { drawCritter, drawBubble } from './critter.js';
+import { box } from './primitives.js';
 import * as sc from './scenery.js';
 
 const TINTS = [[0, [255, 233, 220]], [0.05, [255, 255, 255]], [0.58, [255, 255, 255]], [0.66, [255, 214, 186]], [0.74, [140, 147, 214]], [0.93, [140, 147, 214]], [1, [255, 233, 220]]];
@@ -76,6 +77,14 @@ export function render() {
   for (const c of S.critters) {
     if (c.act === 'sleep' && !c.hidden) { ctx.fillStyle = INK; zzz(c.x + 16 * c.size, c.y - 80 * c.size, c.seed); }
     if (c.bubble && !c.hidden) drawBubble(c);
+  }
+  if (S.sign && S.now < S.sign.until) {   // the note over a tapped house
+    const s = S.sign, w = ctx.measureText(s.text).width + 28;
+    const x = clamp(s.x, w / 2 + 8, W - w / 2 - 8), y = Math.max(22, s.y);
+    ctx.globalAlpha = clamp((s.until - S.now) * 3, 0, 1);
+    box([[x - w / 2, y - 14], [x + w / 2, y - 15], [x + w / 2 + 1, y + 14], [x - w / 2 - 1, y + 13]], '#fff', 4242, 0.6, 2.2);
+    ctx.fillStyle = INK; ctx.fillText(s.text, x, y + 1);
+    ctx.globalAlpha = 1;
   }
   sc.drawSky(n);
 }
