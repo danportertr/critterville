@@ -22,6 +22,7 @@ setTimeout(hideHint, 14000);
 const $version = document.getElementById('version');
 $version.textContent = `build ${VERSION.n}`;
 $version.title = `Built ${VERSION.at}`;
+document.querySelector('#hud h1').addEventListener('click', () => $version.classList.toggle('show'));   // hidden until you click the title
 export async function checkForNewer() {
   try {
     const text = await (await fetch(`src/version.js?fresh=${Date.now()}`, { cache: 'no-store' })).text();

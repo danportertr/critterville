@@ -6,6 +6,8 @@ import { rand } from './util.js';
 import { log } from './ui.js';
 
 const listeners = [];
+/** Hooks for a first-ever catch (talk.js registers one, so it becomes news). */
+export const onFirstCatch = [];
 export const onJournalChange = fn => listeners.push(fn);
 const changed = kind => listeners.forEach(fn => fn(kind));
 
@@ -43,6 +45,7 @@ export function catchFish(c, water) {
     S.journal.fish[sp.id] = { day: dayNum(), by: c.name, where: water, times: 1 };
     note(`${c.name} caught ${sp.call} in the ${water}. That's a new one for the fish book.`);
     changed('fish');
+    for (const fn of onFirstCatch) fn(c, sp);
   } else {
     seen.times++;
     if (!(S.tank && S.tank.progress >= 1) && rand() < 0.5) log(`${c.name} caught ${sp.call} and let it go.`);

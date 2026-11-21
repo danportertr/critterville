@@ -8,7 +8,8 @@ The town starts as an empty meadow: trees, a pond, a few flowers. The critters b
 
 The critters:
 
-- talk to each other
+- talk to each other, and not just noises: news of what's happened spreads from critter to critter, along with fish stories that grow in the telling, last night's dreams, and compliments
+- make friends with whoever they talk to most, and sometimes go off to swim, fish or swing together
 - swing on the swing set
 - swim in the pool
 - make sculptures: stone and wooden statues that gather moss, ones carved from a fallen star that glow, sandcastles that the next rain washes away, piles of found things, and working pieces (a sundial, a weathervane, a birdbath that fills in the rain, a bench to sit on)
@@ -25,13 +26,13 @@ The critters:
 - string a hammock between two trees, two houses, or a house and a tree, if a pair happens to be the right distance apart, and take turns lying in it
 - gather at the campfire in the evening and go home to sleep at night
 
-Every day or three something rare happens that leaves the town a little different: a shower brings up flowers (and a rainbow), a shooting star lands and stays as a glowing stone, a windy spell leaves a seedling that grows into a new tree, a duck family moves onto the water, or a ring of mushrooms appears and everyone dances in it. Sometimes a traveller wheels a cart into town for a few days: a hatmaker (critters keep their hats), a balloon seller, or an ice cream cart.
+Every day or three something rare happens that leaves the town a little different: a shower brings up flowers (and a rainbow), a shooting star lands and stays as a glowing stone, a windy spell leaves a seedling that grows into a new tree, a duck family moves onto the water, or a ring of mushrooms appears and everyone dances in it. Now and then there's a picnic, a hat blows away and gets brought back, a postcard arrives from someone who left, or a rumour goes round about something big in the water. Sometimes a traveller wheels a cart into town for a few days: a hatmaker (critters keep their hats), a balloon seller, or an ice cream cart.
 
 You can tap a critter to say hi, tap a house to see who lives there, tap a painting to see it up close, or tap the ground to drop a snack. There's also a little ♪ radio button that plays a lofi internet radio stream (the critters dance more when it's on); the stations are listed in `src/config.js`. The town is saved in your browser, so it's still there when you come back.
 
 ## Which build am I looking at?
 
-The small `build N` under the title is the version the page is actually running. GitHub Pages lets browsers cache files for about ten minutes, so after an update the page checks for itself and shows a "build N is out: reload" button if it's behind. In the console, `critterville.version` gives the same number.
+Click the "Critterville" title to show a small `build N`: the version the page is actually running. GitHub Pages lets browsers cache files for about ten minutes, so after an update the page checks for itself and shows a "build N is out: reload" button if it's behind. In the console, `critterville.version` gives the same number.
 
 The number lives in `src/version.js`. Bump it by one whenever you commit a change.
 

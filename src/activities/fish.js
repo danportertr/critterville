@@ -1,7 +1,8 @@
 // Stand at the water with a rod and wait. Works at the pond or the stream;
 // what bites depends on which (see journal.js and data/fish.js).
 import { S, built } from '../state.js';
-import { INK, STREAM_HALF } from '../config.js';
+import { INK, STREAM_HALF, DAY_LEN } from '../config.js';
+import { note } from '../journal.js';
 import { TAU, rand, pick } from '../util.js';
 import { ctx } from '../draw/canvas.js';
 import { line, dot } from '../draw/primitives.js';
@@ -34,7 +35,7 @@ export default {
     const s = fishingSpot();
     goTo(c, s.x, s.y, () => {
       c.dir = s.bx > c.x ? 1 : -1;
-      setAct(c, 'fish', rand(14, 28)); c.catchT = rand(5, c.t - 2); c.caught = null; c.fishAnim = 0;
+      setAct(c, 'fish', rand(14, 28)); c.catchT = rand(5, c.t - 2); c.caught = null; c.bite = false; c.fishAnim = 0;
       c.water = s.water; c.bobx = s.bx; c.boby = s.by;
     });
   },
@@ -42,10 +43,16 @@ export default {
     fish: { mood: 'flat',
       update(c, dt) {
         c.fishAnim -= dt;
-        if (!c.caught && (c.catchT -= dt) <= 0) {
-          c.caught = catchFish(c, c.water);
-          c.fishAnim = 1.6; c.t = Math.min(c.t, 2.6);
-          say(c, '!'); c.hopV = 90; c.surprise = 0.7;
+        if (!c.bite && (c.catchT -= dt) <= 0) {
+          c.bite = true; c.hopV = 90; c.surprise = 0.7;
+          if (rand() < 0.13) {   // the one that got away: a story that will grow (talk.js)
+            c.t = Math.min(c.t, 2); say(c, 'aw!', 1.6);
+            c.tale = { size: 0, until: S.clock + 2 * DAY_LEN };
+            note(`${c.name} hooked something big in the ${c.water}, but it got away.`);
+          } else {
+            c.caught = catchFish(c, c.water);
+            c.fishAnim = 1.6; c.t = Math.min(c.t, 2.6); say(c, '!');
+          }
         }
         tick(c, dt);
       },

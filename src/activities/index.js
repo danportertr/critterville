@@ -24,5 +24,6 @@ import { stargaze } from '../events/star.js';
 import { ringDance } from '../events/ring.js';
 import { shop } from '../events/cart.js';
 import { story } from '../events/journeys.js';
+import { findHat, picnicking, investigate } from './errands.js';
 
-[wander, rest, chat, dance, fish, garden, snack, fruit, ball, build, campfire, sleep, swing, swim, art, admire, repaint, tidy, tank, hammock, respond, topiary, cairn, stargaze, ringDance, shop, story].forEach(register);
+[wander, rest, chat, dance, fish, garden, snack, fruit, ball, build, campfire, sleep, swing, swim, art, admire, repaint, tidy, tank, hammock, respond, topiary, cairn, stargaze, ringDance, shop, story, findHat, picnicking, investigate].forEach(register);

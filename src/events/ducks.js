@@ -2,6 +2,7 @@
 import { S, phase } from '../state.js';
 import { irand } from '../util.js';
 import { note } from '../journal.js';
+import { news, anyone } from '../talk.js';
 
 export default {
   id: 'ducks',
@@ -10,6 +11,7 @@ export default {
     const water = S.pond ? 'pond' : 'stream';
     S.ducks = { water, seed: irand(1000) };
     note(`A duck and two ducklings have moved onto the ${water}.`);
+    news('ducks!', anyone(2));
     return { dur: 6 };
   },
 };

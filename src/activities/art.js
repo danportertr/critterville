@@ -151,6 +151,7 @@ function work(c, dt) {
 function done(c) {
   const a = c.art;
   a.progress = 1; a.busy = false; c.cleanup = null; c.art = null;
+  if (a.type === 'painting') c.madeArt = S.clock;   // (people may say something nice about it)
   c.hopV = 140; say(c, pick(['♥', 'ta-da', '!']));
   if (a.type === 'painting') a.title = titleOf(a);
   if (a.type === 'sculpture') sculptureFinished(a, c);

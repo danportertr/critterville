@@ -6,6 +6,7 @@ import { ctx } from '../draw/canvas.js';
 import { findSpot, rebuildObs } from '../world/geometry.js';
 import { note } from '../journal.js';
 import { goTo, setAct, say } from '../sim/core.js';
+import { news, outdoors } from '../talk.js';
 
 const FALL = 1.7;
 
@@ -23,6 +24,7 @@ export default {
     rebuildObs();
     for (const c of S.critters) if (!c.hidden && c.act !== 'sleep') { say(c, '!'); c.surprise = 1.2; }
     note('A shooting star came down in the meadow. It is still glowing.');
+    news('a star fell!', outdoors());   // only whoever was up to see it; the rest hear tomorrow
   },
   overlay(e) {
     const k = clamp(e.t / FALL, 0, 1), q = k * k;   // speeds up as it falls

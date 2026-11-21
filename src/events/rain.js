@@ -8,6 +8,7 @@ import { freePoint } from '../world/geometry.js';
 import { note } from '../journal.js';
 import { say, isFree } from '../sim/core.js';
 import { washAway } from '../activities/sculpture.js';
+import { news, outdoors } from '../talk.js';
 
 const RAIN = 55, RAINBOW = 70, BANDS = ['#ff6e6e', '#ffab5c', '#ffe66d', '#8fe3a0', '#8fc7ff', '#b7a6ff'];
 const falling = e => clamp(e.t / 4, 0, 1) * clamp((RAIN - e.t) / 5, 0, 1);
@@ -23,7 +24,7 @@ export default {
   },
   update(e, dt) {
     if (e.t > RAIN) {
-      if (!e.cleared) { e.cleared = true; note(`The rain stopped${e.sprouted ? ', and there are new flowers everywhere' : ''}. A rainbow came out.`); }
+      if (!e.cleared) { e.cleared = true; news('a rainbow!', outdoors()); note(`The rain stopped${e.sprouted ? ', and there are new flowers everywhere' : ''}. A rainbow came out.`); }
       return;
     }
     for (const t of S.trees) for (let i = 0; i < t.apples.length; i++) if (t.apples[i] < 1) t.apples[i] = Math.min(1, t.apples[i] + dt / 50);

@@ -7,8 +7,8 @@ import { clamp, lerp, smoothstep, hs } from '../util.js';
 import { drawCritter, drawBubble } from './critter.js';
 import { box } from './primitives.js';
 import * as sc from './scenery.js';
-import { drawStone, drawDucks, drawRing, drawHammock } from './props.js';
-import { drawCart, drawBalloon } from './cart.js';
+import { drawStone, drawDucks, drawRing, drawHammock, drawPicnic, drawLostHat, drawRumour } from './props.js';
+import { drawCart, drawBalloon, drawHat } from './cart.js';
 import { drawCairn, drawMonument } from './sculpture.js';
 import { drawEventOverlay } from '../events/index.js';
 
@@ -44,7 +44,9 @@ export function render() {
   if (S.bridge) sc.drawBridge();
   if (S.pond) sc.drawPond();
   if (S.pool) sc.drawPool();
+  if (S.rumour) drawRumour(S.rumour);
   if (S.ducks) drawDucks();
+  if (S.picnic) drawPicnic(S.picnic);
   for (const r of S.rings) drawRing(r);
 
   // Everything standing on the ground, back to front.
@@ -70,6 +72,7 @@ export function render() {
   for (const it of items) it[1](it[2], it[3]);
   for (const f of S.flies) sc.drawButterfly(f, n);
   for (const f of S.floaters) drawBalloon(f, f.x, f.y);
+  if (S.lostHat && !S.lostHat.held) drawLostHat(S.lostHat, drawHat);
 
   // Time-of-day wash, then the things that glow through it.
   ctx.globalCompositeOperation = 'multiply';

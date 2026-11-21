@@ -6,6 +6,7 @@ import { TAU, rand, irand } from '../util.js';
 import { findSpot } from '../world/geometry.js';
 import { note } from '../journal.js';
 import { goTo, ACT } from '../sim/core.js';
+import { news, anyone } from '../talk.js';
 
 export const RING = { rx: 38, ry: 17, lasts: 3 * DAY_LEN };
 
@@ -17,6 +18,7 @@ export default {
     S.rings.push({ x: p.x, y: p.y, seed: irand(1e6), born: S.clock });
     S.flowers = S.flowers.filter(f => Math.hypot((f.x - p.x) / RING.rx, (f.y - p.y) / RING.ry) > 1.25);
     note('A ring of mushrooms came up overnight.');
+    news('mushrooms!', anyone(2));
     return { dur: 6 };
   },
 };

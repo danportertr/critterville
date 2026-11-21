@@ -7,6 +7,7 @@ import { irand, dist } from './util.js';
 import { cv } from './draw/canvas.js';
 import { hideHint, log } from './ui.js';
 import { startDiary } from './journal.js';
+import { bestFriend } from './talk.js';
 import { about as aboutCart } from './events/cart.js';
 import { label as sculptureLabel } from './activities/sculpture.js';
 import { inEllipse, inStream, rebuildObs } from './world/geometry.js';
@@ -54,7 +55,8 @@ cv.addEventListener('pointerdown', e => {
   hideHint();
   if (S.viewing && S.now < S.viewing.until) { S.viewing = null; return; }   // tap anywhere to put the painting down
   if (c) {
-    say(c, c.name, 2); c.surprise = 0.5;
+    const friend = bestFriend(c);
+    say(c, friend ? `${c.name} (♥ ${friend.name})` : c.name, 2.4); c.surprise = 0.5;
     if (c.act !== 'swing' && c.act !== 'swim') c.hopV = 170;
     if (isFree(c)) setAct(c, 'wave', 1.6);
     return;

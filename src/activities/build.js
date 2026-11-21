@@ -7,6 +7,7 @@ import { note } from '../journal.js';
 import { box, line } from '../draw/primitives.js';
 import { assignHomes } from '../world/town.js';
 import { rebuildObs } from '../world/geometry.js';
+import { news, nearby } from '../talk.js';
 import { currentSite } from '../sim/world.js';
 import { goTo, setAct, say } from '../sim/core.js';
 
@@ -65,6 +66,7 @@ export default {
         s.progress = 1;
         if (s.kind === 'house') assignHomes();
         note(JOBS[s.kind].done); c.hopV = 150; say(c, '!');
+        news({ fire: 'a campfire!', house: 'a new house!', bridge: 'the bridge is done', swing: 'swings!', tank: 'a fish tank!', pool: 'the pool is full!', hammock: 'a hammock!', monument: 'the monument!' }[s.kind], nearby(c, 300));
       },
       pose(c, p) { p.hand(p.d, p.d * 28, -34 + Math.sin(p.now * 11) * 11); },
       props(c, p) {   // hammer

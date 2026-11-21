@@ -13,6 +13,9 @@ import { updateRings } from '../events/ring.js';
 import { updateVisitor } from '../events/cart.js';
 import { updateSculptures } from '../activities/sculpture.js';
 import { updateJourneys } from '../events/journeys.js';
+import { updateTalk, news, nearby, anyone } from '../talk.js';
+import { deliverMail } from '../activities/errands.js';
+import { settleRumour } from '../events/rumour.js';
 import { DAY_LEN } from '../config.js';
 import { planHammock, between, shape as hangHammock } from '../activities/hammock.js';
 
@@ -89,6 +92,7 @@ function arrive() {
   S.critters.push(c); assignHomes();
   goTo(c, p.x, p.y, () => { setAct(c, 'wave', 1.8); say(c, 'hi!'); });
   note(`${c.name} moved in.`);
+  news(`${c.name} moved in`, anyone(2));
 }
 
 export function updateWorld(dt) {
@@ -101,7 +105,8 @@ export function updateWorld(dt) {
   lastPhase = p;
 
   for (const c of S.critters) updateCritter(c, dt);
-  updateEvents(dt); updateRings(dt); updateVisitor(dt); updateSculptures(dt); updateJourneys();
+  updateEvents(dt); updateRings(dt); updateVisitor(dt); updateSculptures(dt); updateJourneys(); updateTalk(); deliverMail(); settleRumour();
+  const lh = S.lostHat; if (lh && lh.fly > 0) lh.fly -= dt;   // a hat on the wind
   for (const c of S.critters) if (c.balloon && S.clock > c.balloon.until) {   // a balloon gets away
     S.floaters.push({ ...c.balloon, x: c.x - 30 * c.size, y: c.y - 60 * c.size, t: 0 });
     c.balloon = null;

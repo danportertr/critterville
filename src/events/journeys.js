@@ -15,6 +15,7 @@ import { freePoint, topEdge } from '../world/geometry.js';
 import { hydrate, assignHomes } from '../world/town.js';
 import { note } from '../journal.js';
 import { goTo, setAct, say, release, isFree, tick } from '../sim/core.js';
+import { news, nearby, bestFriend, isFriend } from '../talk.js';
 
 export const PLACES = [
   { id: 'mountains', name: 'the mountains', words: ['so high!', 'snow!', 'an eagle', 'echo... echo'] },
@@ -26,7 +27,7 @@ export const PLACES = [
 ];
 const placeOf = id => PLACES.find(p => p.id === id) || PLACES[0];
 /** The fields that describe a critter for good (also what gets saved). */
-export const keep = c => ({ name: c.name, seed: c.seed, size: c.size, head: c.head, body: c.body, hat: c.hat, hatFrom: c.hatFrom, story: c.story, x: c.x, y: c.y });
+export const keep = c => ({ name: c.name, seed: c.seed, size: c.size, head: c.head, body: c.body, hat: c.hat, hatFrom: c.hatFrom, story: c.story, friends: c.friends, knows: c.knows, x: c.x, y: c.y });
 
 // ---- leaving ----
 function setOff(kind) {
@@ -44,20 +45,33 @@ function setOff(kind) {
     o.nextWalk = 'trot';
     goTo(o, c.x + Math.cos(a) * rand(58, 84), c.y + Math.sin(a) * rand(22, 34), () => {
       if (c.act !== 'goodbye') return;
-      o.dir = c.x > o.x ? 1 : -1; o.sad = kind === 'moving';
+      o.dir = c.x > o.x ? 1 : -1; o.sad = kind === 'moving'; o.close = isFriend(o, c);
       setAct(o, 'seeoff', c.t + rand(3, 6));
     });
   });
   return { dur: 20 };
 }
+const CARDS = {
+  moving: ['The new place has a very good pond.', 'I miss the swings. Say hello to everyone.', 'Settled in. The apples here are not as good.', 'Thinking of you all. Is the bridge still up?'],
+  mountains: ['So high up! I can see for ever.'], sea: ['The sea is enormous. I saw a whale.'], desert: ['Hot. Sandy. The stars are amazing.'],
+  city: ['So many lights. So much noise!'], forest: ['The trees here are taller than our houses.'], island: ['Palm trees and crabs. Back soon.'],
+};
 function gone(c) {
+  const friend = bestFriend(c), seen = nearby(c, 500).filter(o => o !== c);
   release(c);
   const i = S.critters.indexOf(c);
   if (i >= 0) S.critters.splice(i, 1);
+  const card = (key, when) => S.mail.push({ from: c.name, to: friend && friend.name, line: pick(CARDS[key]), due: S.clock + when * DAY_LEN });
   if (c.leaving === 'adventure') {
-    const place = pick(PLACES);
-    S.away.push({ who: keep(c), place: place.id, back: S.clock + rand(1.6, 3) * DAY_LEN });
-  } else note(`${c.name} has gone. The town feels a little quieter.`);
+    const place = pick(PLACES), days = rand(1.6, 3);
+    S.away.push({ who: keep(c), place: place.id, back: S.clock + days * DAY_LEN });
+    card(place.id, days * rand(0.3, 0.6));   // a postcard turns up while they're away
+    news(`${c.name} went adventuring`, seen);
+  } else {
+    note(friend ? `${c.name} has gone. ${friend.name} watched the road for a long while.` : `${c.name} has gone. The town feels a little quieter.`);
+    card('moving', rand(1.2, 2.6));
+    news(`${c.name} moved away`, seen);
+  }
 }
 
 export const farewell = {
@@ -83,6 +97,7 @@ export function updateJourneys() {
   S.critters.push(c); assignHomes();
   goTo(c, p.x, p.y, () => { c.luggage = null; setAct(c, 'wave', 2.5); say(c, "I'm back!", 2.2); });
   note(`${c.name} is back from ${where.name}, full of stories.`);
+  news(`${c.name} is back!`, nearby({ x: p.x, y: p.y }, 400));
 }
 
 // ---- telling everyone about it ----
@@ -113,8 +128,8 @@ export const story = {
       pose(c, p) { p.hr = [30 + Math.sin(p.now * 9) * 5, -57]; if (c.leaving === 'moving') p.mouth = 'small'; },
     },
     seeoff: {    // everybody else, waving
-      update(c, dt) { if ((c.wordT = (c.wordT || rand(0.5, 3)) - dt) <= 0) { say(c, pick(c.sad ? ['bye...', 'stay!', 'write!', '♥'] : ['bye!', 'have fun!', 'good luck', '♥']), 1.5); c.wordT = rand(3, 5); } tick(c, dt); },
-      finish(c) { c.sad = false; },
+      update(c, dt) { if ((c.wordT = (c.wordT || rand(0.5, 3)) - dt) <= 0) { say(c, pick(c.close ? ['my friend...', 'write to me!', '♥'] : c.sad ? ['bye...', 'stay!', 'write!', '♥'] : ['bye!', 'have fun!', 'good luck', '♥']), 1.5); c.wordT = rand(3, 5); } tick(c, dt); },
+      finish(c) { c.sad = c.close = false; },
       pose(c, p) { p.hl = [-30 - Math.sin(p.now * 8 + c.seed) * 5, -56]; p.mouth = c.sad ? 'sad' : 'big'; },
     },
     tell: {      // back from an adventure, holding forth

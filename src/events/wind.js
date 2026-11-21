@@ -7,11 +7,25 @@ import { ctx } from '../draw/canvas.js';
 import { findSpot, rebuildObs } from '../world/geometry.js';
 import { note } from '../journal.js';
 import { topple } from '../activities/sculpture.js';
+import { freePoint } from '../world/geometry.js';
+import { news, nearby, outdoors, anyone } from '../talk.js';
+import { say } from '../sim/core.js';
 
 export default {
   id: 'wind',
   can: () => phase() > 0.05 && phase() < 0.55,
-  start() { note('The wind is getting up.'); return { dur: 45, dir: rand() < 0.5 ? -1 : 1 }; },
+  start() {
+    note('The wind is getting up.');
+    const owner = !S.lostHat && pick(outdoors().filter(c => c.hat));
+    if (owner) {   // there goes somebody's hat (activities/errands.js gets it back)
+      const p = freePoint(20);
+      S.lostHat = { hat: owner.hat, owner: owner.name, x: p.x, y: p.y, from: { x: owner.x, y: owner.y - 70 * owner.size }, fly: 2.6, taken: null, held: false };
+      owner.hat = null; say(owner, 'my hat!', 2); owner.surprise = 1.5;
+      note(`The wind took ${owner.name}'s hat.`);
+      news(`${owner.name} lost a hat`, nearby(owner));
+    }
+    return { dur: 45, dir: rand() < 0.5 ? -1 : 1 };
+  },
   update(e, dt) {
     S.wind = e.dir * clamp(e.t / 5, 0, 1) * clamp((e.dur - e.t) / 6, 0, 1);
     const b = S.ball;
@@ -26,6 +40,7 @@ export default {
     S.trees.push({ x: p.x, y: p.y, seed: irand(1e6), size, color: pick(GREENS), apples: [-1, -1.4, -1.8], grow: 0.12 });
     rebuildObs();
     note('The wind dropped. It must have carried a seed: there is a seedling that was not there before.');
+    news('a seedling!', anyone(1));
   },
   overlay(e) {
     const { W, H } = S, k = Math.abs(S.wind), d = e.dir;

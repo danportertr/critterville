@@ -13,6 +13,7 @@ import { findSpot, rebuildObs, inStream } from '../world/geometry.js';
 import { hydrate } from '../world/town.js';
 import { note } from '../journal.js';
 import { goTo, setAct, say } from '../sim/core.js';
+import { news, nearby } from '../talk.js';
 import { HAT_KINDS } from '../draw/cart.js';
 
 export const CARTS = {
@@ -73,7 +74,7 @@ export function updateVisitor(dt) {
   o.blinkT -= dt; o.blink -= dt; if (o.blinkT <= 0) { o.blink = 0.13; o.blinkT = rand(2, 6); }
   o.y = v.y + 2;
   if (v.state === 'arriving') {
-    if (roll(v, dt, v.x + v.d * GAP)) { v.state = 'open'; o.act = 'idle'; o.settle = 1; v.cartX = v.x; rebuildObs(); note(CARTS[v.kind].arrive); }
+    if (roll(v, dt, v.x + v.d * GAP)) { v.state = 'open'; o.act = 'idle'; o.settle = 1; v.cartX = v.x; rebuildObs(); note(CARTS[v.kind].arrive); news({ hat: 'a hatmaker!', balloon: 'balloons!', ice: 'ice cream!' }[v.kind], nearby(v, 360)); }
   } else if (v.state === 'open') {
     o.x = v.x + v.d * GAP; v.cartX = v.x;
     const busy = S.critters.some(c => c.act === 'shop');

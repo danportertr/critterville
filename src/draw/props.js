@@ -101,3 +101,41 @@ export function drawHammockFront(h) {
   const s = sling(h, -2, 15);
   stripe(h, s, 5); stripe(h, s, 10);
 }
+
+// ---- things that set people talking (events/picnic.js, events/rumour.js, a hat lost in the wind) ----
+/** A checked blanket with a basket and some apples on it. */
+export function drawPicnic(p) {
+  const w = 40, h = 15, cloth = [[-w, -h], [w, -h - 1], [w + 4, h], [-w - 4, h + 1]];
+  ctx.save(); ctx.translate(p.x, p.y);
+  box(cloth, '#fff', p.seed, 0.6);
+  ctx.save(); ctx.beginPath(); cloth.forEach(([x, y], i) => ctx[i ? 'lineTo' : 'moveTo'](x, y)); ctx.clip();
+  ctx.fillStyle = '#ff9d9d';
+  for (let i = -5; i < 5; i++) for (let j = -2; j < 2; j++) if ((i + j) % 2 === 0) ctx.fillRect(i * 9, j * 9, 9, 9);
+  ctx.restore();
+  box(cloth, null, p.seed, 0.6);
+  box([[-22, 2], [-6, 2], [-8, -9], [-20, -9]], '#d2a273', p.seed + 1, 0.4, 2.2);                 // basket
+  smooth([[-20, -9], [-14, -18], [-8, -9]], false); ctx.lineWidth = 2; ctx.strokeStyle = INK; ctx.stroke();
+  for (const [x, y] of [[6, 2], [15, -3], [23, 4]]) blob(x, y, 4.2, 4, '#fb6540', p.seed + x, 6, 0.06, 0.2, 1.8);
+  ctx.restore();
+}
+/** Somebody's hat, wherever the wind dropped it (or still tumbling there). */
+export function drawLostHat(h, drawHat) {
+  let x = h.x, y = h.y, spin = 0;
+  if (h.fly > 0) { const t = 1 - h.fly / 2.6; x = h.from.x + (h.x - h.from.x) * t; y = h.from.y + (h.y - h.from.y) * t - Math.sin(t * Math.PI) * 60; spin = t * 9; }
+  ctx.save(); ctx.translate(x, y); ctx.rotate(spin); ctx.scale(0.8, 0.8);
+  drawHat(h.hat, 1, 77);
+  ctx.restore();
+}
+/** Is that... something? A long dark shape sliding about under the water. */
+export function drawRumour(r) {
+  const t = S.now * 0.12 + r.seed;
+  let x, y, a = 0;
+  if (r.water === 'pond' && S.pond) { x = S.pond.x + Math.cos(t) * S.pond.rx * 0.45; y = S.pond.y + Math.sin(t * 1.3) * S.pond.ry * 0.4; }
+  else if (S.stream) { const q = streamPoint(0.5 + 0.35 * Math.sin(t * 0.6)); x = q.x; y = q.y; a = Math.atan2(q.ty, q.tx); }
+  else return;
+  ctx.save(); ctx.translate(x, y); ctx.rotate(a);
+  ctx.globalAlpha = 0.16 + 0.1 * Math.sin(S.now * 0.7 + r.seed);   // comes and goes
+  ctx.fillStyle = '#1f3d66'; ctx.beginPath(); ctx.ellipse(0, 0, 22, 6.5, 0, 0, TAU); ctx.fill();
+  ctx.beginPath(); ctx.moveTo(-20, 0); ctx.lineTo(-31, -6); ctx.lineTo(-31, 6); ctx.fill();
+  ctx.restore();
+}
