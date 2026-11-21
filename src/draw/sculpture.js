@@ -121,6 +121,17 @@ export function drawBenchFront(a) {
   ctx.restore();
 }
 
+/**
+ * Something half-made needs a proper top edge, or it just looks cut off. This
+ * draws the shape again in solid ink, but only a thin strip of it at height y:
+ * the result is an outline across the top of exactly as much as has been built.
+ */
+function workingEdge(x, y, w, drawInInk) {
+  ctx.save(); ctx.beginPath(); ctx.rect(x, y - 1.3, w, 2.6); ctx.clip();
+  drawInInk();
+  ctx.restore();
+}
+
 export function drawSculpture(a) {
   const form = formOf(a), mat = a.material || 'stone', col = MATERIALS[mat].color, plinth = ON_PLINTH.has(form) && mat !== 'sand';
   ctx.save(); ctx.translate(a.x, a.y);
@@ -130,16 +141,20 @@ export function drawSculpture(a) {
   if (a.progress >= 1) FORMS[form](a, col);
   else if (CARVED.includes(form)) {    // carved out of a block, from the top down
     const cut = -60 + 50 * a.progress;
+    const block = c => box([[-15, -10], [15, -10], [14, -58], [-14, -58]], c, a.seed + 2, 0.9);
     ctx.save(); ctx.beginPath(); ctx.rect(-40, cut, 80, -8 - cut); ctx.clip();
-    box([[-15, -10], [15, -10], [14, -58], [-14, -58]], col, a.seed + 2, 0.9);
+    block(col);
     ctx.restore();
     ctx.save(); ctx.beginPath(); ctx.rect(-40, -80, 80, cut + 80); ctx.clip();
     FORMS[form](a, col);
     ctx.restore();
+    workingEdge(-40, cut, 80, () => block(INK));          // the ledge where the uncut block begins
   } else {                             // built up from the ground
-    ctx.save(); ctx.beginPath(); ctx.rect(-50, -75 * a.progress - 3, 100, 75 * a.progress + 8); ctx.clip();
+    const top = -75 * a.progress - 3;
+    ctx.save(); ctx.beginPath(); ctx.rect(-50, top, 100, 75 * a.progress + 8); ctx.clip();
     FORMS[form](a, col);
     ctx.restore();
+    workingEdge(-50, top, 100, () => FORMS[form](a, INK));   // as far as it's got
   }
   if (a.progress >= 1) {
     if (mat === 'stone' && a.born !== undefined) {   // stone gathers moss over the days
@@ -180,9 +195,8 @@ export function drawMonument(m) {
   } else {   // a giant critter, going up from the feet
     shadow(44, 8);
     if (g < 1) for (const x of [-46, 46]) line([[x, 2], [x, -150]], sd + x, 3, '#c9966b', 0.6);
-    ctx.save(); ctx.beginPath(); ctx.rect(-80, -172 * g - 2, 160, 172 * g + 12); ctx.clip();
+    const giant = c => {
     ctx.scale(2.2, 2.2);
-    const c = STONE;
     for (const k of [-1, 1]) { tube([[k * 6.5, -13], [k * 7, -3]], 10, c, sd + k, 0.3); tube([[k * 7, -3], [k * 15, -2.5]], 7, c, sd + k + 3, 0.3); }
     // The arms go on whole, once the body has reached the shoulders. (Revealed from
     // the ground up like the rest, the hands would appear first, hanging in mid-air.)
@@ -191,7 +205,12 @@ export function drawMonument(m) {
     blob(0, -57, 21, 20, c, sd + 11, 11, 0.06, 0.4);
     dot(4, -64, 1.6); dot(8.5, -62.6, 1.6);
     line([[-3, -58], [-4.5, -50], [-2, -43], [4, -40.5], [9.5, -45], [12, -55]], sd + 12, 2.4, INK, 0.3);
+    };
+    const top = -172 * g - 2;
+    ctx.save(); ctx.beginPath(); ctx.rect(-80, top, 160, 172 * g + 12); ctx.clip();
+    giant(STONE);
     ctx.restore();
+    if (g < 1) workingEdge(-80, top, 160, () => giant(INK));   // a flat top to whatever height it has reached
   }
   ctx.restore();
 }

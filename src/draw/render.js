@@ -11,6 +11,9 @@ import { drawStone, drawDucks, drawRing, drawHammock, drawPicnic, drawLostHat, d
 import { drawCart, drawBalloon, drawHat } from './cart.js';
 import { drawCairn, drawMonument } from './sculpture.js';
 import { drawStageBack, drawStageFront } from './stage.js';
+import { drawPile } from './site.js';
+import { drawPuffs } from '../puffs.js';
+import { currentSite } from '../sim/world.js';
 import { drawEventOverlay } from '../events/index.js';
 
 const TINTS = [[0, [255, 233, 220]], [0.05, [255, 255, 255]], [0.58, [255, 255, 255]], [0.66, [255, 214, 186]], [0.74, [140, 147, 214]], [0.93, [140, 147, 214]], [1, [255, 233, 220]]];
@@ -92,8 +95,11 @@ export function render() {
   for (const h of S.hammocks) if (h.A) items.push([h.y, drawHammock, h]);
   if (S.theatre) { items.push([S.theatre.y - 3, drawStageBack, S.theatre]); items.push([S.theatre.y - 0.5, drawStageFront, S.theatre]); }   // the cast stand in between
   for (const c of S.critters) if (!c.hidden && !c.offstage) items.push([c.y, drawCritter, c]);
+  // materials stacked beside whatever is being built
+  for (const s of new Set([currentSite(), S.monument && S.monument.progress < 1 ? S.monument : null])) if (s && !s.adding && s.phase !== 'striking') items.push([s.y + 12, o => drawPile(o, 1 - o.progress), s]);
   items.sort((a, b) => a[0] - b[0]);
   for (const it of items) it[1](it[2], it[3]);
+  drawPuffs();
   for (const f of S.flies) sc.drawButterfly(f, n);
   for (const f of S.floaters) drawBalloon(f, f.x, f.y);
   if (S.lostHat && !S.lostHat.held) drawLostHat(S.lostHat, drawHat);

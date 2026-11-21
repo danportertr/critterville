@@ -47,15 +47,26 @@ function roofShape(h, fill, top) {
 
 export function drawHouse(h, lit) {
   const sd = h.seed, p = h.progress, done = p >= 1, top = wallTop(h);
-  const wall = done ? h.color : '#fff', roof = done ? h.roof : '#fff', door = shade(h.color, 0.8);
+  const wall = done || p > 0.86 ? h.color : '#fff', roof = done ? h.roof : '#fff', door = shade(h.color, 0.8);   // paint goes on last
   ctx.save(); ctx.translate(h.x, h.y); ctx.scale(HOUSE.scale, HOUSE.scale);
   shadow(0, 2, 60, 6);
   const adding = h.adding, pole = (x, hgt) => line([[x, 2], [x + jit(sd, 9, 1), -hgt]], sd + (x | 0), 3, WOOD, 0.6);
-  if (!done || adding) { pole(-62, top + 20); pole(60, top + 20); }                              // scaffolding
+  if (adding) { pole(-62, top + 20); pole(60, top + 20); }                                       // scaffolding for an add-on
   if (has(h, 'annex')) annex(h, wall, roof);
   else if (adding && adding.what === 'annex') { pole(-92, 60); if (adding.progress > 0.4) annex(h, '#fff', '#fff'); }
 
-  const k = done ? 1 : clamp(p / 0.7, 0.12, 1), y = v => -v * k;                                 // walls rise as it's built
+  if (!done) {   // the timber frame goes up first, and the walls are filled in inside it
+    const f = clamp(p / 0.28, 0.15, 1), post = x => tube([[x, 0], [x, -top * f]], 3, WOOD, sd + 90 + x, 0.4);
+    post(-47); post(45); post(-1);
+    if (f >= 1) {
+      tube([[-49, -top], [47, -top]], 3, WOOD, sd + 93, 0.4);
+      tube([[-47, -4], [-1, -top + 4]], 2.4, WOOD, sd + 94, 0.4);                                // a brace
+      for (const [x0, x1] of [[-58, -1], [56, -1]]) tube([[x0, -top + 2], [x1, -top - HOUSE.roof + 4]], 3, WOOD, sd + 95 + x0, 0.4);   // rafters
+    }
+    for (const x of [52, 60]) line([[x + 8, 2], [x - 6, -top * 0.9]], sd + 97 + x, 2.2, INK, 0.3);   // a ladder against the side
+    for (let i = 1; i < 6; i++) line([[59 - i * 2.2, 2 - i * top * 0.15], [67 - i * 2.2, 2 - i * top * 0.15]], sd + 99 + i, 1.8, INK, 0.2);
+  }
+  const k = done ? 1 : clamp((p - 0.22) / 0.48, 0.02, 1), y = v => -v * k;                       // walls rise as it's built
   let wtop = top;
   if (adding && adding.what === 'upstairs') wtop = top + HOUSE.upstairs * clamp(adding.progress / 0.8, 0, 1);
   if (has(h, 'chimney')) chimney(h, wall, door, wtop);
