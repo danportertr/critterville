@@ -32,7 +32,8 @@ export function load() {
   S.pool = mv(d.pool) || null; if (S.pool) { S.pool.rx *= fx; S.pool.ry = S.pool.rx * 0.48; }
   S.fire = mv(d.fire) || null;
   S.swing = mv(d.swing) ? makeSwing(d.swing.x, d.swing.y, d.swing.seed, d.swing.progress) : null;
-  S.houses = d.houses.map(mv); S.trees = d.trees.map(mv); S.flowers = d.flowers.map(mv); S.arts = (d.arts || []).map(mv);
+  S.houses = d.houses.map(mv); S.trees = d.trees.map(mv);
+  for (const t of S.trees) if (!t.apples) { t.apples = [Math.random(), Math.random(), Math.random()]; }   // towns saved before apples grew S.flowers = d.flowers.map(mv); S.arts = (d.arts || []).map(mv);
   S.apples = [];
   S.ball = mv(d.ball) ? makeBall(d.ball.x, d.ball.y) : null;
   S.critters = d.critters.map(c => hydrate(mv(c)));

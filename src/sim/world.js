@@ -94,7 +94,9 @@ export function updateWorld(dt) {
   for (const f of S.flowers) f.age += dt;
   fade(S.flowers, dt);
   fade(S.arts, dt, rebuildObs);
-  for (const t of S.trees) if (t.fruit < 3 && (t.regrow -= dt) <= 0) { t.fruit++; t.regrow = rand(40, 100); }
+  // Apples swell from a bud to ripe over a couple of minutes. A picked spot goes
+  // negative first, so there's a pause before the next bud shows.
+  for (const t of S.trees) for (let i = 0; i < t.apples.length; i++) if (t.apples[i] < 1) t.apples[i] = Math.min(1, t.apples[i] + dt / (110 + hash(t.seed + i) * 80));
   for (const f of S.flies) {
     f.a += (hash(f.seed + Math.floor(S.now * 2)) - 0.5) * 24 * dt;
     f.x += Math.cos(f.a) * 30 * dt; f.y += Math.sin(f.a) * 18 * dt + Math.sin(S.now * 5 + f.seed) * 0.3;

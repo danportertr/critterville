@@ -3,7 +3,7 @@ import { ctx } from './canvas.js';
 import { S } from '../state.js';
 import { INK, LW, HOUSE, SWING, WOOD, STONE } from '../config.js';
 import { TAU, clamp, hs } from '../util.js';
-import { jit, wob, smooth, polyPath, paint, blob, box, line, tube, dot } from './primitives.js';
+import { jit, wob, smooth, polyPath, blobPts, paint, blob, box, line, tube, dot } from './primitives.js';
 
 const shadow = (x, y, rx, ry) => { ctx.fillStyle = 'rgba(0,0,0,.08)'; ctx.beginPath(); ctx.ellipse(x, y, rx, ry, 0, 0, TAU); ctx.fill(); };
 const WINDOW = [[22, -26], [22, -44], [38, -44], [38, -26]];
@@ -31,13 +31,45 @@ export function drawLitWindow(h, alpha) {
   ctx.restore();
 }
 
+// Apple tree: a cloud of lobes with little curls where they meet, a flared
+// trunk, and three spots where apples grow (t.apples holds each one's growth,
+// 0..1; see sim/world.js). Lobes are [cx, cy, rx, ry]; coordinates are from the
+// middle of the trunk's base.
+const LOBES = [[0.5, -99, 19.5, 21], [-21, -73, 22, 15], [21, -75, 19, 15], [-16, -47, 18, 13], [16, -50, 17, 14]];
+const CURLS = [[-16, -86], [15, -87], [-31, -60], [31, -62], [0, -39]];   // where lobes meet on the outline
+export const APPLE_SPOTS = [[-2, -81], [-17, -58], [14, -59]];
+const TRUNK_L = [[-8, -42], [-9, -23], [-14, -10], [-26, -1]], TRUNK_R = [[8.5, -42], [9, -23], [13, -10], [26, -3]];
+
+function drawAppleOnTree(x, y, g, seed) {
+  if (g <= 0) return;                       // not budded yet
+  const k = 0.25 + 0.75 * Math.min(1, g), r = 6 * k;
+  const color = g < 0.55 ? '#c5e85a' : g < 0.9 ? '#f5b04a' : '#fb6540';   // green, turning, ripe
+  tube([[x, y - r * 0.7], [x + 1, y - r * 1.7]], 1.4 * k, '#7a3b1e', seed + 1, 0.2);
+  blob(x + r * 0.95, y - r * 1.25, 3.2 * k, 1.9 * k, '#c9ec6a', seed + 2, 6, 0.1, 0.2, 1.6);
+  blob(x, y, r, r * 0.95, color, seed, 7, 0.06, 0.3, 2.2);
+}
+
 export function drawTree(t) {
+  const sd = t.seed;
   ctx.save(); ctx.translate(t.x, t.y); ctx.scale(t.size, t.size);
-  shadow(0, 1, 22, 5);
-  ctx.lineCap = 'butt'; tube([[0, 0], [1, -22], [0, -44]], 9, WOOD, t.seed, 0.6); ctx.lineCap = 'round';
-  blob(0, -66, 34, 30, t.color, t.seed + 1, 11, 0.1, 0.8);
-  const slots = [[-14, -60], [10, -74], [15, -53]];
-  for (let i = 0; i < t.fruit; i++) blob(slots[i][0], slots[i][1], 4.6, 4.6, '#ff6b6b', t.seed + 2 + i, 6, 0.04, 0.3, 2);
+  shadow(0, 1, 30, 5);
+  // trunk: filled shape, outlined only down its two sides
+  const L = wob(TRUNK_L, sd, 0.6), R = wob(TRUNK_R, sd + 1, 0.6);
+  polyPath([...L, ...R.slice().reverse()]); ctx.fillStyle = '#b06634'; ctx.fill();
+  ctx.lineWidth = LW; ctx.strokeStyle = INK;
+  smooth(L, false); ctx.stroke(); smooth(R, false); ctx.stroke();
+  // crown: every lobe in fat ink, then every lobe in green, so they merge into one outline
+  const lobes = LOBES.map((l, i) => blobPts(l[0], l[1], l[2], l[3], 9, sd + 2 + i, 0.06, 0.7));
+  ctx.fillStyle = INK; ctx.strokeStyle = INK; ctx.lineWidth = LW * 2;
+  for (const pts of lobes) { smooth(pts, true); ctx.fill(); ctx.stroke(); }
+  ctx.fillStyle = t.color;
+  for (const pts of lobes) { smooth(pts, true); ctx.fill(); }
+  ctx.beginPath(); ctx.ellipse(0, -70, 20, 24, 0, 0, TAU); ctx.fill();
+  for (const [i, [jx, jy]] of CURLS.entries()) {   // the outline hooks inwards a little at each join
+    const dx = -jx, dy = -68 - jy, d = Math.hypot(dx, dy), vx = dx / d, vy = dy / d, m = i % 2 ? -1 : 1;
+    line([[jx, jy], [jx + vx * 7 - vy * m, jy + vy * 7 + vx * m], [jx + vx * 5 - vy * 4.5 * m, jy + vy * 5 + vx * 4.5 * m]], sd + 20 + i, LW, INK, 0.3);
+  }
+  t.apples.forEach((g, i) => drawAppleOnTree(APPLE_SPOTS[i][0], APPLE_SPOTS[i][1], g, sd + 30 + i * 3));
   ctx.restore();
 }
 
@@ -196,8 +228,16 @@ export function drawBall() {
   blob(b.x, y, 8, 8, '#fff', 77, 8, 0.02, 0.3, 2.4);
   line([[b.x - 7 * Math.cos(r), y - 7 * Math.sin(r)], [b.x + 3 * Math.sin(r), y - 3 * Math.cos(r)], [b.x + 7 * Math.cos(r), y + 7 * Math.sin(r)]], 78, 2.4, '#ff8fc7', 0.2);
 }
+// Grass: two flat green blades, no outline. Some tufts are mirrored or a bit bigger.
+const BLADE_TALL = [[-1.6, -11], [0.3, -7], [1.5, -1], [-2.4, 0.2], [-4.4, -1], [-2.2, -6]];
+const BLADE_SHORT = [[4.6, -6.2], [4, -3.2], [4.6, -0.2], [2.4, 0.2], [1.2, -1.2], [2.6, -4]];
 export function drawTuft(t) {
-  for (let i = -1; i <= 1; i++) line([[t.x + i * 3, t.y], [t.x + i * 6, t.y - 7 - (i === 0 ? 3 : 0)]], t.seed + i, 2.2, '#9ad59a', 0.4);
+  const m = (hs(t.seed, 1) < 0.5 ? -1 : 1) * (1.1 + hs(t.seed, 2) * 0.6), k = Math.abs(m);
+  ctx.fillStyle = '#adeb3c';
+  for (const [n, blade] of [BLADE_TALL, BLADE_SHORT].entries()) {
+    smooth(wob(blade.map(p => [t.x + p[0] * m, t.y + p[1] * k]), t.seed + n, 0.25), true);
+    ctx.fill();
+  }
 }
 export function drawButterfly(f, night) {
   if (night >= 0.5) return;

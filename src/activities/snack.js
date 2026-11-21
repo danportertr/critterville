@@ -1,6 +1,6 @@
-// Eating: fruit picked off a tree, or a snack somebody dropped from the sky.
+// Eating: a ripe apple picked off a tree, or a snack somebody dropped from the sky.
 import { S } from '../state.js';
-import { pick } from '../util.js';
+import { pick, rand } from '../util.js';
 import { blob } from '../draw/primitives.js';
 import { goTo, setAct, say, release } from '../sim/core.js';
 
@@ -25,21 +25,25 @@ export const snack = {
   },
 };
 
+const ripe = t => t.apples.some(g => g >= 1);
+
 export const fruit = {
   id: 'fruit',
-  weight: () => S.trees.some(t => t.fruit > 0) ? 0.9 : 0,
+  weight: () => S.trees.some(ripe) ? 0.9 : 0,
   start(c) {
-    const t = pick(S.trees.filter(t => t.fruit > 0));
-    goTo(c, t.x + (c.x < t.x ? -20 : 20) * t.size, t.y + 4, () => { c.dir = t.x > c.x ? 1 : -1; c.tree = t; setAct(c, 'pick', 1.8); });
+    const t = pick(S.trees.filter(ripe));
+    goTo(c, t.x + (c.x < t.x ? -32 : 32) * t.size, t.y + 4, () => { c.dir = t.x > c.x ? 1 : -1; c.tree = t; setAct(c, 'pick', 1.8); });
   },
   states: {
     pick: {
       finish(c) {
-        if (!c.tree || c.tree.fruit <= 0) return;
-        c.tree.fruit--; setAct(c, 'eat', 2.2);
+        const i = c.tree ? c.tree.apples.findIndex(g => g >= 1) : -1;
+        if (i < 0) return;                       // somebody beat them to it
+        c.tree.apples[i] = -rand(0.15, 0.5);
+        setAct(c, 'eat', 2.2);
         return true;
       },
-      pose(c, p) { p.hand(p.d, p.d * 22, -58 + Math.sin(p.now * 8) * 3); },
+      pose(c, p) { p.hand(p.d, p.d * 20, -62 + Math.sin(p.now * 8) * 3); },
     },
   },
 };

@@ -81,10 +81,10 @@ export function newTown() {
   S.fire = S.pool = S.swing = S.ball = null;
   const rx = clamp(W * 0.09, 60, 115), ry = rx * 0.5;
   S.pond = { ...findSpot(rx + 6, ry + 6), rx, ry, seed: irand(1e6) };
-  const nt = clamp(Math.round(W * H / 130000), 3, 8);
+  const nt = clamp(Math.round(W * H / 170000), 3, 6);
   for (let i = 0; i < nt; i++) {
-    const p = findSpot(30, 44, 38);
-    S.trees.push({ x: p.x, y: p.y, seed: irand(1e6), size: rand(0.85, 1.2), color: pick(GREENS), fruit: irand(4), regrow: rand(20, 60) });
+    const size = rand(1.1, 1.45), p = findSpot(44 * size, 54 * size, 52 * size);
+    S.trees.push({ x: p.x, y: p.y, seed: irand(1e6), size, color: pick(GREENS), apples: [rand(), rand(), rand()] });
   }
   rebuildObs();
   for (let i = 0; i < 5; i++) { const p = freePoint(); S.critters.push(newCritter(p.x, p.y, i === 0)); }

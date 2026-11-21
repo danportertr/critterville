@@ -16,7 +16,7 @@ export function rebuildObs() {
   if (pool) S.obs.push({ x: pool.x, y: pool.y, rx: pool.rx + 14, ry: pool.ry + 11 });
   if (fire) S.obs.push({ x: fire.x, y: fire.y - 3, rx: 20, ry: 11 });
   for (const h of S.houses) S.obs.push({ x: h.x, y: h.y - 9, rx: HOUSE.w / 2 + 6, ry: 13 });
-  for (const t of S.trees) S.obs.push({ x: t.x, y: t.y - 2, rx: 11, ry: 6 });
+  for (const t of S.trees) S.obs.push({ x: t.x, y: t.y - 2, rx: 24 * t.size, ry: 7 });
   for (const a of S.arts) S.obs.push({ x: a.x, y: a.y - 2, rx: 17, ry: 7 });
 }
 
@@ -39,7 +39,7 @@ function zones() {
   if (pond) z.push({ x: pond.x, y: pond.y, rx: pond.rx + 6, ry: pond.ry + 6 });
   if (swing) z.push({ x: swing.x, y: swing.y - 55, rx: 100, ry: 70 });
   for (const h of S.houses) z.push({ x: h.x, y: h.y - 40, rx: 58, ry: 55 });
-  for (const t of S.trees) z.push({ x: t.x, y: t.y - 38, rx: 30, ry: 44 });
+  for (const t of S.trees) z.push({ x: t.x, y: t.y - 52 * t.size, rx: 44 * t.size, ry: 54 * t.size });
   for (const a of S.arts) z.push({ x: a.x, y: a.y - 25, rx: 22, ry: 32 });
   return z;
 }

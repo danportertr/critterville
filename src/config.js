@@ -15,7 +15,7 @@ export const BODIES = ['#ffe66d', '#ffd1e8', '#c8f0ff', '#d9d0ff', '#ffd9b8', '#
 export const WALLS = ['#ffe3c2', '#d9ecff', '#ffd6e6', '#e2f7d0', '#fff3b0', '#e6dcff'];
 export const ROOFS = ['#ff8f8f', '#8fb8ff', '#ffab76', '#b7a6ff', '#7fd6a0', '#ff8fc7'];
 export const PETALS = ['#ff8fc7', '#ffd36b', '#b7a6ff', '#ff8f8f', '#8fd3ff', '#ffffff', '#ffab76'];
-export const GREENS = ['#9fe0a0', '#b5e88f', '#86d9b0'];
+export const GREENS = ['#adeb3c', '#9fe64a', '#bdee4c'];
 export const WOOD = '#c9966b';
 export const STONE = '#d8d8e0';
 
