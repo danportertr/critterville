@@ -34,5 +34,5 @@ export default {
     const t = S.tank, p = front(c, t);
     goTo(c, p.x, p.y, () => { c.dir = t.x > c.x ? 1 : -1; setAct(c, 'watch', rand(4, 8)); if (rand() < 0.7) say(c, pick(['ooh', 'blub', '♥', 'hello', '?', 'wow'])); });
   },
-  states: { watch: {} },
+  states: { watch: { mood: 'oh' } },
 };

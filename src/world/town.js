@@ -22,10 +22,10 @@ export function newCritter(x, y, original) {
 export function hydrate(d) {
   return {
     ...d, home: S.houses[d.home] || null,
-    hw: 0.94 + hs(d.seed, 1) * 0.14, hh: 0.94 + hs(d.seed, 2) * 0.14, eyeGap: hs(d.seed, 3) * 1.6 - 0.4,
+    hw: 0.94 + hs(d.seed, 1) * 0.14, hh: 0.94 + hs(d.seed, 2) * 0.14, eyeGap: hs(d.seed, 3) * 1.6 - 0.4, cheer: hs(d.seed, 6),
     speed: 22 + hs(d.seed, 4) * 10, dir: hs(d.seed, 5) < 0.5 ? -1 : 1,
     act: 'idle', t: rand(0.5, 4), tx: 0, ty: 0, then: null, walkT: 0, phase: 0,
-    hopY: 0, hopV: 0, sink: 0, blink: 0, blinkT: rand(1, 5), bubble: null, hidden: false,
+    hopY: 0, hopV: 0, sink: 0, surprise: 0, blink: 0, blinkT: rand(1, 5), bubble: null, hidden: false,
     partner: null, apple: null, cleanup: null, owl: false,
   };
 }

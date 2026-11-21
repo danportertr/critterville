@@ -12,7 +12,7 @@ export default {
     for (const o of S.critters) if (o !== c && isFree(o) && dist(o, c) < 190 && rand() < 0.65) { setAct(o, 'dance', t + rand(-1, 1)); o.noteT = rand(1); }
   },
   states: {
-    dance: {
+    dance: { mood: 'big',
       update(c, dt) {
         if ((c.noteT -= dt) <= 0) { say(c, '♪', 0.9); c.noteT = rand(1.6, 3); }
         tick(c, dt);

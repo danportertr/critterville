@@ -13,7 +13,7 @@ export default {
   weight: () => 1,
   start(c) { const p = freePoint(20); goTo(c, p.x, p.y, () => setAct(c, 'plant', 2.6)); },
   states: {
-    plant: {
+    plant: { mood: 'small',
       finish(c) {
         S.flowers.push({ x: c.x + rand(-4, 4), y: c.y + 3, seed: irand(1e6), color: pick(PETALS), age: 0 });
         if (S.flowers.length > flowerCap()) { const old = S.flowers.find(f => f.dying === undefined); if (old) old.dying = 1; }

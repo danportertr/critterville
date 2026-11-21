@@ -12,7 +12,7 @@ export const snack = {
     goTo(c, a.x + (c.x < a.x ? -9 : 9), a.y + 1, () => { c.dir = a.x > c.x ? 1 : -1; a.eaten = true; setAct(c, 'eat', 2.4); say(c, 'yum'); });
   },
   states: {
-    eat: {
+    eat: { mood: 'big',
       finish(c) {
         if (!c.apple) return;
         const i = S.apples.indexOf(c.apple);
@@ -35,7 +35,7 @@ export const fruit = {
     goTo(c, t.x + (c.x < t.x ? -32 : 32) * t.size, t.y + 4, () => { c.dir = t.x > c.x ? 1 : -1; c.tree = t; setAct(c, 'pick', 1.8); });
   },
   states: {
-    pick: {
+    pick: { mood: 'small',
       finish(c) {
         const i = c.tree ? c.tree.apples.findIndex(g => g >= 1) : -1;
         if (i < 0) return;                       // somebody beat them to it

@@ -15,7 +15,7 @@ export default {
     goTo(c, f.x + Math.cos(a) * 52, f.y + Math.sin(a) * 26, () => { setAct(c, 'sleep', rand(0, 10)); c.dir = f.x > c.x ? 1 : -1; });
   },
   states: {
-    sleep: {
+    sleep: { mood: 'tiny',
       update(c, dt) {
         if (isNight() || (c.t -= dt) > 0) return;
         c.hidden = false;

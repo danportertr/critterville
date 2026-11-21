@@ -44,7 +44,7 @@ export default {
     goTo(c, p.x, p.y, () => { c.dir = s.x > c.x ? 1 : -1; c.site = s; setAct(c, 'build', rand(4, 7)); });
   },
   states: {
-    build: {
+    build: { mood: 'flat',
       finish(c) {
         const s = c.site;
         if (!s) return;

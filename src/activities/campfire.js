@@ -14,6 +14,6 @@ export default {
   start(c) { sit(c, 8, 20); },
   startOwl(c) { c.owl = false; sit(c, 18, 40); },
   states: {
-    warm: { pose(c, p) { const q = Math.sin(p.now * 3 + c.seed); p.hl = [-27, -27 + q]; p.hr = [27, -27 - q]; } },
+    warm: { mood: 'smile', pose(c, p) { const q = Math.sin(p.now * 3 + c.seed); p.hl = [-27, -27 + q]; p.hr = [27, -27 - q]; } },
   },
 };

@@ -30,7 +30,8 @@ export default {
         tick(c, dt);
       },
       finish: release,
-      pose(c, p) { if (c.bubble) p.hand(p.d, p.d * 32, -34 + Math.sin(p.now * 10) * 4); },
+      mood: 'small',
+      pose(c, p) { if (c.bubble) { p.mouth = 'big'; p.hand(p.d, p.d * 32, -34 + Math.sin(p.now * 10) * 4); } },   // whoever's talking lights up
     },
   },
 };

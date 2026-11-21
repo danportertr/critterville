@@ -8,6 +8,20 @@ import { TAU } from '../util.js';
 import { STATES } from '../sim/core.js';
 import { inStream, onBridge } from '../world/geometry.js';
 
+// Mouths. The big U is the full grin from the original doodle; most of the
+// time a critter wears something quieter. Each is the curve, plus whether it
+// gets the little serif caps at its ends. Coordinates are from the middle of the head.
+const MOUTHS = {
+  big: { curve: [[-4, -1], [-5.5, 7], [-3, 14], [3, 16.5], [8.5, 12], [11, 2]], caps: [[[-7.5, -1.2], [-1.5, -1]], [[9, 1], [13, 3]]] },
+  smile: { curve: [[-3, 4], [-3.5, 8], [-0.5, 11.5], [4, 12], [7.5, 9.5], [8.5, 5]], caps: [[[-5.5, 3.8], [-0.8, 4]], [[7, 4.4], [10.2, 5.8]]] },
+  small: { curve: [[-2, 7], [0, 9.5], [3.5, 10], [6.5, 8]], caps: [] },
+  flat: { curve: [[-2.5, 8], [2, 8.8], [7, 8]], caps: [] },
+  tiny: { curve: [[0.5, 8.5], [4.5, 9]], caps: [] },
+  oh: { round: [2.5, 8.5, 3, 3.8] },
+};
+/** What a critter's face does when nothing in particular is going on: some are just smilier than others. */
+const restingFace = c => (c.cheer > 0.8 ? 'big' : c.cheer > 0.45 ? 'smile' : c.cheer > 0.15 ? 'small' : 'flat');
+
 const WADE = 8;   // how deep the stream is, in critter units
 import { jit, wob, smooth, polyPath, blob, box, line, dot } from './primitives.js';
 
@@ -31,9 +45,11 @@ export function drawCritter(c) {
   const p = {
     now: S.now, d: c.dir, bob: Math.sin(S.now * 2 + sd) * 0.5, rock: 0, lf: 0, rf: 0, lx: 0, rx: 0,   // lf/rf: foot lift, lx/rx: foot stride
     hl: [-33, -16], hr: [33, -16], eyesClosed: c.blink > 0,
+    mouth: st.mood || restingFace(c),          // a state can set a mood, or change p.mouth in its pose
     hand(side, x, y) { if (side > 0) this.hr = [x, y]; else this.hl = [x, y]; },
   };
   if (st.pose) st.pose(c, p);
+  if (c.surprise > 0) p.mouth = 'oh';
   const { bob, lf, rf, d } = p;
   ctx.rotate(p.rock);
 
@@ -71,9 +87,12 @@ export function drawCritter(c) {
     if (p.eyesClosed) line([[fx(ex - 1.6), fy(ey)], [fx(ex + 1.6), fy(ey + 0.4)]], sd + 11, 1.8, INK, 0.2);
     else dot(fx(ex) + jit(sd + 12, ex | 0, 0.2), fy(ey), 1.6);
   }
-  line([[-4, -1], [-5.5, 7], [-3, 14], [3, 16.5], [8.5, 12], [11, 2]].map(q => [fx(q[0]), fy(q[1])]), sd + 13, 2.4, INK, 0.4);
-  line([[fx(-7.5), fy(-1.2)], [fx(-1.5), fy(-1)]], sd + 14, 2.4, INK, 0.3);
-  line([[fx(9), fy(1)], [fx(13), fy(3)]], sd + 15, 2.4, INK, 0.3);
+  const mouth = MOUTHS[p.mouth] || MOUTHS.smile, face = q => [fx(q[0]), fy(q[1])];
+  if (mouth.round) blob(fx(mouth.round[0]), fy(mouth.round[1]), mouth.round[2], mouth.round[3], '#000', sd + 13, 7, 0.05, 0.2, 1);
+  else {
+    line(mouth.curve.map(face), sd + 13, 2.4, INK, 0.4);
+    mouth.caps.forEach((cap, i) => line(cap.map(face), sd + 14 + i, 2.4, INK, 0.3));
+  }
   ctx.restore();
 
   if (wading) line([[c.x - 15 * s, c.y + 1], [c.x - 7 * s, c.y - 1.5], [c.x, c.y + 1], [c.x + 7 * s, c.y - 1.5], [c.x + 15 * s, c.y + 1]], sd + 31, 2.4, '#fff', 0.7);

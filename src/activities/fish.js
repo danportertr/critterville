@@ -39,13 +39,13 @@ export default {
     });
   },
   states: {
-    fish: {
+    fish: { mood: 'flat',
       update(c, dt) {
         c.fishAnim -= dt;
         if (!c.caught && (c.catchT -= dt) <= 0) {
           c.caught = catchFish(c, c.water);
           c.fishAnim = 1.6; c.t = Math.min(c.t, 2.6);
-          say(c, '!'); c.hopV = 90;
+          say(c, '!'); c.hopV = 90; c.surprise = 0.7;
         }
         tick(c, dt);
       },
@@ -54,7 +54,7 @@ export default {
         stock(c, c.caught, c.water);
         return true;
       },
-      pose(c, p) { p.hand(p.d, p.d * 27, -30); },
+      pose(c, p) { p.hand(p.d, p.d * 27, -30); if (c.caught) p.mouth = 'big'; },
       props(c, p) {
         const d = p.d, tip = [d * 58, -64];
         line([p.HD, tip], c.seed + 6, 2.2, INK, 0.3);

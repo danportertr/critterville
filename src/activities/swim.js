@@ -22,7 +22,7 @@ export default {
     });
   },
   states: {
-    swim: {
+    swim: { mood: 'big',
       update(c, dt) {
         const dx = c.tx - c.x, dy = c.ty - c.y, d = Math.hypot(dx, dy);
         if (d < 4) paddleTo(c);

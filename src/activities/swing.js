@@ -20,7 +20,7 @@ export default {
     });
   },
   states: {
-    swing: {
+    swing: { mood: 'big',
       finish(c) { c.sink = 0; c.y = S.swing.y + 6; c.hopV = 130; release(c); },
       transform(c) {   // hang from the bar and rotate with the seat
         ctx.translate(S.swing.x + c.seat.dx, S.swing.y - SWING.barH);

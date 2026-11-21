@@ -46,7 +46,7 @@ cv.addEventListener('pointerdown', e => {
   const p = toWorld(e), c = critterAt(p);
   hideHint();
   if (c) {
-    say(c, c.name, 2);
+    say(c, c.name, 2); c.surprise = 0.5;
     if (c.act !== 'swing' && c.act !== 'swim') c.hopV = 170;
     if (isFree(c)) setAct(c, 'wave', 1.6);
     return;

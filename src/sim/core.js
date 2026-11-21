@@ -4,6 +4,7 @@
 // A state is a small object of optional hooks:
 //   update(c, dt)   run each tick instead of the default countdown of c.t
 //   finish(c)       the countdown ran out; return true if you set the next state yourself
+//   mood            the face it wears: 'big', 'smile', 'small', 'flat', 'tiny' or 'oh'
 //   pose(c, p)      adjust the drawn pose          (see draw/critter.js)
 //   props(c, p)     draw held things, in critter-local coordinates
 //   transform(c)    take over where/how the critter is drawn; return true
@@ -141,6 +142,7 @@ Object.assign(STATES, {
     },
     pose(c, p) {
       if (c.jump) {   // arms up, knees up
+        p.mouth = 'oh';
         const a = Math.sin(c.jump.t * Math.PI);
         p.bob = a * 2; p.lf = p.rf = a * 6; p.lx = -3 * a; p.rx = 3 * a;
         p.hl = [-30, -30 - a * 26]; p.hr = [30, -30 - a * 26];
@@ -157,12 +159,12 @@ Object.assign(STATES, {
     props(c, p) { if (c.carry && !c.jump) c.carry(c, p);
     },
   },
-  wave: { pose(c, p) { p.hr = [30 + Math.sin(p.now * 14) * 5, -57]; } },
+  wave: { mood: 'big', pose(c, p) { p.hr = [30 + Math.sin(p.now * 14) * 5, -57]; } },
 });
 
 export function updateCritter(c, dt) {
   if (!c.jump && (c.hopV || c.hopY)) { c.hopY += c.hopV * dt; c.hopV -= 700 * dt; if (c.hopY <= 0) { c.hopY = 0; c.hopV = 0; } }
-  c.blinkT -= dt; c.blink -= dt;
+  c.blinkT -= dt; c.blink -= dt; c.surprise -= dt;
   if (c.blinkT <= 0) { c.blink = 0.13; c.blinkT = rand(2, 6); }
   if (c.bubble && (c.bubble.t -= dt) <= 0) c.bubble = null;
   const st = STATES[c.act];

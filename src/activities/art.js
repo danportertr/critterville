@@ -87,7 +87,7 @@ export const art = {
     });
   },
   states: {
-    paint: {
+    paint: { mood: 'flat',
       update: work, finish: done,
       pose(c, p) { p.hand(1, 19 + Math.sin(p.now * 5) * 4, -43 + Math.cos(p.now * 7) * 6); },
       props(c, p) {   // brush
@@ -95,7 +95,7 @@ export const art = {
         line([p.HD, tip], c.seed + 6, 2, INK, 0.2); dot(tip[0], tip[1], 2.6); dot(tip[0], tip[1], 1.6, c.art.c1);
       },
     },
-    sculpt: {
+    sculpt: { mood: 'flat',
       update: work, finish: done,
       pose(c, p) { p.hand(1, 17 + Math.sin(p.now * 11) * 5, -40 + c.art.progress * 14); },
       props(c, p) { line([p.HD, [p.HD[0] + 9, p.HD[1] + 1]], c.seed + 6, 2.6, INK, 0.2); },   // chisel
@@ -110,5 +110,5 @@ export const admire = {
     const a = pick(S.arts.filter(a => a.progress >= 1)), side = c.x < a.x ? -1 : 1;
     goTo(c, a.x + side * 32, a.y + 5, () => { c.dir = -side; setAct(c, 'admire', rand(3, 5)); say(c, pick(['♥', 'ooh', 'hm', 'wow', '?', 'nice'])); });
   },
-  states: { admire: {} },
+  states: { admire: { mood: 'smile' } },
 };
