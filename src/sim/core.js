@@ -123,6 +123,9 @@ function crossStream(c, wx, wy) {
   return true;
 }
 
+// An arm at rest points out and down from the shoulder at this angle, and is this long.
+const ARM_REST = 0.66, ARM_LEN = 27.8;
+
 /** Where a foot is in its cycle: [along the stride from 1 (front) to -1 (back), lift 0..1]. */
 function footAt(phase) {
   const u = ((phase / Math.PI) % 2 + 2) % 2;
@@ -192,9 +195,12 @@ Object.assign(STATES, {
       p.rx = ra * A * c.hx; p.ry = ra * A * c.hy * 0.4; p.rf = rl * g.lift * w.lift * k;
       p.bob = Math.abs(Math.sin(c.phase)) * g.bounce * w.bounce * k - w.droop * 0.6;
       p.rock = (Math.sin(c.phase) * (0.025 + 0.045 * up) + c.hx * 0.04 * w.lean) * k;   // waddle, plus a lean into the walk
-      const sw = g.swing * w.swing * k, hang = w.droop;                                  // arms swing opposite the legs; tired arms hang
-      p.hl = [-31 + hang * 1.5 + ra * 5 * sw * c.hx, -15 + hang * 1.6 - Math.abs(ra) * sw + ra * 3 * sw * up];
-      p.hr = [31 - hang * 1.5 + la * 5 * sw * c.hx, -15 + hang * 1.6 - Math.abs(la) * sw + la * 3 * sw * up];
+      // Arms swing from the shoulder, opposite the legs, staying the same length
+      // (so they pivot rather than stretch or wriggle). Tired arms hang lower.
+      const sw = g.swing * w.swing * k, rest = ARM_REST + w.droop * 0.12;
+      const aL = rest + ra * sw * (0.4 * c.hx + 0.18 * up), aR = rest + la * sw * (-0.4 * c.hx + 0.18 * up);
+      p.hl = [-11 - ARM_LEN * Math.cos(aL), -33 + ARM_LEN * Math.sin(aL)];
+      p.hr = [11 + ARM_LEN * Math.cos(aR), -33 + ARM_LEN * Math.sin(aR)];
       if (c.walk === 'trudge') { p.mouth = 'tiny'; p.eyesClosed = p.eyesClosed || Math.sin(p.now * 0.9 + c.seed) > 0.55; }   // nodding off
       if (c.walk === 'skip') p.mouth = 'big';
       c.feet = [p.lx, p.ly, p.lf, p.rx, p.ry, p.rf];                                // so they can settle when the walk ends

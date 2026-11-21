@@ -22,7 +22,7 @@ const MOUTHS = {
 /** What a critter's face does when nothing in particular is going on: some are just smilier than others. */
 const restingFace = c => (c.cheer > 0.8 ? 'big' : c.cheer > 0.45 ? 'smile' : c.cheer > 0.15 ? 'small' : 'flat');
 
-const ARM = 29;    // shoulder-to-hand length when the arm is straight
+const ARM = 28.2;  // shoulder-to-hand length when the arm is straight
 const WADE = 8;   // how deep the stream is, in critter units
 import { jit, wob, smooth, polyPath, blob, box, line, dot } from './primitives.js';
 
@@ -63,10 +63,11 @@ export function drawCritter(c) {
   // straight out it's nearly a line, as in the original doodle.
   const arm = (sh, h, side, k) => {
     const dx = h[0] - sh[0], dy = h[1] - sh[1], d = Math.hypot(dx, dy) || 1;
-    const bend = Math.sqrt(Math.max(0, ARM * ARM - d * d)) / 2 * 1.5;        // how far the elbow sticks out
+    const bend = Math.sqrt(Math.max(0, ARM * ARM - d * d)) / 2;              // how far the elbow sticks out
     let nx = -dy / d, ny = dx / d;                                            // across the arm...
     if (nx * side + ny * 0.6 < 0) { nx = -nx; ny = -ny; }                     // ...on the outward, downward side
-    return wob([sh, [sh[0] + dx / 2 + nx * bend, sh[1] + dy / 2 + ny * bend + 1], h], sd + k, 0.5);
+    const el = [sh[0] + dx / 2 + nx * bend, sh[1] + dy / 2 + ny * bend];
+    return [sh, el, [h[0] + jit(sd + k, 0, 0.5), h[1] + jit(sd + k, 1, 0.5)]];   // only the hand wobbles, so the arm doesn't wriggle
   };
   const armL = arm([-11, -33 - bob], [p.hl[0], p.hl[1] - bob], -1, 1), armR = arm([11, -33 - bob], [p.hr[0], p.hr[1] - bob], 1, 2);
   const HL = p.HL = armL[2], HR = p.HR = armR[2];
