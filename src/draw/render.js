@@ -60,6 +60,15 @@ function redrawWashed(draw, wash) {
   ctx.save(); ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.drawImage(scratch, 0, 0); ctx.restore();
 }
 
+/** A photograph of the stage as it looks right now, as a small JPEG (for the playbill in the journal). */
+function photograph(th) {
+  const k = S.dpr * S.zoom, shot = document.createElement('canvas'), g = shot.getContext('2d');
+  shot.width = 340; shot.height = 238;
+  g.fillStyle = PAPER; g.fillRect(0, 0, shot.width, shot.height);
+  g.drawImage(cv, (th.x - 135) * k, (th.y - 152) * k, 270 * k, 189 * k, 0, 0, shot.width, shot.height);
+  return shot.toDataURL('image/jpeg', 0.74);
+}
+
 export function render() {
   const n = nightAmt(), p = phase(), { W, H } = S;
   ctx.setTransform(S.dpr * S.zoom, 0, 0, S.dpr * S.zoom, 0, 0);
@@ -159,4 +168,7 @@ export function render() {
     ctx.globalAlpha = 1;
   }
   sc.drawSky(n);
+
+  const th = S.theatre;
+  if (th && th.wantPhoto) { th.wantPhoto = false; try { (th.photos = th.photos || []).push(photograph(th)); } catch (e) { /* no picture this time */ } }
 }

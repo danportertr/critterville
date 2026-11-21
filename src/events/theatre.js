@@ -136,6 +136,7 @@ function playBeat(th, b) {
   const speaker = th.cast[b.who];
   for (const c of th.cast) c.faceTo = speaker && c !== speaker ? (speaker.x > c.x ? 1 : -1) : c === A ? 1 : c === C ? -1 : (B && C && !C.offstage ? 1 : -1);
   th.mood = b.mood || null;
+  if (b.photo) th.photoT = 1.1;   // a moment for everyone to get into position, then: click
   if (b.mood) for (const c of S.critters) if (c.act === 'audience' && rand() < 0.45) {
     say(c, pick({ gasp: ['oh!', 'no!', '!!'], laugh: ['ha ha', 'hee', 'ha!'], aww: ['aww', '♥'], clap: ['bravo!', 'more!', '♥', 'hooray'] }[b.mood]), 1.4);
     if (b.mood === 'clap') c.hopV = rand(40, 100);
@@ -144,8 +145,10 @@ function playBeat(th, b) {
 function curtainDown(th) {
   const names = th.cast.map((c, i) => `${c.name} as ${th.play.cast[i].role}`);
   // Keep the playbill (the journal's shows page lists them).
-  S.plays.push({ title: th.title, day: Math.floor(S.clock / 300) + 1, cast: th.cast.map((c, i) => ({ name: c.name, role: th.play.cast[i].role })), twist: th.twist, ending: th.ending });
+  S.plays.push({ title: th.title, day: Math.floor(S.clock / 300) + 1, cast: th.cast.map((c, i) => ({ name: c.name, role: th.play.cast[i].role })), twist: th.twist, ending: th.ending, photos: th.photos || [] });
+  th.photos = null;
   if (S.plays.length > 20) S.plays.shift();
+  S.plays.slice(0, -6).forEach(p => { p.photos = []; });   // pictures are only kept for the last few (they take up room)
   journalChanged('songs');
   for (const c of th.cast) {
     c.costume = c.stageProp = c.role = null; c.luggage = null; c.offstage = false; c.acting = null; c.sink = 0;
@@ -177,6 +180,7 @@ export function updateTheatre(dt) {
       th.beat = 0; th.t = 0; playBeat(th, th.play.beats[0]);
     }
     th.curtain = clamp(th.curtain + dt * 0.8, 0, 1);
+    if (th.photoT > 0 && (th.photoT -= dt) <= 0) th.wantPhoto = true;   // (render.js takes it, once this frame is drawn)
     if ((th.t += dt) >= th.play.beats[th.beat].d) {
       th.t = 0;
       if (++th.beat >= th.play.beats.length) return void curtainDown(Object.assign(th, { title: th.play.title, twist: th.play.twist, ending: th.play.ending }));

@@ -10,6 +10,7 @@
 //   enter  cast members who come on at this point
 //   move   where they stand: { 0: -50 } (stage is about -70..70)
 //   mood   how the audience takes it: 'gasp', 'laugh', 'aww', 'clap'
+//   photo  take a picture of the stage during this beat, for the playbill
 import { S } from '../state.js';
 import { rand, pick } from '../util.js';
 import { PLACES } from '../events/journeys.js';
@@ -127,14 +128,16 @@ function twistBeats(t) {
 export function buildPlay() {
   const s = pick(subjects()), t = pick(TWISTS);
   const C = { ...t.C, costume: t.C.costume === 'same' ? s.A.costume : t.C.costume };
+  const twist = twistBeats(t);
+  twist[1].photo = true;                                                          // the big moment
   const beats = [
     { d: 2.4, act: {}, move: { 0: -45, 1: 5 } },                                   // curtain up
     { d: 3.2, who: 0, say: s.A.line, act: { 0: 'speak' } },
     { d: 3.2, who: 1, say: s.B.line, act: { 1: 'speak' } },
     { d: 3.2, who: s.event[0], say: s.event[1], act: { [s.event[0]]: 'cheer' }, mood: rand() < 0.5 ? 'laugh' : 'gasp' },
-    ...twistBeats(t),
+    ...twist,
     { d: 2.6, who: 0, say: 'The End!', act: { 0: 'cheer', 1: 'cheer', 2: 'cheer' }, move: { 0: -40, 1: 0, 2: 40 } },
-    { d: 5, act: { 0: 'bow', 1: 'bow', 2: 'bow' }, mood: 'clap' },
+    { d: 5, act: { 0: 'bow', 1: 'bow', 2: 'bow' }, mood: 'clap', photo: true },      // and the curtain call
   ];
   return { title: s.title, backdrop: s.backdrop, hero: s.hero, cast: [s.A, s.B, C], beats, twist: t.text, ending: t.ending };
 }

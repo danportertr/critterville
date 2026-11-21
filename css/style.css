@@ -54,3 +54,6 @@ h1 { pointer-events: auto; cursor: pointer; }
 #journal .playbill h3 { margin: 0; }
 #journal .playbill ul { margin: 6px 0; }
 #journal .playbill p { margin: 4px 0 0; }
+
+#journal .photos { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
+#journal .photos img { width: min(250px, 100%); border: 2.5px solid #000; border-radius: 10px 13px 9px 12px; display: block; }

@@ -89,6 +89,10 @@ function joinBand(c, band) {
     let idx = loop * part.length;
     while (band.t0 + (Math.floor(idx / part.length) * band.song.beats + part[idx % part.length].b) * spb < now()) idx++;
     band.members.push({ c, role, part, idx });
+    // The song remembers who has played which part, so it fills out over time (the journal plays it back that way).
+    const known = band.song.parts = band.song.parts || {};
+    if (!known[role]) journalChanged('songs');
+    known[role] = { voice: c.instrument.voice, instrument: c.instrument.name, by: c.name };
     if (!band.names.includes(c.name)) band.names.push(c.name);
     c.band = band; c.noteT = 9;
     setAct(c, 'perform', 999);

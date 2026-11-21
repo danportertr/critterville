@@ -12,8 +12,7 @@ import { hydrate, makeSwing, makeBall, assignHomes, scatterDecor } from './town.
 
 export function save() {
   if (!S.W || !S.critters.length) return;
-  try {
-    localStorage.setItem(SAVE_KEY, JSON.stringify({
+  const data = {
       v: SAVE_VERSION, W: S.W, H: S.H, clock: S.clock, journal: S.journal, pond: S.pond, stream: S.stream, tank: S.tank, nextEvent: S.nextEvent, away: S.away, townName: S.townName, pranked: S.pranked, songs: S.songs, songId: S.songId, plays: S.plays,
       theatre: S.theatre && { kind: 'stage', x: S.theatre.x, y: S.theatre.y, seed: S.theatre.seed, progress: S.theatre.progress, phase: S.theatre.phase === 'show' ? 'ready' : S.theatre.phase, wait: 8 }, news: S.news, newsId: S.newsId, mail: S.mail, rumour: S.rumour,
       lostHat: S.lostHat && { ...S.lostHat, taken: null, held: false }, cairns: S.cairns, monument: S.monument, recent: S.recent, lastCart: S.lastCart,
@@ -24,8 +23,12 @@ export function save() {
       arts: S.arts.filter(a => a.progress >= 1 && a.dying === undefined),
       ball: S.ball && { x: S.ball.x, y: S.ball.y, roof: S.ball.roof, roofAt: S.ball.roofAt },
       critters: S.critters.filter(c => !c.leaving).map(c => ({ ...keep(c), home: S.houses.indexOf(c.home) })),
-    }));
-  } catch (e) { /* private mode etc: the town just won't persist */ }
+  };
+  try { localStorage.setItem(SAVE_KEY, JSON.stringify(data)); }
+  catch (e) {   // probably out of room: the plays' photographs are the bulky part, so try again without them
+    try { localStorage.setItem(SAVE_KEY, JSON.stringify({ ...data, plays: S.plays.map(p => ({ ...p, photos: [] })) })); }
+    catch (e2) { /* private mode etc: the town just won't persist */ }
+  }
 }
 
 /** Returns false if there is nothing usable saved. */

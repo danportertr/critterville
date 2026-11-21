@@ -65,26 +65,35 @@ function renderSky() {
   $body.append(grid);
 }
 
-/** Play a song through once: the tune on its composer's instrument if they still have it, over a simple bass. */
+const ROLES = ['melody', 'harmony', 'bass', 'counter', 'rhythm'];
+const LOUDNESS = { melody: 1, harmony: 0.8, bass: 0.7, counter: 0.7, rhythm: 0.6 };
+/**
+ * Play a song through once, the way the town has learnt to play it: every part
+ * that somebody has played, on the instrument they played it on. A brand new
+ * tune that nobody has performed yet is just the melody on a plain whistle.
+ */
 function playSong(song) {
   unlockAudio();
-  const by = S.critters.find(c => c.name === song.by && c.instrument && c.instrument.family !== 'drum');
-  const lead = by ? by.instrument.voice : { family: 'flute', wave: 'triangle', oct: 1, vib: 4, vibRate: 5, attack: 0.04, detune: 0 };
-  const low = { family: 'strings', wave: 'triangle', oct: 0, decay: 0.7, cutoff: 1500, detune: 0 }, spb = 60 / song.bpm;
+  const parts = song.parts || {}, spb = 60 / song.bpm;
+  const plain = { family: 'flute', wave: 'triangle', oct: 1, vib: 4, vibRate: 5, attack: 0.04, detune: 0 };
   setTimeout(() => {   // (a beat's grace for the audio to wake up on the first press)
-    for (const n of partFor(song, 'melody')) playNote(lead, n.midi, 0.1 + n.b * spb, n.d * spb, n.vel);
-    for (const n of partFor(song, 'bass')) playNote(low, n.midi, 0.1 + n.b * spb, n.d * spb, 0.5);
+    const roles = ROLES.filter(r => parts[r]);
+    if (!roles.includes('melody')) for (const n of partFor(song, 'melody')) playNote(parts.harmony ? parts.harmony.voice : plain, n.midi, 0.1 + n.b * spb, n.d * spb, n.vel);
+    for (const r of roles) for (const n of partFor(song, r)) playNote(parts[r].voice, n.midi, 0.1 + n.b * spb, n.d * spb, n.vel * LOUDNESS[r]);
   }, 120);
 }
+/** "reed whistle (melody), log drum (rhythm)" */
+const lineUp = song => ROLES.filter(r => song.parts && song.parts[r]).map(r => `${song.parts[r].instrument} (${r})`).join(', ');
 // The shows page: the town's songs (a repertoire, played again and again), and
 // the playbills of its plays (each performed once).
 function renderSongs() {
   $body.append(el('h3', 'day', 'Songs'));
   if (!S.songs.length) $body.append(el('p', 'lede', 'No songs yet. Somebody has to make an instrument first, and then wait for evening.'));
-  else $body.append(el('p', 'lede', 'Tunes the critters have made up. They play them in the evening, and you can hear one here.'));
+  else $body.append(el('p', 'lede', 'Tunes the critters have made up. They play them in the evening. Each one fills out as more instruments join in, and that is how you hear it here.'));
   for (const song of S.songs) {
     const row = el('div', 'song'), text = el('div'), btn = el('button', '', '▶ play');
     text.append(el('h3', '', song.name), el('p', 'meta', `Made up by ${song.by} on day ${song.day}.`));
+    if (lineUp(song)) text.append(el('p', 'meta', `Played so far on: ${lineUp(song)}.`));
     btn.addEventListener('click', () => playSong(song));
     row.append(text, btn); $body.append(row);
   }
@@ -99,6 +108,11 @@ function renderSongs() {
     const cast = el('ul');
     for (const c of p.cast) cast.append(el('li', '', `${c.role}: ${c.name}`));
     bill.append(cast, el('p', '', `Featuring ${p.twist}. ${p.ending}`));
+    if (p.photos && p.photos.length) {   // pictures taken during the show
+      const strip = el('div', 'photos');
+      p.photos.forEach((src, n) => { const img = el('img'); img.src = src; img.alt = n ? `The curtain call of ${p.title}` : `A scene from ${p.title}`; strip.append(img); });
+      bill.append(strip);
+    }
     $body.append(bill);
   }
 }
