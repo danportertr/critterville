@@ -88,6 +88,7 @@ export function render() {
   for (const h of lit) zzz(h.x - 62, h.y - (wallTop(h) + HOUSE.roof * 0.6) * HOUSE.scale, h.seed);
   for (const c of S.critters) {
     if (c.act === 'sleep' && !c.hidden) { ctx.fillStyle = INK; zzz(c.x + 16 * c.size, c.y - 80 * c.size, c.seed); }
+    if (c.act === 'hammock') { ctx.fillStyle = INK; zzz(c.ham.M[0] + c.dir * 24 * c.size, c.ham.M[1] - 26, c.seed); }   // asleep in the hammock
     if (c.bubble && !c.hidden) drawBubble(c);
   }
   if (S.sign && S.now < S.sign.until) {   // the note over a tapped house

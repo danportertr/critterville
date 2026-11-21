@@ -61,7 +61,9 @@ export function restore(h) {
 export function shape(h) {
   const a = thing(h.a), b = thing(h.b), lying = h.user && h.user.act === 'hammock';
   h.A = tieOn(h.a, 1); h.B = tieOn(h.b, -1);
-  h.M = [(h.A[0] + h.B[0]) / 2 + (lying ? Math.sin(S.now * 1.3 + h.seed) * 3 : 0), (h.A[1] + h.B[1]) / 2 + (lying ? 24 : 15)];
+  // With someone asleep in it, it rocks slowly from side to side and rises and falls with their breathing.
+  const rock = lying ? Math.sin(S.now * 0.9 + h.seed) * 6 : 0, breath = lying ? Math.sin(S.now * 1.7 + h.seed) * 1.6 : 0;
+  h.M = [(h.A[0] + h.B[0]) / 2 + rock, (h.A[1] + h.B[1]) / 2 + (lying ? 24 + breath : 15)];
   h.x = (h.A[0] + h.B[0]) / 2; h.y = Math.max(a.y, b.y) + 0.5;   // drawn just in front of both anchors
   return h;
 }
@@ -77,24 +79,24 @@ export default {
       c.dir = rand() < 0.5 ? -1 : 1;
       c.x = h.x; c.y = h.y + 0.5; c.sink = -16;
       setAct(c, 'hammock', rand(16, 34));
-      if (rand() < 0.5) say(c, pick(['ahh', '♪', 'zzz']));
+      if (rand() < 0.5) say(c, pick(['ahh', 'yawn']));
     });
   },
   states: {
     hammock: {
-      mood: 'smile',
+      mood: 'tiny',
       finish(c) { c.sink = 0; c.y = c.ham.y + 8; c.hopV = 90; release(c); },
       transform(c) {   // lying back along the hammock, head slightly raised
         const h = c.ham, m = h.M;
         hammockClip(h);                                  // nothing shows below the sling
         ctx.translate(m[0], m[1] - 13 * c.size);         // high enough that their head shows over the edge
-        ctx.rotate(c.dir * 1.42 + Math.sin(S.now * 1.3 + h.seed) * 0.03);
+        ctx.rotate(c.dir * 1.42 + Math.sin(S.now * 0.9 + h.seed) * 0.05);   // tilts a little as it rocks
         ctx.translate(0, 30 * c.size);
         ctx.scale(c.size, c.size);
         return true;
       },
       after(c) { drawHammockFront(c.ham); },
-      pose(c, p) { p.bob = 0; p.eyesClosed = true; p.hl = [-13, -52]; p.hr = [13, -52]; p.lx = 3; p.rx = -3; p.lf = p.rf = 4; },   // hands behind the head, feet tucked in
+      pose(c, p) { p.bob = Math.sin(p.now * 1.7 + c.ham.seed) * 1.2; p.eyesClosed = true; p.hl = [-13, -52]; p.hr = [13, -52]; p.lx = 3; p.rx = -3; p.lf = p.rf = 4; },   // hands behind the head, feet tucked in
     },
   },
 };
