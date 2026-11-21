@@ -30,6 +30,8 @@ export const S = {
   stones: [], rings: [], ducks: null,   // fallen stars, mushroom rings, the duck family
   visitor: null, lastCart: null,        // a traveller with a cart, in town for a few days (events/cart.js)
   shots: [],                            // apples in the air (thrown at the ball on the roof)
+  extraBalls: [], ballsUntil: 0, ballGames: [],   // spare balls, and games in progress (activities/ballgames.js)
+  games: [],                            // games the town has invented: {name, kind, by, day, rule}
   puffs: [],                            // dust, chips, confetti (puffs.js)
   floaters: [],                         // balloons that have got away
   viewing: null,                   // a painting you tapped, shown large: {art, until}

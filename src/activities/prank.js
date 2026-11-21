@@ -75,7 +75,7 @@ const PRANKS = [
     where: () => S.monument && S.monument.hats ? S.monument : null, when: () => S.monument.hats.at,
     undo() { S.monument.hats = null; return 'took the party hat off the monument'; } },
   { id: 'ball', w: 1,
-    can: () => S.ball && S.ball.roof == null && S.houses.some(built),
+    can: () => S.ball && S.ball.roof == null && !S.ball.game && !S.ball.fly && !S.ball.held && S.houses.some(built),
     pick: () => pick(S.houses.filter(built)),
     at: h => ({ x: h.x - 50, y: h.y + 12 }),
     go(h) { S.ball.roof = S.houses.indexOf(h); S.ball.roofAt = S.clock; S.ball.vx = S.ball.vy = 0; S.ball.x = h.x - 24; S.ball.y = h.y; return 'threw the ball up onto a roof'; },

@@ -93,8 +93,9 @@ export function render() {
   if (S.ball) {   // (it may be stuck on a roof, thanks to the prankster)
     const b = S.ball, h = b.roof != null && S.houses[b.roof];
     if (h) { b.x = h.x - 26; b.y = h.y + 0.5; b.z = (wallTop(h) + HOUSE.roof * 0.45) * HOUSE.scale - 8; }
-    items.push([b.y, sc.drawBall]);
+    items.push([b.y, sc.drawBall, b]);
   }
+  for (const b of S.extraBalls) items.push([b.y, sc.drawBall, b]);
   if (S.swing) items.push([S.swing.y, sc.drawSwing, S.swing]);
   if (S.tank) items.push([S.tank.y, sc.drawTank, S.tank]);
   for (const h of S.houses) items.push([h.y, sc.drawHouse, h, lit.has(h)]);

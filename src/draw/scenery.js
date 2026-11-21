@@ -672,11 +672,11 @@ export function drawApple(a) {
   blob(a.x, y - 5, 6, 5.6, '#ff6b6b', a.seed, 7, 0.05, 0.3, 2.2);
   line([[a.x, y - 10], [a.x + 2, y - 14]], a.seed + 1, 2, INK, 0.2);
 }
-export function drawBall() {
-  const b = S.ball, y = b.y - 8 - b.z, r = b.spin;
+export function drawBall(b) {
+  const y = b.y - 8 - b.z, r = b.spin;
   if (b.roof == null) shadow(b.x, b.y + 1, 8, 2.5);
   blob(b.x, y, 8, 8, '#fff', 77, 8, 0.02, 0.3, 2.4);
-  line([[b.x - 7 * Math.cos(r), y - 7 * Math.sin(r)], [b.x + 3 * Math.sin(r), y - 3 * Math.cos(r)], [b.x + 7 * Math.cos(r), y + 7 * Math.sin(r)]], 78, 2.4, '#ff8fc7', 0.2);
+  line([[b.x - 7 * Math.cos(r), y - 7 * Math.sin(r)], [b.x + 3 * Math.sin(r), y - 3 * Math.cos(r)], [b.x + 7 * Math.cos(r), y + 7 * Math.sin(r)]], 78, 2.4, b.color || '#ff8fc7', 0.2);
 }
 // Grass: two flat green blades, no outline. Some tufts are mirrored or a bit bigger.
 const BLADE_TALL = [[-1.6, -11], [0.3, -7], [1.5, -1], [-2.4, 0.2], [-4.4, -1], [-2.2, -6]];

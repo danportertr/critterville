@@ -20,6 +20,7 @@ import { updateTheatre } from '../events/theatre.js';
 import { updatePuffs } from '../puffs.js';
 import { updateMusic } from '../activities/music.js';
 import { updateShots, updatePranks } from '../activities/prank.js';
+import { updateBallGames } from '../activities/ballgames.js';
 import { DAY_LEN } from '../config.js';
 import { planHammock, between, shape as hangHammock } from '../activities/hammock.js';
 
@@ -31,9 +32,16 @@ export function refreshStats() {
   setStats(`day ${dayNum()} · ${p < 0.3 ? 'morning' : p < 0.6 ? 'afternoon' : p < 0.72 ? 'evening' : p < 0.96 ? 'night' : 'dawn'}`);
 }
 
-function updateBall(dt) {
-  const b = S.ball;
-  if (!b || b.roof != null || !(b.vx || b.vy || b.z > 0)) return;
+function updateBall(b, dt) {
+  if (!b || b.roof != null || b.held) return;
+  if (b.fly) {   // thrown or kicked in a game: follow the arc until it lands (activities/ballgames.js)
+    const f = b.fly, t = Math.min(1, (f.t += dt / f.dur));
+    b.x = f.x0 + (f.x1 - f.x0) * t; b.y = f.y0 + (f.y1 - f.y0) * t; b.z = Math.sin(Math.PI * t) * f.h;
+    b.spin += dt * 7 * (f.x1 < f.x0 ? -1 : 1);
+    if (t >= 1) { b.fly = null; b.z = 0; if (f.then) f.then(); }
+    return;
+  }
+  if (!(b.vx || b.vy || b.z > 0)) return;
   b.x += b.vx * dt; b.y += b.vy * dt; b.z += b.vz * dt; b.vz -= 600 * dt;
   b.spin += b.vx * dt * 0.08;
   if (b.z <= 0) { b.z = 0; b.vz = b.vz < -60 ? -b.vz * 0.5 : 0; const f = Math.pow(0.12, dt); b.vx *= f; b.vy *= f; }
@@ -121,7 +129,8 @@ export function updateWorld(dt) {
   }
   for (let i = S.floaters.length - 1; i >= 0; i--) { const f = S.floaters[i]; f.t += dt; f.y -= 34 * dt; f.x += Math.sin(f.t * 1.5 + f.seed) * 12 * dt + S.wind * 60 * dt; if (f.y < -80) S.floaters.splice(i, 1); }
   for (const h of S.hammocks) hangHammock(h);
-  updateBall(dt);
+  for (const b of [S.ball, ...S.extraBalls]) updateBall(b, dt);
+  updateBallGames(dt);
 
   if (S.swing) for (const seat of S.swing.seats) {
     const going = seat.user && seat.user.act === 'swing';

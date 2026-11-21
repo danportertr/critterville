@@ -72,6 +72,6 @@ S.status = () => ({
   doing: S.critters.map(c => `${c.name}:${c.act}`).join(' '),
 });
 S.version = VERSION; S.checkVersion = checkForNewer; S.freshReload = freshReload;   // critterville.checkVersion() asks the server right now
-S.trigger = trigger;       // e.g. critterville.trigger('rain') | 'star' | 'wind' | 'ducks' | 'ring' | 'cart' | 'farewell' | 'adventure' | 'picnic' | 'rumour' | 'theatre'
+S.trigger = trigger;       // e.g. critterville.trigger('rain') | 'star' | 'wind' | 'ducks' | 'ring' | 'cart' | 'farewell' | 'adventure' | 'picnic' | 'rumour' | 'theatre' | 'balls'
 window.critterville = S;   // for poking around in the console
 boot();

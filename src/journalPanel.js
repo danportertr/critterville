@@ -84,8 +84,8 @@ function playSong(song) {
 }
 /** "reed whistle (melody), log drum (rhythm)" */
 const lineUp = song => ROLES.filter(r => song.parts && song.parts[r]).map(r => `${song.parts[r].instrument} (${r})`).join(', ');
-// The shows page: the town's songs (a repertoire, played again and again), and
-// the playbills of its plays (each performed once).
+// The shows page: the town's songs (a repertoire, played again and again), the
+// games it has invented, and the playbills of its plays (each performed once).
 function renderSongs() {
   $body.append(el('h3', 'day', 'Songs'));
   if (!S.songs.length) $body.append(el('p', 'lede', 'No songs yet. Somebody has to make an instrument first, and then wait for evening.'));
@@ -98,6 +98,14 @@ function renderSongs() {
     row.append(text, btn); $body.append(row);
   }
   if (S.songs.length && !S.sound) $body.append(el('p', 'meta', 'Sound is switched off (the ♫ button).'));
+
+  $body.append(el('h3', 'day', 'Games'));
+  if (!S.games.length) $body.append(el('p', 'lede', 'No games of their own yet. Sooner or later a kickabout turns into something with rules.'));
+  for (const g of S.games) {
+    const bill = el('div', 'playbill');
+    bill.append(el('h3', '', g.name), el('p', 'meta', `Invented by ${g.by.join(' and ')} on day ${g.day}.`), el('p', '', g.rule));
+    $body.append(bill);
+  }
 
   $body.append(el('h3', 'day', 'Plays'));
   if (!S.plays.length) return void $body.append(el('p', 'lede', 'No plays yet. Every so often the critters build a stage and put one on.'));
