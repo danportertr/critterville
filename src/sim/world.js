@@ -10,6 +10,7 @@ import { save } from '../world/save.js';
 import { updateCritter, goTo, setAct, say } from './core.js';
 import { updateEvents } from '../events/index.js';
 import { updateRings } from '../events/ring.js';
+import { updateVisitor } from '../events/cart.js';
 import { DAY_LEN } from '../config.js';
 import { planHammock, between, shape as hangHammock } from '../activities/hammock.js';
 
@@ -96,7 +97,13 @@ export function updateWorld(dt) {
   lastPhase = p;
 
   for (const c of S.critters) updateCritter(c, dt);
-  updateEvents(dt); updateRings(dt);
+  updateEvents(dt); updateRings(dt); updateVisitor(dt);
+  for (const c of S.critters) if (c.balloon && S.clock > c.balloon.until) {   // a balloon gets away
+    S.floaters.push({ ...c.balloon, x: c.x - 30 * c.size, y: c.y - 60 * c.size, t: 0 });
+    c.balloon = null;
+    if (!c.hidden) { say(c, 'oh!'); c.surprise = 1; }
+  }
+  for (let i = S.floaters.length - 1; i >= 0; i--) { const f = S.floaters[i]; f.t += dt; f.y -= 34 * dt; f.x += Math.sin(f.t * 1.5 + f.seed) * 12 * dt + S.wind * 60 * dt; if (f.y < -80) S.floaters.splice(i, 1); }
   for (const h of S.hammocks) hangHammock(h);
   updateBall(dt);
 

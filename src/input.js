@@ -7,6 +7,7 @@ import { irand, dist } from './util.js';
 import { cv } from './draw/canvas.js';
 import { hideHint, log } from './ui.js';
 import { startDiary } from './journal.js';
+import { about as aboutCart } from './events/cart.js';
 import { inEllipse, inStream, rebuildObs } from './world/geometry.js';
 import { newTown } from './world/town.js';
 import { save } from './world/save.js';
@@ -57,6 +58,8 @@ cv.addEventListener('pointerdown', e => {
     if (isFree(c)) setAct(c, 'wave', 1.6);
     return;
   }
+  const v = S.visitor;
+  if (v && Math.abs(p.x - v.cartX) < 42 && p.y > v.y - 90 && p.y < v.y + 4) { S.sign = { x: v.cartX, y: v.y - 100, text: aboutCart(v), until: S.now + 4 }; return; }
   const art = artAt(p);
   if (art) {
     if (art.type === 'painting') { S.viewing = { art, until: S.now + 8 }; S.sign = null; }

@@ -58,8 +58,19 @@ export function drawRing(r) {
 export function drawHammock(h) {
   const { A, B, M } = h, at = (p, q, k) => [p[0] + (q[0] - p[0]) * k, p[1] + (q[1] - p[1]) * k];
   if (h.progress < 1) return void tube([A, [M[0], M[1] - 8], B], 0.6, INK, h.seed, 0.3);     // just the rope so far
-  const a = at(A, M, 0.22), b = at(B, M, 0.22);
-  for (const [end, near] of [[A, a], [B, b]]) for (const dy of [-4, 4]) { ctx.beginPath(); ctx.moveTo(end[0], end[1]); ctx.lineTo(near[0], near[1] + dy); ctx.lineWidth = 1.6; ctx.strokeStyle = INK; ctx.stroke(); }
-  tube([a, M, b], 9, '#ffd1e8', h.seed, 0.3);
-  for (const dy of [-2.6, 2.6]) { smooth([[a[0], a[1] + dy], [M[0], M[1] + dy], [b[0], b[1] + dy]], false); ctx.lineWidth = 1.6; ctx.strokeStyle = '#ff8fc7'; ctx.stroke(); }
+  const a = at(A, M, 0.22), b = at(B, M, 0.22), full = h.user && h.user.act === 'hammock';
+  const spread = full ? 9 : 4;   // with someone in it the sling opens out
+  for (const [end, near] of [[A, a], [B, b]]) for (const dy of [-spread, spread]) { ctx.beginPath(); ctx.moveTo(end[0], end[1]); ctx.lineTo(near[0], near[1] + dy); ctx.lineWidth = 1.6; ctx.strokeStyle = INK; ctx.stroke(); }
+  tube([a, M, b], full ? 20 : 9, '#ffd1e8', h.seed, 0.3);
+  if (!full) stripes(a, M, b, [-2.6, 2.6]);
+}
+function stripes(a, M, b, offsets) {
+  for (const dy of offsets) { smooth([[a[0], a[1] + dy], [M[0], M[1] + dy], [b[0], b[1] + dy]], false); ctx.lineWidth = 1.6; ctx.strokeStyle = '#ff8fc7'; ctx.stroke(); }
+}
+/** The near edge of an occupied hammock, drawn over whoever is in it so they're tucked inside. */
+export function drawHammockFront(h) {
+  const { A, B, M } = h, at = (p, q, k) => [p[0] + (q[0] - p[0]) * k, p[1] + (q[1] - p[1]) * k];
+  const a = at(A, M, 0.22), b = at(B, M, 0.22), down = p => [p[0], p[1] + 5];
+  tube([down(a), [M[0], M[1] + 9], down(b)], 11, '#ffd1e8', h.seed + 1, 0.3);
+  stripes(down(a), [M[0], M[1] + 9], down(b), [-2.6, 2.6]);
 }

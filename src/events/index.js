@@ -1,5 +1,6 @@
 // Rare events. Every day or three, something unusual happens that leaves the
-// town a little different: flowers after rain, a fallen star, a seedling, ducks.
+// town a little different: flowers after rain, a fallen star, a seedling, ducks,
+// a traveller with a cart.
 //
 // An event is { id, can(), start(), update?(e, dt), overlay?(e), end?(e) }:
 //   can()       is now a sensible moment for it?
@@ -16,8 +17,9 @@ import star from './star.js';
 import wind from './wind.js';
 import ducks from './ducks.js';
 import ring from './ring.js';
+import cart from './cart.js';
 
-const EVENTS = [rain, star, wind, ducks, ring];
+const EVENTS = [rain, star, wind, ducks, ring, cart];
 const later = () => S.clock + rand(1.2, 2.6) * DAY_LEN;
 
 function begin(def) {

@@ -28,7 +28,7 @@ function resize() {
   if (!oW || !S.critters.length) return;
   // Stretch the existing town to fit the new window.
   const fx = S.W / oW, fy = S.H / oH;
-  for (const o of [S.pond, S.pool, S.fire, S.ball, S.swing, S.tank, ...S.houses, ...S.trees, ...S.flowers, ...S.apples, ...S.arts, ...S.stones, ...S.rings, ...S.critters].filter(Boolean)) { o.x *= fx; o.y *= fy; }
+  for (const o of [S.pond, S.pool, S.fire, S.ball, S.swing, S.tank, ...S.houses, ...S.trees, ...S.flowers, ...S.apples, ...S.arts, ...S.stones, ...S.rings, S.visitor, ...S.critters].filter(Boolean)) { o.x *= fx; o.y *= fy; }
   for (const c of S.critters) { c.tx *= fx; c.ty *= fy; if (c.bobx) { c.bobx *= fx; c.boby *= fy; } }
   if (S.pond) { S.pond.rx *= fx; S.pond.ry = S.pond.rx * 0.5; }
   if (S.stream) S.stream.pts = S.stream.pts.map(([x, y]) => [x * fx, y * fy]);
@@ -58,6 +58,6 @@ function boot() {
   if (!load()) { newTown(); startDiary(); }
   requestAnimationFrame(frame);
 }
-S.trigger = trigger;       // e.g. critterville.trigger('rain') | 'star' | 'wind' | 'ducks' | 'ring'
+S.trigger = trigger;       // e.g. critterville.trigger('rain') | 'star' | 'wind' | 'ducks' | 'ring' | 'cart'
 window.critterville = S;   // for poking around in the console
 boot();

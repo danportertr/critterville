@@ -6,6 +6,7 @@ import { HOUSE } from '../config.js';
 import { rand, irand, pick } from '../util.js';
 import { ctx } from '../draw/canvas.js';
 import { goTo, setAct, say, release } from '../sim/core.js';
+import { drawHammockFront } from '../draw/props.js';
 
 // A hammock hangs between two anchors, each a grown tree or a finished house:
 // { t: 'tree' | 'house', i: index }.
@@ -85,12 +86,13 @@ export default {
       finish(c) { c.sink = 0; c.y = c.ham.y + 8; c.hopV = 90; release(c); },
       transform(c) {   // lying back along the hammock, head slightly raised
         const h = c.ham, m = h.M;
-        ctx.translate(m[0], m[1] - 7 * c.size);
+        ctx.translate(m[0], m[1] - 4 * c.size);
         ctx.rotate(c.dir * 1.3 + Math.sin(S.now * 1.3 + h.seed) * 0.04);
         ctx.translate(0, 30 * c.size);
         ctx.scale(c.size, c.size);
         return true;
       },
+      after(c) { drawHammockFront(c.ham); },
       pose(c, p) { p.bob = 0; p.eyesClosed = true; p.hl = [-13, -52]; p.hr = [13, -52]; p.lx = 2; p.rx = -2; },   // hands behind the head
     },
   },

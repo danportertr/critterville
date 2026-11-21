@@ -20,7 +20,7 @@ The critters:
 - string a hammock between two trees, two houses, or a house and a tree, if a pair happens to be the right distance apart, and take turns lying in it
 - gather at the campfire in the evening and go home to sleep at night
 
-Every day or three something rare happens that leaves the town a little different: a shower brings up flowers (and a rainbow), a shooting star lands and stays as a glowing stone, a windy spell leaves a seedling that grows into a new tree, a duck family moves onto the water, or a ring of mushrooms appears and everyone dances in it.
+Every day or three something rare happens that leaves the town a little different: a shower brings up flowers (and a rainbow), a shooting star lands and stays as a glowing stone, a windy spell leaves a seedling that grows into a new tree, a duck family moves onto the water, or a ring of mushrooms appears and everyone dances in it. Sometimes a traveller wheels a cart into town for a few days: a hatmaker (critters keep their hats), a balloon seller, or an ice cream cart.
 
 You can tap a critter to say hi, tap a house to see who lives there, tap a painting to see it up close, or tap the ground to drop a snack. There's also a little ♪ radio button that plays a lofi internet radio stream (the critters dance more when it's on); the stations are listed in `src/config.js`. The town is saved in your browser, so it's still there when you come back.
 

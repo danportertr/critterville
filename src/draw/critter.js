@@ -7,6 +7,7 @@ import { INK, LW, FONT } from '../config.js';
 import { TAU } from '../util.js';
 import { STATES } from '../sim/core.js';
 import { inStream, onBridge } from '../world/geometry.js';
+import { drawHat, drawBalloon } from './cart.js';
 
 // Mouths. The big U is the full grin from the original doodle; most of the
 // time a critter wears something quieter. Each is the curve, plus whether it
@@ -93,6 +94,7 @@ export function drawCritter(c) {
   polyPath(torso); ctx.fillStyle = c.body; ctx.fill();
 
   if (st.props) st.props(c, p);
+  if (c.balloon) drawBalloon(c.balloon, HL[0], HL[1] - 4);
 
   // Head and face: two dot eyes off to one side and the big U.
   const hy = -57 - bob;
@@ -109,6 +111,7 @@ export function drawCritter(c) {
     line(mouth.curve.map(face), sd + 13, 2.4, INK, 0.4);
     mouth.caps.forEach((cap, i) => line(cap.map(face), sd + 14 + i, 2.4, INK, 0.3));
   }
+  if (c.hat) { ctx.save(); ctx.translate(0, hy - 17 * c.hh); drawHat(c.hat, m, sd + 60); ctx.restore(); }
   ctx.restore();
 
   if (wading) line([[c.x - 15 * s, c.y + 1], [c.x - 7 * s, c.y - 1.5], [c.x, c.y + 1], [c.x + 7 * s, c.y - 1.5], [c.x + 15 * s, c.y + 1]], sd + 31, 2.4, '#fff', 0.7);

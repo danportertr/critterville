@@ -16,6 +16,8 @@ export const S = {
   // Rare events (src/events/) and what they leave behind:
   event: null, nextEvent: 0, wind: 0,   // what's happening now, when the next one is due, how hard it's blowing (-1..1)
   stones: [], rings: [], ducks: null,   // fallen stars, mushroom rings, the duck family
+  visitor: null, lastCart: null,        // a traveller with a cart, in town for a few days (events/cart.js)
+  floaters: [],                         // balloons that have got away
   viewing: null,                   // a painting you tapped, shown large: {art, until}
   sign: null,                      // a note floating over something you tapped: {x, y, text, until}
   music: false,                    // is the radio on?

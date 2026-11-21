@@ -5,19 +5,21 @@ import { clamp } from '../util.js';
 import { rebuildObs, placeBridge } from './geometry.js';
 import { newJournal } from '../journal.js';
 import { restore as restoreHammock } from '../activities/hammock.js';
+import { restoreVisitor } from '../events/cart.js';
 import { hydrate, makeSwing, makeBall, assignHomes, scatterDecor } from './town.js';
 
 export function save() {
   if (!S.W || !S.critters.length) return;
   try {
     localStorage.setItem(SAVE_KEY, JSON.stringify({
-      v: SAVE_VERSION, W: S.W, H: S.H, clock: S.clock, journal: S.journal, pond: S.pond, stream: S.stream, tank: S.tank, nextEvent: S.nextEvent, hammocks: S.hammocks.map(h => ({ kind: 'hammock', a: h.a, b: h.b, seed: h.seed, progress: h.progress })), stones: S.stones, rings: S.rings, ducks: S.ducks, bridge: S.bridge && { kind: 'bridge', t: S.bridge.t, seed: S.bridge.seed, progress: S.bridge.progress }, pool: S.pool, fire: S.fire,
+      v: SAVE_VERSION, W: S.W, H: S.H, clock: S.clock, journal: S.journal, pond: S.pond, stream: S.stream, tank: S.tank, nextEvent: S.nextEvent, lastCart: S.lastCart,
+      visitor: S.visitor && S.visitor.state === 'open' ? { kind: S.visitor.kind, seed: S.visitor.seed, x: S.visitor.x, y: S.visitor.y, d: S.visitor.d, until: S.visitor.until } : null, hammocks: S.hammocks.map(h => ({ kind: 'hammock', a: h.a, b: h.b, seed: h.seed, progress: h.progress })), stones: S.stones, rings: S.rings, ducks: S.ducks, bridge: S.bridge && { kind: 'bridge', t: S.bridge.t, seed: S.bridge.seed, progress: S.bridge.progress }, pool: S.pool, fire: S.fire,
       swing: S.swing && { x: S.swing.x, y: S.swing.y, seed: S.swing.seed, progress: S.swing.progress },
       houses: S.houses, trees: S.trees,
       flowers: S.flowers.filter(f => f.dying === undefined),
       arts: S.arts.filter(a => a.progress >= 1 && a.dying === undefined),
       ball: S.ball && { x: S.ball.x, y: S.ball.y },
-      critters: S.critters.map(c => ({ name: c.name, seed: c.seed, size: c.size, head: c.head, body: c.body, x: c.x, y: c.y, home: S.houses.indexOf(c.home) })),
+      critters: S.critters.map(c => ({ name: c.name, seed: c.seed, size: c.size, head: c.head, body: c.body, hat: c.hat, hatFrom: c.hatFrom, x: c.x, y: c.y, home: S.houses.indexOf(c.home) })),
     }));
   } catch (e) { /* private mode etc: the town just won't persist */ }
 }
@@ -44,7 +46,8 @@ export function load() {
   S.trees = d.trees.map(mv);
   for (const t of S.trees) if (!t.apples) t.apples = [Math.random(), Math.random(), Math.random()];   // towns saved before apples grew
   S.flowers = d.flowers.map(mv); S.arts = (d.arts || []).map(mv);
-  S.apples = [];
+  S.apples = []; S.floaters = []; S.lastCart = d.lastCart || null;
+  S.visitor = restoreVisitor(mv(d.visitor));
   S.hammocks = (d.hammocks || []).map(restoreHammock).filter(Boolean);
   S.ball = mv(d.ball) ? makeBall(d.ball.x, d.ball.y) : null;
   S.critters = d.critters.map(c => hydrate(mv(c)));

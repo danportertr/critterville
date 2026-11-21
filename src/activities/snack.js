@@ -2,6 +2,7 @@
 import { S } from '../state.js';
 import { pick, rand } from '../util.js';
 import { blob } from '../draw/primitives.js';
+import { drawCone } from '../draw/cart.js';
 import { goTo, setAct, say, release } from '../sim/core.js';
 
 export const snack = {
@@ -15,13 +16,17 @@ export const snack = {
   states: {
     eat: { mood: 'big',
       finish(c) {
+        c.treat = null;
         if (!c.apple) return;
         const i = S.apples.indexOf(c.apple);
         if (i >= 0) S.apples.splice(i, 1);
         c.apple = null; say(c, '♥');
       },
       pose(c, p) { p.hand(p.d, p.d * 10, -42 + Math.sin(p.now * 12) * 2); },
-      props(c, p) { blob(p.HD[0] + p.d * 2, p.HD[1] - 5, 4, 4, '#ff6b6b', c.seed + 6, 6, 0.05, 0.3, 1.8); },
+      props(c, p) {   // an apple, or an ice cream from the cart
+        if (c.treat) drawCone(p.HD[0] + p.d * 2, p.HD[1] - 6, c.treat, c.seed + 6);
+        else blob(p.HD[0] + p.d * 2, p.HD[1] - 5, 4, 4, '#ff6b6b', c.seed + 6, 6, 0.05, 0.3, 1.8);
+      },
     },
   },
 };

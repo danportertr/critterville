@@ -8,6 +8,7 @@ import { drawCritter, drawBubble } from './critter.js';
 import { box } from './primitives.js';
 import * as sc from './scenery.js';
 import { drawStone, drawDucks, drawRing, drawHammock } from './props.js';
+import { drawCart, drawBalloon } from './cart.js';
 import { drawEventOverlay } from '../events/index.js';
 
 const TINTS = [[0, [255, 233, 220]], [0.05, [255, 255, 255]], [0.58, [255, 255, 255]], [0.66, [255, 214, 186]], [0.74, [140, 147, 214]], [0.93, [140, 147, 214]], [1, [255, 233, 220]]];
@@ -59,11 +60,13 @@ export function render() {
   for (const a of S.apples) items.push([a.y, sc.drawApple, a]);
   for (const a of S.arts) items.push([a.y, sc.drawArt, a]);
   for (const s of S.stones) items.push([s.y, drawStone, s]);
+  if (S.visitor) { items.push([S.visitor.y, drawCart, S.visitor]); items.push([S.visitor.owner.y, drawCritter, S.visitor.owner]); }
   for (const h of S.hammocks) if (h.A) items.push([h.y, drawHammock, h]);
   for (const c of S.critters) if (!c.hidden) items.push([c.y, drawCritter, c]);
   items.sort((a, b) => a[0] - b[0]);
   for (const it of items) it[1](it[2], it[3]);
   for (const f of S.flies) sc.drawButterfly(f, n);
+  for (const f of S.floaters) drawBalloon(f, f.x, f.y);
 
   // Time-of-day wash, then the things that glow through it.
   ctx.globalCompositeOperation = 'multiply';
