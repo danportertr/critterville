@@ -1,7 +1,6 @@
 // What the instruments look like while they're being played (or made).
 // Drawn in critter-local coordinates. Flutes and horns go to the mouth, so
 // they're drawn in front of the face; the rest sit in front of the body.
-import { ctx } from './canvas.js';
 import { INK } from '../config.js';
 import { blob, box, line, tube, dot } from './primitives.js';
 

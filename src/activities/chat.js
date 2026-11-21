@@ -1,7 +1,7 @@
 // Walk over to someone and have a conversation. What gets said (news, fish
 // stories, dreams, compliments) and what comes of it (friendship, plans) is in talk.js.
 import { S } from '../state.js';
-import { rand, pick, dist } from '../util.js';
+import { rand, dist } from '../util.js';
 import { goTo, setAct, say, release, tick } from '../sim/core.js';
 import { nextLine, bond, makePlan, isFriend } from '../talk.js';
 

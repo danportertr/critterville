@@ -11,7 +11,7 @@ import { drawHat } from '../draw/cart.js';
 import { ctx } from '../draw/canvas.js';
 import { streamPoint } from '../world/geometry.js';
 import { note } from '../journal.js';
-import { news, bond, nearby } from '../talk.js';
+import { news, bond } from '../talk.js';
 import { goTo, setAct, say, isFree } from '../sim/core.js';
 
 // ---- lost and found ----

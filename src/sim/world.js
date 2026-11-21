@@ -13,7 +13,7 @@ import { updateRings } from '../events/ring.js';
 import { updateVisitor } from '../events/cart.js';
 import { updateSculptures } from '../activities/sculpture.js';
 import { updateJourneys } from '../events/journeys.js';
-import { updateTalk, news, nearby, anyone } from '../talk.js';
+import { updateTalk, news, anyone } from '../talk.js';
 import { deliverMail } from '../activities/errands.js';
 import { settleRumour } from '../events/rumour.js';
 import { updateTheatre } from '../events/theatre.js';

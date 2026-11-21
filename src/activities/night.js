@@ -3,7 +3,7 @@
 // only bite at night, follow fireflies, or sit up by the fire. They turn in
 // shortly before dawn and sleep late.
 import { S, phase, built } from '../state.js';
-import { TAU, rand, pick, hs } from '../util.js';
+import { rand, pick, hs } from '../util.js';
 import { SKY } from '../data/sky.js';
 import { tube, line, dot } from '../draw/primitives.js';
 import { INK } from '../config.js';

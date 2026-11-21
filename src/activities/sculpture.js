@@ -10,9 +10,9 @@
 //
 // Carving itself is the 'sculpt' state in art.js; this file decides what gets
 // made, looks after the pieces afterwards, and has the critters' responses.
-import { S, built, phase } from '../state.js';
+import { S, phase } from '../state.js';
 import { DAY_LEN, STREAM_HALF, PETALS, HEADS } from '../config.js';
-import { TAU, rand, irand, pick, clamp, dist } from '../util.js';
+import { TAU, rand, irand, pick, clamp } from '../util.js';
 import { log } from '../ui.js';
 import { ctx } from '../draw/canvas.js';
 import { MATERIALS, STATUES, SKY_FORMS, DREAM_FORMS, CARVED, formOf, drawBenchFront } from '../draw/sculpture.js';

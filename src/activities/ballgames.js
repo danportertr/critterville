@@ -13,7 +13,7 @@
 // A ball in a game is moved by script, not physics: throwBall() sends it
 // along an arc (ball.fly), and sim/world.js follows that until it lands.
 import { S } from '../state.js';
-import { INK, WOOD, PETALS } from '../config.js';
+import { WOOD, PETALS } from '../config.js';
 import { TAU, rand, irand, pick, clamp, dist } from '../util.js';
 import { log } from '../ui.js';
 import { ctx } from '../draw/canvas.js';

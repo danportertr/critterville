@@ -8,7 +8,7 @@
 // Nobody minds much. After a while somebody good-natured comes along and puts
 // each thing right (the `cleanUp` activity).
 import { S, built, isNight } from '../state.js';
-import { DAY_LEN, PETALS, HOUSE } from '../config.js';
+import { DAY_LEN, HOUSE } from '../config.js';
 import { TAU, rand, irand, pick, hs } from '../util.js';
 import { log, setTownName, TOWN } from '../ui.js';
 import { line, box, blob } from '../draw/primitives.js';

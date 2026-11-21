@@ -1,0 +1,16 @@
+{
+  "name": "critterville",
+  "private": true,
+  "type": "module",
+  "description": "A tiny town of little guys who walk around and do things. The game itself is plain files with no build step; this file is only for the checks.",
+  "scripts": {
+    "test": "node test/smoke.mjs",
+    "lint": "eslint . --max-warnings 0",
+    "check": "npm run lint && npm test"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "eslint": "^10.15.0",
+    "globals": "^17.14.0"
+  }
+}

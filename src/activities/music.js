@@ -17,7 +17,7 @@ import { streamPoint } from '../world/geometry.js';
 import { note, journalChanged } from '../journal.js';
 import { news, nearby } from '../talk.js';
 import { duckRadio } from '../radio.js';
-import { ACT, goTo, setAct, say, release, tick, isFree } from '../sim/core.js';
+import { ACT, goTo, setAct, say, release, tick } from '../sim/core.js';
 
 const now = () => performance.now() / 1000;                       // music runs on real time, whatever the game speed
 const musicTime = () => { const p = phase(); return p > 0.5 && p < 0.74; };   // late afternoon through dusk

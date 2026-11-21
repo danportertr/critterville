@@ -3,7 +3,6 @@
 // drawStageBack (platform, posts, backdrop), then the cast, then
 // drawStageFront (the pelmet and curtains).
 import { ctx } from './canvas.js';
-import { S } from '../state.js';
 import { INK, WOOD } from '../config.js';
 import { TAU, clamp } from '../util.js';
 import { box, line, tube } from './primitives.js';

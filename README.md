@@ -50,6 +50,20 @@ python3 -m http.server 8000
 
 then open http://localhost:8000. Add `?speed=10` to the URL to fast-forward time.
 
+## Checking it still works
+
+The game needs no install, but the checks do (Node 24):
+
+```
+npm install
+npm run check
+```
+
+- `npm run lint` looks for plain mistakes: a name that doesn't exist, an import nobody uses.
+- `npm test` boots the real game against a pretend browser and fast-forwards three brand new towns (phone, laptop and tablet sized) through 30 days each. It fails if anything throws, a critter gets stuck for two days or wanders off somewhere impossible, or a town doesn't survive being saved and loaded. `node test/smoke.mjs 60 7` runs 60 days with random seed 7.
+
+Both run on every push (`.github/workflows/check.yml`). The test can't see the screen, so it catches crashes and stuck logic, not things that only look wrong.
+
 ## How the code is laid out
 
 ```

@@ -127,6 +127,7 @@ function crossStream(c, wx, wy) {
   }
   let k = 9;
   while (k < 170 && inStream(c.x + ux * k, c.y + uy * k, 3)) k += 4;   // find the far bank along our heading
+  if (d < k + 7) return false;   // where we're going is in the water itself: wade in, or we'd leap back and forth over it for ever
   c.jump = { x0: c.x, y0: c.y, x1: c.x + ux * (k + 7), y1: c.y + uy * (k + 7), t: 0, dur: 0.45 + k * 0.004 };
   return true;
 }
@@ -150,6 +151,7 @@ Object.assign(STATES, {
     update(c, dt) {
       const j = c.jump;
       if (j) {   // mid-leap over the stream
+        c.walkT += dt;
         j.t = Math.min(1, j.t + dt / j.dur);
         c.x = j.x0 + (j.x1 - j.x0) * j.t; c.y = j.y0 + (j.y1 - j.y0) * j.t;
         c.hopY = Math.sin(j.t * Math.PI) * 26; c.hopV = 0;

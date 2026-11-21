@@ -1,7 +1,7 @@
 // Everything in town that isn't a critter.
 import { ctx } from './canvas.js';
 import { S } from '../state.js';
-import { INK, LW, HOUSE, SWING, TANK, VIEW, STREAM_HALF, BRIDGE, WOOD, STONE } from '../config.js';
+import { INK, LW, HOUSE, SWING, TANK, VIEW, STREAM_HALF, BRIDGE, WOOD } from '../config.js';
 import { SPECIES_BY_ID } from '../data/fish.js';
 import { drawFish } from './fish.js';
 import { drawHat } from './cart.js';
