@@ -176,13 +176,13 @@ export function drawTopiary(t) {
   const tp = t.topiary;
   if (!tp) return false;
   const c = t.color, sd = t.seed + 90;
-  if (tp.shape === 'ball') blob(0, -76, 30, 29, c, sd, 12, 0.02, 0.5);
+  if (tp.shape === 'ball') blob(0, -67, 30, 29, c, sd, 12, 0.02, 0.5);   // (low enough to sit on the trunk, which tops out at -42)
   else if (tp.shape === 'cone') box([[-27, -42], [-13, -78], [0, -114], [13, -78], [27, -42], [0, -38]], c, sd, 0.6);
   else if (tp.shape === 'tiers') { blob(0, -52, 28, 13, c, sd, 10, 0.03, 0.4); blob(0, -74, 20, 11.5, c, sd + 1, 9, 0.03, 0.4); blob(0, -94, 12.5, 10, c, sd + 2, 8, 0.03, 0.4); }
   else {   // 'critter': a leafy head, grinning
-    blob(0, -76, 29, 27, c, sd, 12, 0.03, 0.5);
-    dot(5, -85, 2); dot(11.5, -83, 2);
-    line([[-5, -77], [-7, -66], [-3, -57], [5, -54], [12, -60], [15.5, -73]], sd + 3, 2.8, INK, 0.3);
+    blob(0, -65, 29, 27, c, sd, 12, 0.03, 0.5);
+    dot(5, -74, 2); dot(11.5, -72, 2);
+    line([[-5, -66], [-7, -55], [-3, -46], [5, -43], [12, -49], [15.5, -62]], sd + 3, 2.8, INK, 0.3);
   }
   return true;
 }

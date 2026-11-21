@@ -1,5 +1,5 @@
 // One frame: ground, depth-sorted things, the time-of-day wash, then glows and bubbles.
-import { ctx } from './canvas.js';
+import { ctx, cv, drawOn } from './canvas.js';
 import { S, phase, nightAmt, built } from '../state.js';
 import { INK, PAPER, FONT, HOUSE } from '../config.js';
 import { wallTop } from './scenery.js';
@@ -32,6 +32,28 @@ function zzz(x, y, seed) {
     ctx.fillText('z', x + t * 14 + Math.sin(t * 9) * 2, y - t * 30);
   }
   ctx.globalAlpha = 1;
+}
+
+// Lit windows are painted after the night-time wash so that they shine. But
+// that also paints them over anything standing in front of the house, so
+// those things are drawn again on top, with the same wash applied to just
+// their own pixels (using two scratch canvases: one to tint, one as a mask).
+let scratch = null, mask = null;
+function redrawWashed(draw, wash) {
+  if (!scratch) { scratch = document.createElement('canvas'); mask = document.createElement('canvas'); }
+  for (const c of [scratch, mask]) if (c.width !== cv.width || c.height !== cv.height) { c.width = cv.width; c.height = cv.height; }
+  const T = ctx.getTransform();
+  for (const c of [scratch, mask]) {
+    const g = c.getContext('2d');
+    g.setTransform(1, 0, 0, 1, 0, 0); g.globalCompositeOperation = 'source-over'; g.clearRect(0, 0, c.width, c.height);
+    g.setTransform(T); g.lineCap = 'round'; g.lineJoin = 'round';
+    drawOn(g, draw);
+  }
+  const g = scratch.getContext('2d');
+  g.setTransform(1, 0, 0, 1, 0, 0);
+  g.globalCompositeOperation = 'multiply'; g.fillStyle = wash; g.fillRect(0, 0, scratch.width, scratch.height);
+  g.globalCompositeOperation = 'destination-in'; g.drawImage(mask, 0, 0);
+  ctx.save(); ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.drawImage(scratch, 0, 0); ctx.restore();
 }
 
 export function render() {
@@ -76,7 +98,8 @@ export function render() {
 
   // Time-of-day wash, then the things that glow through it.
   ctx.globalCompositeOperation = 'multiply';
-  ctx.fillStyle = tint(p); ctx.fillRect(0, 0, W, H);
+  const wash = tint(p);
+  ctx.fillStyle = wash; ctx.fillRect(0, 0, W, H);
   ctx.globalCompositeOperation = 'source-over';
   if (n > 0.02) {
     ctx.globalCompositeOperation = 'screen';
@@ -86,7 +109,13 @@ export function render() {
     for (const a of S.arts) if (a.material === 'star' && a.progress >= 1) glow(a.x, a.y - 34, 46 + Math.sin(S.now * 2 + a.seed) * 3, '255,244,170', 0.5 * n);   // so do things carved from them
     for (const s of S.stones) glow(s.x, s.y - 8, 38 + Math.sin(S.now * 2 + s.seed) * 3, '255,244,170', 0.55 * n);   // fallen stars glow
     ctx.globalCompositeOperation = 'source-over';
-    for (const h of lit) sc.drawHouseLights(h, n);
+    for (const h of lit) {
+      sc.drawHouseLights(h, n);
+      for (const it of items) {   // whatever is in front of this house and overlapping it
+        const o = it[2];
+        if (o && o !== h && o.x !== undefined && it[0] > h.y && it[0] - h.y < 130 && Math.abs(o.x - h.x) < 150) redrawWashed(() => it[1](it[2], it[3]), wash);
+      }
+    }
   }
 
   drawEventOverlay();
