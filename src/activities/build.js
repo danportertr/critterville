@@ -7,9 +7,9 @@ import { note } from '../journal.js';
 import { box, line, blob } from '../draw/primitives.js';
 import { pileSpot } from '../draw/site.js';
 import { puff } from '../puffs.js';
-import { assignHomes } from '../world/town.js';
+import { assignHomes, beds, livingIn } from '../world/town.js';
 import { rebuildObs } from '../world/geometry.js';
-import { news, nearby } from '../talk.js';
+import { news, nearby, isFriend } from '../talk.js';
 import { currentSite } from '../sim/world.js';
 import { goTo, setAct, say, tick, isFree } from '../sim/core.js';
 
@@ -90,6 +90,22 @@ export const monumentWork = {
   start(c) { workOn(c, S.monument); },
 };
 
+/**
+ * A house that's just got bigger has room for somebody else. A friend of the
+ * people who live there moves in from across town (but nobody's left living
+ * on their own because of it).
+ */
+function moveIn(h) {
+  const here = livingIn(h);
+  if (here.length >= beds(h)) return;
+  const could = S.critters.filter(c => c.home && c.home !== h && livingIn(c.home).length > 2);
+  const c = could.find(c => here.some(o => isFriend(c, o))) || (rand() < 0.5 ? pick(could) : null);
+  if (!c) return;
+  c.home = h;
+  const host = here.find(o => isFriend(c, o));
+  note(host ? `Now there's room, ${c.name} has moved in with ${host.name}.` : `Now there's room, ${c.name} has moved into the bigger house.`);
+}
+
 export default {
   id: 'build',
   weight: () => currentSite() ? 4 : 0,
@@ -116,6 +132,7 @@ export default {
           s.addons.push(s.adding.what); delete s.adding;
           rebuildObs(); note(job.done); c.hopV = 150; say(c, '!');
           celebrate(c, s);
+          moveIn(s);
           return;
         }
         if (s.phase === 'striking') {   // the play's over: the stage comes down a bit at a time

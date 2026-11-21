@@ -1,11 +1,11 @@
 // Everything that happens on its own: the clock, the ball, growing things, new arrivals.
 import { S, phase, dayNum, isNight, built } from '../state.js';
 import { clamp, rand, hash } from '../util.js';
-import { HOUSE, SWING } from '../config.js';
+import { SWING } from '../config.js';
 import { log, setStats } from '../ui.js';
 import { note } from '../journal.js';
 import { inEllipse, rebuildObs, freePoint, topEdge } from '../world/geometry.js';
-import { newHouse, newCritter, assignHomes, planFire, planPool, planSwing, planBridge, planAddon, planTank, planMonument, makeBall } from '../world/town.js';
+import { newHouse, newCritter, assignHomes, planFire, planPool, planSwing, planBridge, planAddon, planTank, planMonument, makeBall, beds as bedsIn } from '../world/town.js';
 import { save } from '../world/save.js';
 import { updateCritter, goTo, setAct, say } from './core.js';
 import { updateEvents } from '../events/index.js';
@@ -74,7 +74,7 @@ export const currentSite = () => {
 // from the odd home improvement, and the critters just get on with enjoying it.
 function growTown() {
   if (!currentSite()) {
-    const beds = S.houses.length * HOUSE.residents, n = S.critters.length;
+    const beds = S.houses.reduce((n, h) => n + bedsIn(h), 0), n = S.critters.length;
     let msg = null, hammock;
     if (!S.fire) { planFire(); msg = 'The critters are making a campfire.'; }
     else if (!S.houses.length) { newHouse(0); msg = 'The first house is going up.'; }

@@ -4,7 +4,7 @@
 
 A tiny town of little guys who walk around and do things. There isn't much to do except watch — it's something to leave running.
 
-The town starts as an empty meadow: trees, a pond, a few flowers. The critters build everything else themselves — first a campfire, then houses, a swing set and a pool — and a few more move in until it's a small, settled town. There are no scores. The **journal** button opens the town's diary (who moved in, what got built, what was painted) a shows page (the town's songs, each with a play button, and the playbills of its plays), a fish book (a picture and a few true facts about each kind of fish the critters have caught), and a night-sky page for what the night owls find through the telescope.
+The town starts as an empty meadow: trees, a pond, a few flowers. The critters build everything else themselves — first a campfire, then houses (no two quite alike), a swing set and a pool — and a few more move in until it's a small, settled town. There are no scores. The **journal** button opens the town's diary (who moved in, what got built, what was painted) a shows page (the town's songs, each with a play button, and the playbills of its plays), a fish book (a picture and a few true facts about each kind of fish the critters have caught), and a night-sky page for what the night owls find through the telescope.
 
 The critters:
 
@@ -20,13 +20,13 @@ The critters:
 - let what's on their mind into what they make: last night's dream or something seen through the telescope can turn up as a painting, a carving, or the hat they ask the hatmaker for
 - make paintings of what they can see from the easel: sometimes the whole view, sometimes a close-up or portrait, a colour-washed version, or something abstract (and go admire each other's)
 - dance, sometimes in groups
-- play with the ball: pass it round a ring and count, keep it up with their heads, whack it with a stick, push it along, balance on it, juggle; a good game sometimes gets a name and a silly rule and becomes one of the town's own
-- fish in the pond or the stream (a town has one or the other, sometimes both), plant flowers, pick apples, kick a ball around
-- build the campfire, houses (and later add chimneys, side rooms and upstairs), a bridge, the swing set, a fish tank and the pool
+- play with the ball: pass it round a ring and count, keep it up with their heads, whack it with a stick, push it along, balance on it, juggle; once in a while a good game gets a name and a silly rule and becomes one of the town's own, played again and again (they're listed on the journal's shows page)
+- fish in the pond or the stream (a town has one or the other, sometimes both), plant flowers, pick apples
+- build the campfire, houses (and later add chimneys, side rooms and upstairs; a bigger house has room for a friend or two to move in), a bridge, the swing set, a fish tank and the pool
 - jump the stream until there's a bridge, then mostly use that
 - keep a few of the fish they catch in the tank for a while, and come by to watch them
 - string a hammock between two trees, two houses, or a house and a tree, if a pair happens to be the right distance apart, and take turns lying in it
-- include one prankster, who now and then puts on a jester's hat and fills the pool with apples, paints a house in spots, draws moustaches on statues or changes the town's name; the others good-naturedly put it all right
+- include one prankster, who now and then puts on a jester's hat and fills the pool with apples, paints a house in zigzags or zebra stripes, draws moustaches on statues, throws the ball onto a roof or changes the town's name; the others good-naturedly put it all right (the ball comes down when someone lobs apples at it)
 - make themselves instruments (no two sound alike), make up tunes that become the town's songs, and play them in the evening, alone or together in parts, while the others listen and dance
 - gather at the campfire in the evening and go home to sleep at night, except for the one or two night owls, who set up a telescope, fish in the dark, follow fireflies, and sleep in
 
@@ -49,6 +49,12 @@ python3 -m http.server 8000
 ```
 
 then open http://localhost:8000. Add `?speed=10` to the URL to fast-forward time.
+
+A few things are there to poke at from the browser console:
+
+- `critterville.trigger('rain')` makes a rare event happen now. The ids are `rain`, `star`, `wind`, `ducks`, `ring`, `cart`, `farewell`, `adventure`, `picnic`, `rumour`, `theatre` and `balls`.
+- `critterville.status()` says what's being built, how far along the monument is, and what each critter is doing.
+- `critterville.version` is the build number.
 
 ## Checking it still works
 
@@ -74,12 +80,16 @@ src/
   config.js          tunables, palettes, names
   state.js           the one shared world object + time of day
   util.js            maths and random helpers
-  ui.js              stats line, event log, hint
+  ui.js              stats line, event log, hint, the build number
+  version.js         which build this is
+  talk.js            news, friendships, plans, dreams: what critters say to each other
+  puffs.js           little puffs of dust and sawdust
   input.js           tapping critters, dropping snacks
   journal.js         the town's diary and fish records
   journalPanel.js    the journal you open and read
   data/fish.js       fish species and their facts
   data/sky.js        planets and constellations and their facts
+  data/plays.js      the plots, parts and twists plays are made from
   radio.js           the lofi radio button, and the sound on/off button
   audio.js           the synthesiser behind the critters' instruments
   data/music.js      making up instruments and songs
@@ -88,6 +98,13 @@ src/
     critter.js       drawing a critter and its speech bubble
     scenery.js       houses, trees, pond, stream, pool, swing set, artworks...
     fish.js          fish doodles
+    sky.js           pictures of planets and constellations for the journal
+    sculpture.js     statues, topiary, the monument
+    site.js          the pile of materials beside a building site
+    stage.js         the theatre and its backdrops
+    costume.js       what the cast wears
+    instrument.js    the critters' home-made instruments
+    cart.js          travellers' carts, hats and balloons
     props.js         things events leave behind, and hammocks
     render.js        one frame: depth sort, day/night wash, glows
   world/
@@ -98,7 +115,8 @@ src/
     core.js          the critter brain: states, activities, walking
     world.js         clock, ball, growth, new arrivals
   activities/        one module per thing a critter can do
-  events/            one module per rare event (rain, shooting star, wind, ducks, mushroom ring)
+  events/            one module per rare event (rain, a shooting star, a cart, a play...)
+test/smoke.mjs       fast-forwards whole towns to check nothing breaks
 ```
 
 ### Adding something for critters to do

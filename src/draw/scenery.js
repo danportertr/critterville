@@ -15,34 +15,97 @@ const shadow = (x, y, rx, ry) => { ctx.fillStyle = 'rgba(0,0,0,.08)'; ctx.beginP
 // ---- houses ----
 // Drawn from the middle of the doorstep. Walls pinch in at the waist, the roof
 // overhangs, and the door is a darker shade of the walls. A house can grow
-// add-ons (h.addons): a chimney, a side room ('annex') and an upstairs.
+// add-ons (h.addons): a chimney, a side room ('annex') and an upstairs, and
+// the bigger it gets the more critters can live in it (see beds() in world/town.js).
 const GLASS = '#dff4fd', GLOW = '#ffe98a';
 const has = (h, what) => (h.addons || []).includes(what);
 /** How far the walls go up, including an upstairs. */
 export const wallTop = h => HOUSE.h + (has(h, 'upstairs') ? HOUSE.upstairs : 0);
 
-const WINDOWS = [[[-38, -50], [-27, -52], [-25, -32], [-37, -30]], [[24, -52], [36, -52], [33, -34], [22, -33]]];
-const UP_WINDOWS = [[[-37, -104], [-25, -105], [-24, -89], [-36, -88]], [[23, -105], [35, -104], [34, -88], [22, -89]]];
+// No two houses are quite alike. Everything that varies is worked out from the
+// house's seed, so a house always looks the same and nothing extra is saved:
+// which way the door hangs, which side the chimney's on, what shape each window
+// is and how high it sits, and what the roof is like.
+const LOOKS = new WeakMap();
+const choose = (r, table) => { for (const [p, v] of table) if ((r -= p) < 0) return v; return table[0][1]; };
+const WIN_KINDS = [[0.46, 'rect'], [0.2, 'round'], [0.18, 'arch'], [0.16, 'tall']];
+function look(h) {
+  let l = LOOKS.get(h);
+  if (l) return l;
+  const r = i => hs(h.seed, 20 + i);
+  l = {
+    chimney: r(1) < 0.5 ? 1 : -1,             // which side it's on
+    door: r(2) < 0.5 ? 1 : -1,                // which side the knob's on
+    wins: [0, 1].map(i => ({ kind: choose(r(3 + i), WIN_KINDS), dy: (r(5 + i) - 0.5) * 9 })),
+    bars: r(7) < 0.4,                         // a glazing bar down each window
+    eave: choose(r(8), [[0.5, 'round'], [0.22, 'square'], [0.28, 'none']]),
+    up: choose(r(9), [[0.45, 'rect'], [0.25, 'round'], [0.3, 'middle']]),
+    roof: choose(r(10), [[0.26, 'plain'], [0.26, 'tiles'], [0.2, 'planks'], [0.14, 'patched'], [0.14, 'finial']]),
+  };
+  LOOKS.set(h, l);
+  return l;
+}
+/** One window of the given kind, centred on (x, y). */
+function pane(kind, x, y, fill, seed, bars) {
+  if (kind === 'round') blob(x, y, 7.6, 7.6, fill, seed, 8, 0.05, 0.4, 2.2);
+  else if (kind === 'arch') box([[x - 6.5, y + 10], [x - 6.5, y - 4], [x - 4.5, y - 10], [x, y - 12.5], [x + 4.5, y - 10], [x + 6.5, y - 4], [x + 6, y + 10]], fill, seed, 0.4, 2.2);
+  else if (kind === 'tall') box([[x - 6, y - 12], [x + 6, y - 13], [x + 5, y + 13], [x - 6, y + 14]], fill, seed, 0.5, 2.2);
+  else if (kind === 'wide') box([[x - 15, y - 8], [x + 15, y - 9], [x + 14, y + 8], [x - 14, y + 9]], fill, seed, 0.5, 2.2);
+  else box([[x - 6, y - 10], [x + 6, y - 11], [x + 5, y + 9], [x - 6, y + 10]], fill, seed, 0.5, 2.2);
+  if (bars) { const t = kind === 'tall' ? 12 : kind === 'round' ? 7 : 9.5; line([[x, y - t], [x, y + t]], seed + 5, 1.5, INK, 0.2); if (kind === 'wide') line([[x - 14, y], [x + 14, y]], seed + 6, 1.5, INK, 0.2); }
+}
 const ANNEX_WINDOW = [[-76, -29], [-61, -30], [-60, -14], [-75, -13]];
 function panes(h, fill) {
-  const sd = h.seed;
-  WINDOWS.forEach((w, i) => box(w, fill, sd + 40 + i, 0.5, 2.2));
+  const sd = h.seed, l = look(h), top = wallTop(h);
+  l.wins.forEach((w, i) => pane(w.kind, i ? 29.5 : -31.5, -41 + w.dy, fill, sd + 40 + i, l.bars));
+  ctx.save(); ctx.scale(l.door, 1);
   box([[-13, -48], [10, -50], [11, -30], [-11, -27]], fill, sd + 44, 0.5, 2.2);                  // the pane in the door
-  if (has(h, 'upstairs')) UP_WINDOWS.forEach((w, i) => box(w, fill, sd + 46 + i, 0.5, 2.2));
+  ctx.restore();
+  let eave = l.eave;
+  if (has(h, 'upstairs')) {
+    if (l.up === 'middle') { pane('wide', -1, -93, fill, sd + 46, l.bars); eave = 'none'; }   // one big window instead of two (and it takes the spot under the eaves)
+    else [-30.5, 29].forEach((x, i) => pane(l.up, x, -96, fill, sd + 46 + i, l.bars));
+  }
   if (has(h, 'annex')) box(ANNEX_WINDOW, fill, sd + 49, 0.5, 2.2);
-  blob(-3, -wallTop(h) + 17, 7.5, 6.5, fill, sd + 50, 8, 0.06, 0.4, 2.2);                             // round window under the eaves
+  if (eave === 'round') blob(-3, -top + 17, 7.5, 6.5, fill, sd + 50, 8, 0.06, 0.4, 2.2);              // a little window under the eaves
+  else if (eave === 'square') box([[-3, -top + 9], [5, -top + 17], [-3, -top + 25], [-11, -top + 17]], fill, sd + 50, 0.4, 2.2);
 }
 function annex(h, wall, roof) {
   box([[-86, 0], [-46, 0], [-46, -43], [-85, -41]], wall, h.seed + 60, 0.7);
   box([[-93, -35], [-46, -63], [-45, -38]], roof, h.seed + 61, 0.7);
 }
 function chimney(h, wall, cap, top) {
+  ctx.save(); ctx.scale(look(h).chimney, 1);
   box([[24, -top - 14], [24, -top - 43], [47, -top - 41], [47, -top + 2]], wall, h.seed + 62, 0.6);
   box([[19, -top - 43], [53, -top - 40], [52, -top - 49], [18, -top - 52]], cap, h.seed + 63, 0.6);
+  ctx.restore();
 }
 // The underside dips below the top of the walls, so the roof sits on the house with no gap.
 const roofPts = top => [[-69, -top + 9], [-30, -top - 26], [-1, -top - HOUSE.roof + 2], [28, -top - 26], [62, -top + 8], [30, -top + 4], [0, -top + 2], [-35, -top + 5]];
 function roofShape(h, fill, top) { box(roofPts(top), fill, h.seed + 1, 0.9); }
+/** What makes this roof its own: rows of tiles, planks, a couple of mended patches, or something on the ridge. */
+function roofDetail(h, fill, top) {
+  const kind = look(h).roof, sd = h.seed, dark = shade(fill, 0.8), peak = -top - HOUSE.roof;
+  if (kind === 'plain') return;
+  if (kind === 'finial') {   // a little pennant on the ridge
+    const d = look(h).door;
+    line([[-1, peak + 4], [-1, peak - 16]], sd + 30, 2.4, INK, 0.3);
+    box([[-1, peak - 16], [-1 + d * 12, peak - 12.5], [-1, peak - 8]], shade(fill, 1.15), sd + 31, 0.4, 2);
+    return;
+  }
+  const pts = wob(roofPts(top), sd + 1, 0.9);
+  ctx.save(); polyPath(pts); ctx.clip();
+  ctx.strokeStyle = dark; ctx.lineWidth = 2; ctx.lineCap = 'round';
+  if (kind === 'tiles') {
+    for (let row = 0, y = peak + 9; y < -top + 8; y += 9, row++) for (let x = -72 + (row % 2) * 5.5; x < 66; x += 11) { ctx.beginPath(); ctx.arc(x + jit(sd + row, x, 0.5), y, 5.5, 0.1, Math.PI - 0.1); ctx.stroke(); }
+  } else if (kind === 'planks') {
+    for (let x = -64; x < 62; x += 10.5) { const lean = x < -1 ? -5 : 5; ctx.beginPath(); ctx.moveTo(x + jit(sd, x, 1), peak); ctx.lineTo(x + lean + jit(sd + 1, x, 1), -top + 12); ctx.stroke(); }
+  } else {   // patched
+    for (const [i, x, y] of [[0, -38 + hs(sd, 41) * 14, -top - 9], [1, 12 + hs(sd, 42) * 16, -top - 16 - hs(sd, 43) * 8]]) box([[x, y], [x + 13, y - 1], [x + 12, y + 9], [x - 1, y + 10]], shade(fill, i ? 0.84 : 1.12), sd + 32 + i, 0.6, 1.8);
+  }
+  ctx.restore();
+  polyPath(pts); paint(null);   // the outline again, over the ends of the pattern
+}
 
 /**
  * The prankster's idea of decorating: a wild pattern filling the box from
@@ -135,15 +198,19 @@ export function drawHouse(h, lit) {
   const loud = pr && (pr.colors || [pr.wall, pr.roof, pr.dots, pr.wall]);   // (older saves had three colours)
   if (pr) wildFill(wob(wallPts, sd, 0.8), WILD.includes(pr.style) ? pr.style : 'bubbles', loud, (pr.seed || sd) + 1);
   if (done || p > 0.7) roofShape(h, roof, wtop);
+  if (done && !pr) roofDetail(h, roof, wtop);
   if (pr) wildFill(wob(roofPts(wtop), sd + 1, 0.9), WILD.includes(pr.roofStyle) ? pr.roofStyle : 'zigzag', loud.slice().reverse(), (pr.seed || sd) + 2);   // the roof gets a different one
   if (done) {
+    const l = look(h);
+    ctx.save(); ctx.scale(l.door, 1);   // the door can hang either way
     box([[-19, 0], [-21, -30], [-22, -56], [20, -58], [17, -30], [22, 0]], door, sd + 2, 0.6);
+    ctx.restore();
     panes(h, lit ? GLOW : GLASS);
-    dot(11, -22, 2.8); dot(11, -22, 1.5, '#ffd93b');
+    dot(11 * l.door, -22, 2.8); dot(11 * l.door, -22, 1.5, '#ffd93b');
     if (lit && has(h, 'chimney')) for (let i = 0; i < 2; i++) {                                  // someone's home: smoke
       const t = (S.now * 0.22 + i * 0.5 + hs(sd, 3)) % 1;
       ctx.globalAlpha = Math.sin(t * Math.PI);
-      blob(38 + t * 20, -top - 58 - t * 30, 6 + t * 6, 5 + t * 4, '#e0e0e0', sd + 70 + i, 8, 0.12, 0.6, 2.2);
+      blob(38 * l.chimney + t * 20, -top - 58 - t * 30, 6 + t * 6, 5 + t * 4, '#e0e0e0', sd + 70 + i, 8, 0.12, 0.6, 2.2);
     }
     ctx.globalAlpha = 1;
   }

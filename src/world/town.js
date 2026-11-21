@@ -97,12 +97,15 @@ export function planSwing() {
 export const makeBall = (x, y) => ({ x, y, z: 0, vx: 0, vy: 0, vz: 0, spin: 0 });
 
 /** Give every homeless critter a bed in a finished house, if there is one. */
+/** How many critters a house has room for: a side room sleeps one more, an upstairs two. */
+export const beds = h => HOUSE.residents + ((h.addons || []).includes('annex') ? 1 : 0) + ((h.addons || []).includes('upstairs') ? 2 : 0);
+export const livingIn = h => S.critters.filter(c => c.home === h);
 export function assignHomes() {
   const done = S.houses.filter(h => h.progress >= 1);
   for (const c of S.critters) {
     if (c.home && c.home.progress >= 1) continue;
-    let best = null, bn = HOUSE.residents;
-    for (const h of done) { const n = S.critters.filter(o => o.home === h).length; if (n < bn) { bn = n; best = h; } }
+    let best = null, room = 0;   // whichever house has the most room to spare
+    for (const h of done) { const spare = beds(h) - livingIn(h).length; if (spare > room) { room = spare; best = h; } }
     c.home = best;
   }
 }
