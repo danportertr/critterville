@@ -13,6 +13,7 @@ import { drawCairn, drawMonument } from './sculpture.js';
 import { drawStageBack, drawStageFront } from './stage.js';
 import { drawPile } from './site.js';
 import { drawPuffs } from '../puffs.js';
+import { drawShots } from '../activities/prank.js';
 import { currentSite } from '../sim/world.js';
 import { drawEventOverlay } from '../events/index.js';
 
@@ -112,7 +113,7 @@ export function render() {
   for (const s of new Set([currentSite(), S.monument && S.monument.progress < 1 ? S.monument : null])) if (s && !s.adding && s.phase !== 'striking') items.push([s.y + 12, o => drawPile(o, 1 - o.progress), s]);
   items.sort((a, b) => a[0] - b[0]);
   for (const it of items) it[1](it[2], it[3]);
-  drawPuffs();
+  drawPuffs(); drawShots();
   for (const f of S.flies) sc.drawButterfly(f, n);
   for (const f of S.floaters) drawBalloon(f, f.x, f.y);
   if (S.lostHat && !S.lostHat.held) drawLostHat(S.lostHat, drawHat);

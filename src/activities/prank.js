@@ -11,7 +11,7 @@ import { S, built, isNight } from '../state.js';
 import { DAY_LEN, PETALS, HOUSE } from '../config.js';
 import { TAU, rand, irand, pick, hs } from '../util.js';
 import { log, setTownName, TOWN } from '../ui.js';
-import { line, box } from '../draw/primitives.js';
+import { line, box, blob } from '../draw/primitives.js';
 import { puff } from '../puffs.js';
 import { wallTop, WILD } from '../draw/scenery.js';
 import { note } from '../journal.js';
@@ -80,7 +80,7 @@ const PRANKS = [
     at: h => ({ x: h.x - 50, y: h.y + 12 }),
     go(h) { S.ball.roof = S.houses.indexOf(h); S.ball.roofAt = S.clock; S.ball.vx = S.ball.vy = 0; S.ball.x = h.x - 24; S.ball.y = h.y; return 'threw the ball up onto a roof'; },
     where: () => S.ball && S.ball.roof != null ? S.houses[S.ball.roof] : null, when: () => S.ball.roofAt,
-    undo() { const h = S.houses[S.ball.roof]; S.ball.roof = null; if (h) { S.ball.x = h.x - 60; S.ball.y = h.y + 16; S.ball.z = 60; S.ball.vx = -70; } return 'got the ball down off the roof'; } },
+    undo() { const h = S.houses[S.ball.roof]; S.ball.roof = null; if (h) { S.ball.x = h.x - 60; S.ball.y = h.y + 16; S.ball.z = 60; S.ball.vx = -70; } return 'got the ball down off the roof'; } },   // (normally done with apples: see lobApples)
   { id: 'name', w: 1.8,
     can: () => S.townName === TOWN,
     at: sign,
@@ -148,18 +148,77 @@ export const prankster = {
   },
 };
 
+// ---- getting the ball down: apples ----
+const roofBall = h => ({ x: h.x - 26, y: h.y - (wallTop(h) + HOUSE.roof * 0.45) * HOUSE.scale });
+function lobApples(c, house) {
+  S.fixing = true;
+  c.cleanup = () => { S.fixing = false; };
+  goTo(c, house.x - 118, house.y + 16, () => {
+    c.dir = 1;
+    c.lob = { house, thrown: 0, need: 2 + irand(3), t: 0.9, wind: 0 };   // it takes a few goes
+    setAct(c, 'lob', 99);
+    say(c, pick(['hm', 'oh dear', 'the ball!']), 1.4);
+  });
+}
+/** Apples in flight. Called every tick from sim/world.js. */
+export function updateShots(dt) {
+  for (let i = S.shots.length - 1; i >= 0; i--) {
+    const s = S.shots[i];
+    if ((s.t += dt / s.dur) < 1) continue;
+    S.shots.splice(i, 1);
+    const c = s.by, h = s.house;
+    if (s.hit && S.ball.roof != null) {   // got it
+      puff('dust', s.x1, s.y1);
+      S.ball.roof = null; S.ball.x = h.x - 40; S.ball.y = h.y + 16; S.ball.z = (wallTop(h) + HOUSE.roof * 0.45) * HOUSE.scale; S.ball.vx = -80; S.ball.vy = 20; S.ball.vz = 60;
+      c.lob = null; c.cleanup = null; S.fixing = false;
+      setAct(c, 'wave', 2); say(c, pick(['got it!', 'ha!', 'yes!']), 1.6); c.hopV = 130;
+      log(`${c.name} knocked the ball off the roof with an apple.`);
+    } else if (!s.hit && rand() < 0.4 && c.act === 'lob') say(c, pick(['missed', 'nearly', 'bother', 'hm']), 1);
+    // either way the apple comes back down, and is somebody's snack
+    if (S.apples.length < 6) S.apples.push({ x: h.x + rand(-80, -30), y: h.y + rand(10, 24), z: 90, vz: 0, seed: irand(1e6), claimed: null, eaten: false });
+  }
+}
+export function drawShots() {
+  for (const s of S.shots) {
+    const x = s.x0 + (s.x1 - s.x0) * s.t, y = s.y0 + (s.y1 - s.y0) * s.t - Math.sin(s.t * Math.PI) * 46;
+    blob(x, y, 4.8, 4.5, '#fb6540', 5, 7, 0.06, 0.2, 2);
+    line([[x, y - 4], [x + 1.5, y - 7]], 6, 1.4, '#000', 0.1);
+  }
+}
+
 // ---- everybody else, putting things right ----
 const mess = () => PRANKS.map(p => ({ p, at: p.where() })).filter(m => m.at && S.clock - (m.p.when() || 0) > 50).sort((a, b) => (a.p.when() || 0) - (b.p.when() || 0));
 export const cleanUp = {
   id: 'cleanUp',
   weight: c => !c.pranking && !isPrankster(c) && !S.fixing && mess().length ? 2.2 : 0,
   start(c) {
-    const m = mess()[0], spot = m.p.id === 'name' ? sign() : m.p.id === 'junk' || m.p.id === 'dye' ? { x: S.pool.x + S.pool.rx + 24, y: S.pool.y + 12 } : { x: m.at.x + 40, y: m.at.y + 8 };
+    const m = mess()[0];
+    if (m.p.id === 'ball') return lobApples(c, m.at);   // the ball on the roof needs a different approach
+    const spot = m.p.id === 'name' ? sign() : m.p.id === 'junk' || m.p.id === 'dye' ? { x: S.pool.x + S.pool.rx + 24, y: S.pool.y + 12 } : { x: m.at.x + 40, y: m.at.y + 8 };
     S.fixing = true;
     c.cleanup = () => { S.fixing = false; };
     goTo(c, spot.x, spot.y, () => { c.fix = m.p; c.dir = m.at.x > c.x ? 1 : -1; setAct(c, 'putRight', m.p.paint ? rand(6, 8) : rand(3.5, 5)); c.strikeT = 0.4; if (rand() < 0.6) say(c, pick(['tsk tsk', 'ha!', 'oh dear', 'honestly']), 1.5); });
   },
   states: {
+    lob: {   // throwing apples at the ball on the roof until one knocks it off
+      mood: 'flat',
+      update(c, dt) {
+        const l = c.lob;
+        if (!l || S.ball.roof == null) return void setAct(c, 'idle', 1);
+        l.wind = Math.max(0, l.wind - dt);
+        if ((l.t -= dt) > 0) return;
+        l.t = 1.7; l.wind = 0.45; l.thrown++;
+        const hit = l.thrown >= l.need, aim = roofBall(l.house);
+        S.shots.push({ x0: c.x + c.dir * 22 * c.size, y0: c.y - 52 * c.size, x1: aim.x + (hit ? 0 : rand(-26, 26)), y1: aim.y + (hit ? 0 : rand(-22, 6)), t: 0, dur: 0.75, hit, by: c, house: l.house });
+        if (l.thrown === 1 && rand() < 0.7) say(c, pick(['hup!', 'right', 'watch this']), 1.2);
+      },
+      pose(c, p) {   // wind up, and throw
+        const w = c.lob ? c.lob.wind / 0.45 : 0;
+        p.hand(p.d, p.d * (10 + (1 - w) * 22), -50 - Math.sin(w * Math.PI) * 14); p.hand(-p.d, -p.d * 22, -22); p.rock = -p.d * 0.1 * w;
+        p.mouth = w > 0 ? 'oh' : 'flat';
+      },
+      props(c, p) { if (c.lob && c.lob.wind <= 0) blob(p.HD[0], p.HD[1] - 6, 4.6, 4.3, '#fb6540', c.seed + 6, 7, 0.06, 0.2, 2); },   // the next apple, ready
+    },
     putRight: {
       mood: 'smile',   // they don't mind
       update(c, dt) {
