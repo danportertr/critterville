@@ -26,10 +26,31 @@ export const WOOD = '#c9966b';
 export const STONE = '#d8d8e0';
 
 // Internet radio streams for the ♪ radio button (src/radio.js). Any direct
-// MP3/AAC stream URL works here.
+// MP3/AAC stream over https works here, as long as the station is happy to be
+// played from a web page (SomaFM, for one, is not). `name` is what the button
+// says, so keep it short; `credit` is who's really broadcasting, for the ticker.
+// Found through the radio-browser.info directory.
 export const STATIONS = [
   { name: 'lofi', url: 'https://lofi.stream.laut.fm/lofi', credit: 'lofi on laut.fm' },
   { name: 'chillhop', url: 'https://streams.ilovemusic.de/iloveradio17.mp3', credit: 'I Love Chillhop (ilovemusic.de)' },
+  { name: 'lofi beats', url: 'https://listen.reyfm.de/lofi_128kbps.mp3', credit: 'REYFM #lofi (reyfm.de)' },
+  { name: 'lofi jazz', url: 'https://radiorecord.hostingradio.ru/lofi96.aacp', credit: 'Radio Record Lo-Fi (radiorecord.ru)' },
+  { name: 'island lofi', url: 'https://radio.nia.nc/radio/8020/lofi-hq-stream.aac', credit: 'NIA Radio Lo-Fi (nia.nc)' },
+  { name: 'easy lofi', url: 'https://stream.0nlineradio.com/lo-fi', credit: '0nlineradio LO-FI (0nlineradio.com)' },
+  { name: 'study', url: 'https://das-sa39.cdnstream1.com/5582_128', credit: 'LITT Live Lofi (littlive.com)' },
+  { name: 'jazzhop', url: 'https://stream.epic-lounge.com/jazzhop-lounge', credit: 'Epic Lounge Jazzhop (epic-lounge.com)' },
+  { name: 'lounge', url: 'https://stream.epic-lounge.com/workday-lounge', credit: 'Epic Lounge Workday Lounge (epic-lounge.com)' },
+  { name: 'cafe', url: 'https://s35.derstream.net/100austria.mp3', credit: 'Lounge.FM (lounge.fm)' },
+  { name: 'smooth jazz', url: 'https://0n-smoothjazz.radionetz.de/0n-smoothjazz.aac', credit: '0N Smooth Jazz (0nradio.com)' },
+  { name: 'chill', url: 'https://media-ssl.musicradio.com/ChillMP3', credit: 'Smooth Chill (smoothradio.com)' },
+  { name: 'ambient', url: 'https://0n-chillout.radionetz.de/0n-chillout.aac', credit: '0N Chillout (0nradio.com)' },
+  { name: 'retro', url: 'https://daystream.palmerablanca.com/daystream-128.mp3', credit: 'Palmera Blanca Daystream (palmerablanca.com)' },
+  { name: 'electronic', url: 'https://public.isekoi-radio.com/listen/chill/radio.mp3', credit: 'ISEKOI Radio Chill Zone (isekoi-radio.com)' },
+  { name: 'drum & bass', url: 'https://stream.brokenbeats.net/tune', credit: 'Brokenbeats (brokenbeats.net)' },
+  { name: 'classical', url: 'https://stream.epic-classical.com/classical-music-for-sleep', credit: 'Epic Classical (epic-classical.com)' },
+  { name: 'sleepy', url: 'https://stream.epic-lounge.com/sleep-meditation', credit: 'Epic Lounge Sleep & Meditation (epic-lounge.com)' },
+  { name: 'rain', url: 'https://maggie.torontocast.com:2020/stream/natureradiorain', credit: 'Nature Radio Rain (torontocast.stream)' },
+  { name: 'nature', url: 'https://purenature-mynoise.radioca.st/stream', credit: 'myNoise Pure Nature (mynoise.net)' },
 ];
 
 export const CHAT = ['♥', '♪', '?', '!', 'ha', 'oh!', 'hm', 'hehe', 'wow', 'ok!', 'fish?', 'nice', 'bloop', 'yes', 'no!', '...'];

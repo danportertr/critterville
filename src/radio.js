@@ -6,6 +6,7 @@ import { log } from './ui.js';
 
 const $toggle = document.getElementById('radio-toggle');
 const $next = document.getElementById('radio-next');
+const $prev = document.getElementById('radio-prev');
 const audio = new Audio();
 audio.preload = 'none';
 audio.volume = 0.6;
@@ -19,7 +20,7 @@ function show() {
   $toggle.textContent = S.music ? `♪ ${STATIONS[station].name}` : '♪ radio';
   $toggle.classList.toggle('on', S.music);
   $toggle.setAttribute('aria-pressed', S.music);
-  $next.hidden = !S.music || STATIONS.length < 2;
+  $next.hidden = $prev.hidden = !S.music || STATIONS.length < 2;
 }
 function play() {
   S.music = true;
@@ -41,11 +42,12 @@ function tune(step) {
 audio.addEventListener('playing', () => { failures = 0; log(`On the radio: ${STATIONS[station].credit}`); });
 audio.addEventListener('error', () => {
   if (!S.music) return;
-  if (++failures < STATIONS.length) return tune(1);   // try the next one
+  if (++failures < 4) return tune(1);   // try the next few, then stop asking
   failures = 0; stop(); log("The radio can't find a signal right now.");
 });
 $toggle.addEventListener('click', () => (S.music ? stop() : play()));
 $next.addEventListener('click', () => tune(1));
+$prev.addEventListener('click', () => tune(-1));
 show();
 
 // ---- the critters' own music: can it be heard? ----
