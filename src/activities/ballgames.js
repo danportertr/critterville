@@ -260,10 +260,10 @@ export const balance = {
       mood: 'flat',
       update(c, dt) { tick(c, dt); },
       finish(c) { if (rand() < 0.45) { say(c, pick(['oops', 'drat']), 1.2); } else { say(c, pick(['ta-da', '♪']), 1.3); c.hopV = 110; } },
-      pose(c, p) { const q = Math.sin(p.now * 10); p.hl = [-17, -28 + q * 4]; p.hr = [17, -28 - q * 4]; },
-      props(c, p) {
+      pose(c, p) { const q = Math.sin(p.now * 7.5); p.hl = [-25, -30 + q * 4]; p.hr = [25, -30 - q * 4]; },
+      over(c, p) {   // (drawn last, so the balls pass in front of the face, not behind the head)
         for (let i = 0; i < 3; i++) {
-          const u = (p.now * 1.5 + i / 3) % 1, x = -17 + 34 * u, y = -34 - Math.sin(u * Math.PI) * 42;
+          const u = (p.now * 1.2 + i / 3) % 1, x = -25 + 50 * u, y = -34 - Math.pow(Math.sin(u * Math.PI), 0.7) * 86;   // hand to hand, up over the top of the head
           blob(i % 2 ? -x : x, y, 4.2, 4.2, (c.jugglers || PETALS)[i % 3], c.seed + 6 + i, 7, 0.03, 0.2, 1.8);
         }
       },
