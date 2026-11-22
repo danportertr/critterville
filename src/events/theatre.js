@@ -36,7 +36,7 @@ export default {
 // ---- the audience ----
 function seat(th, i) {   // two rows, well in front so nobody blocks the stage
   const row = i % 2, col = Math.floor(i / 2), side = col % 2 ? 1 : -1, n = Math.ceil(col / 2);
-  return { x: th.x + side * (22 + n * 44) - (row ? 20 : 0), y: th.y + 74 + row * 28 };
+  return { x: clamp(th.x + side * (22 + n * 44) - (row ? 20 : 0), 24, S.W - 24), y: Math.min(th.y + 74 + row * 28, S.H - 16) };   // (kept on the screen when the stage is near an edge)
 }
 function takeSeat(c, th) {
   const i = th.seats++;
@@ -48,11 +48,13 @@ export const playgoer = {
   id: 'playgoer',
   // During the show, find a seat. Before it (curtains still closed), drift over
   // and hang about in front of the stage, so there's a cast and a crowd to hand.
-  weight() { const th = S.theatre; return !th ? 0 : th.phase === 'show' && th.seats < 14 ? 6 : th.phase === 'ready' ? 8 : 0; },
+  // A play is the event of the week: nearly everyone who's finished what they
+  // were doing comes along (the odd one would still rather fish).
+  weight() { const th = S.theatre; return !th ? 0 : th.phase === 'show' && th.seats < 14 ? 70 : th.phase === 'ready' ? 70 : 0; },
   start(c) {
     const th = S.theatre;
     if (th.phase === 'show') return takeSeat(c, th);
-    goTo(c, th.x + rand(-130, 130), th.y + rand(64, 120), () => { if (S.theatre === th && th.phase === 'ready') { setAct(c, 'gather', 120); if (rand() < 0.3) say(c, pick(['soon?', 'a play!', 'shh', '♥']), 1.4); } });
+    goTo(c, th.x + rand(-130, 130), th.y + rand(64, 120), () => { if (S.theatre === th && th.phase === 'ready') { setAct(c, 'gather', 240); if (rand() < 0.3) say(c, pick(['soon?', 'a play!', 'shh', '♥']), 1.4); } });
   },
   states: {
     gather: {   // hanging about in front of the closed curtain until it's time
@@ -107,7 +109,7 @@ function raiseCurtain(th) {
   if (free.length < 3) return false;
   const play = buildPlay(), lead = free.find(c => c.name === play.hero);
   const cast = [lead, ...free.filter(c => c !== lead).sort(() => rand() - 0.5)].filter(Boolean).slice(0, 3);
-  Object.assign(th, { phase: 'show', play, cast, beat: -1, t: 0, curtain: 0, mood: null, seats: 0, wait: 16, settle: 7 });
+  Object.assign(th, { phase: 'show', play, cast, beat: -1, t: 0, curtain: 0, mood: null, seats: 0, wait: 16, settle: 11 });
   cast.forEach((c, i) => {
     const part = play.cast[i];
     release(c);
@@ -162,12 +164,12 @@ function curtainDown(th) {
 export function updateTheatre(dt) {
   const th = S.theatre;
   if (!th) return;
-  if (th.phase === 'building' && th.progress >= 1) { th.phase = 'ready'; th.wait = 12; th.patience = 75; }
+  if (th.phase === 'building' && th.progress >= 1) { th.phase = 'ready'; th.wait = 12; th.patience = 150; }
   else if (th.phase === 'ready') {
     // Hold the curtain until most of the town has drifted over (or we've waited long enough).
-    th.patience = (th.patience === undefined ? 75 : th.patience) - dt;
+    th.patience = (th.patience === undefined ? 150 : th.patience) - dt;
     const here = S.critters.filter(c => c.act === 'gather').length;
-    const crowd = here >= Math.min(6, S.critters.length * 0.6) || th.patience <= 0;
+    const crowd = here >= S.critters.length * 0.75 || th.patience <= 0;
     if ((th.wait -= dt) <= 0 && !isNight() && !(crowd && raiseCurtain(th))) th.wait = 3;
   }
   else if (th.phase === 'show') {

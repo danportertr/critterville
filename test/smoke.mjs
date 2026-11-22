@@ -79,7 +79,8 @@ for (const [w, h, name] of SIZES) {
   globalThis.innerWidth = w; globalThis.innerHeight = h;
   for (const fn of listeners.resize || []) fn();
   newTown(); startDiary();
-  const seen = new Set(), events = new Set(), stuck = new Map(), ballGames = new Set();
+  const seen = new Set(), events = new Set(), stuck = new Map(), ballGames = new Set(), crowds = [];
+  let crowd = -1;
   const t0 = Date.now();
   for (let i = 0; i < DAYS * DAY / STEP; i++) {
     S.now += STEP; S.boil = Math.floor(S.now * 5);
@@ -90,6 +91,9 @@ for (const [w, h, name] of SIZES) {
       check();
       for (const c of S.critters) seen.add(c.act);
       if (S.event) events.add(S.event.def.id);
+      // how many turned up to watch each play (the biggest audience it had)
+      if (S.theatre && S.theatre.phase === 'show') crowd = Math.max(crowd, S.critters.filter(c => c.act === 'audience').length);
+      else if (crowd >= 0) { crowds.push(crowd); crowd = -1; }
     }
     if (i % 900 === 0) {   // every half minute: is anybody doing the same thing in the same place as two days ago?
       for (const c of S.critters) {
@@ -104,8 +108,9 @@ for (const [w, h, name] of SIZES) {
       if (S.critters.length !== before.critters || S.houses.length !== before.houses) fail(`loading changed the town: ${JSON.stringify(before)} became ${S.critters.length} critters, ${S.houses.length} houses`);
     }
   }
+  if (crowds.length >= 3 && crowds.reduce((a, b) => a + b, 0) / crowds.length < 2.5) fail(`hardly anyone watches the plays (audiences: ${crowds.join(' ')})`);
   total += seen.size;
-  console.log(`ok  ${name.padEnd(7)} ${w}x${h}  ${DAYS} days in ${((Date.now() - t0) / 1000).toFixed(1)}s  ${S.critters.length} critters, ${S.houses.length} houses, ${S.plays.length} plays, ${S.games.length} games invented (${[...ballGames].filter(g => g.named).length} of ${ballGames.size} ball games were one of the town's own), ${seen.size} kinds of activity, events: ${[...events].join(' ') || 'none'}`);
+  console.log(`ok  ${name.padEnd(7)} ${w}x${h}  ${DAYS} days in ${((Date.now() - t0) / 1000).toFixed(1)}s  ${S.critters.length} critters, ${S.houses.length} houses, ${S.plays.length} plays (audiences: ${crowds.join(' ') || 'none'}), ${S.games.length} games invented (${[...ballGames].filter(g => g.named).length} of ${ballGames.size} ball games were one of the town's own), ${seen.size} kinds of activity, events: ${[...events].join(' ') || 'none'}`);
 }
 if (total < 30) fail('hardly anything happened, which is suspicious');
 console.log('\nAll towns ran without trouble.');
