@@ -115,6 +115,28 @@ for (const [w, h, name] of SIZES) {
   total += seen.size;
   console.log(`ok  ${name.padEnd(7)} ${w}x${h}  ${DAYS} days in ${((Date.now() - t0) / 1000).toFixed(1)}s  ${S.critters.length} critters, ${S.houses.length} houses, ${S.plays.length} plays (audiences: ${crowds.join(' ') || 'none'}), ${S.games.length} games invented (${[...ballGames].filter(g => g.named).length} of ${ballGames.size} ball games were one of the town's own), ${seen.size} kinds of activity, events: ${[...events].join(' ') || 'none'}`);
 }
+
+// Songs: make up a few dozen (every style comes round at least twice) and check that each part of each one makes sense.
+{
+  const { makeSong, partFor, kindOf } = await import('../src/data/music.js');
+  const kinds = new Set();
+  S.songs = [];
+  for (let i = 0; i < 42; i++) {
+    const song = makeSong({ name: 'Tester' });
+    S.songs.push(song); kinds.add(kindOf(song));
+    const bars = song.beats / song.meter;
+    if (bars !== song.chords.length) fail(`“${song.name}” (${kindOf(song)}) has ${song.chords.length} chords for ${bars} bars`);
+    let end = 0;
+    for (const n of song.melody) { if (n.b < end - 0.01 || n.d <= 0) fail(`“${song.name}” (${kindOf(song)}) has notes on top of each other at beat ${n.b}`); end = n.b + n.d; }
+    if (Math.abs(end - song.beats) > 0.01) fail(`“${song.name}” (${kindOf(song)}) ends at beat ${end} of ${song.beats}`);
+    for (const role of ['melody', 'harmony', 'bass', 'counter', 'rhythm']) {
+      const part = partFor(song, role);
+      if (!part.length) fail(`nothing to play for the ${role} of ${kindOf(song)}`);
+      for (const n of part) if (!(n.b >= 0 && n.b < song.beats && n.d > 0 && n.vel > 0) || (typeof n.midi === 'number' ? !(n.midi > 20 && n.midi < 110) : !['kick', 'tap', 'shake'].includes(n.midi))) fail(`a bad note in the ${role} of ${kindOf(song)}: ${JSON.stringify(n)}`);
+    }
+  }
+  console.log(`ok  songs   ${S.songs.length} made up, ${kinds.size} kinds: ${[...kinds].map(k => k.replace(/^a /, '')).join(', ')}`);
+}
 if (total < 30) fail('hardly anything happened, which is suspicious');
 console.log('\nAll towns ran without trouble.');
 process.exit(0);

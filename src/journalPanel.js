@@ -6,7 +6,7 @@ import { drawFish, drawMystery } from './draw/fish.js';
 import { localSpecies, waters, onJournalChange } from './journal.js';
 import { SKY } from './data/sky.js';
 import { drawSkyPicture } from './draw/sky.js';
-import { partFor } from './data/music.js';
+import { partFor, kindOf } from './data/music.js';
 import { playNote, unlockAudio } from './audio.js';
 
 const $btn = document.getElementById('journal-btn');
@@ -92,7 +92,7 @@ function renderSongs() {
   else $body.append(el('p', 'lede', 'Tunes the critters have made up. They play them in the evening. Each one fills out as more instruments join in, and that is how you hear it here.'));
   for (const song of S.songs) {
     const row = el('div', 'song'), text = el('div'), btn = el('button', '', '▶ play');
-    text.append(el('h3', '', song.name), el('p', 'meta', `Made up by ${song.by} on day ${song.day}.`));
+    text.append(el('h3', '', song.name), el('p', 'meta', `${kindOf(song).replace(/^a /, 'A ')}, made up by ${song.by} on day ${song.day}.`));
     if (lineUp(song)) text.append(el('p', 'meta', `Played so far on: ${lineUp(song)}.`));
     btn.addEventListener('click', () => playSong(song));
     row.append(text, btn); $body.append(row);

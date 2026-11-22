@@ -9,7 +9,7 @@ import { STREAM_HALF } from '../config.js';
 import { TAU, rand, irand, pick, dist } from '../util.js';
 import { log } from '../ui.js';
 import { playNote } from '../audio.js';
-import { makeInstrument, makeSong, partFor, roleFor } from '../data/music.js';
+import { makeInstrument, makeSong, partFor, roleFor, kindOf } from '../data/music.js';
 import { instrumentBody, instrumentAtMouth } from '../draw/instrument.js';
 import { blob, line } from '../draw/primitives.js';
 import { puff } from '../puffs.js';
@@ -66,13 +66,13 @@ function startBand(c) {
   const f = built(S.fire) ? S.fire : null, a = rand(TAU);
   const at = f ? { x: f.x + Math.cos(a) * 60, y: f.y + 30 + Math.abs(Math.sin(a)) * 16 } : { x: c.x, y: c.y };
   // Usually one of the town's own tunes; now and then, a new one.
-  let song = S.songs.length && (S.songs.length >= 6 || rand() < 0.65) ? pick(S.songs) : null;
+  let song = S.songs.length && (S.songs.length >= 9 || rand() < 0.65) ? pick(S.songs) : null;
   if (!song) {
     song = makeSong(c); S.songs.push(song);
-    note(`${c.name} made up a tune. The town is calling it “${song.name}”.`);
+    note(`${c.name} made up ${kindOf(song)}. The town is calling it “${song.name}”.`);
     journalChanged('songs');
   }
-  return (S.band = { song, x: at.x, y: at.y, members: [], coming: 0, t0: null, ends: S.clock + rand(42, 62), names: [] });
+  return (S.band = { song, x: at.x, y: at.y, members: [], coming: 0, t0: null, ends: S.clock + rand(48, 70), names: [] });
 }
 function joinBand(c, band) {
   const i = band.members.length + band.coming, side = i % 2 ? 1 : -1, n = Math.ceil(i / 2);
