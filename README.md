@@ -30,7 +30,7 @@ The critters:
 - make themselves instruments (no two sound alike), make up tunes that become the town's songs, and play them in the evening, alone or together in parts, while the others listen and dance
 - gather at the campfire in the evening and go home to sleep at night, except for the one or two night owls, who set up a telescope, fish in the dark, follow fireflies, and sleep in
 
-Every day or three something rare happens that leaves the town a little different: a shower brings up flowers (and a rainbow), a shooting star lands and stays as a glowing stone, a windy spell leaves a seedling that grows into a new tree, a duck family moves onto the water, a ring of mushrooms appears and everyone dances in it, or a bag of extra balls turns up for a day. Every few days they build a stage and put on a play about something that really happened in town, with a twist added (a dragon, a ghost, a duel), in costume, in front of everyone; then they take the stage down again. Now and then there's a picnic, a hat blows away and gets brought back, a postcard arrives from someone who left, or a rumour goes round about something big in the water. Sometimes a traveller wheels a cart into town for a few days: a hatmaker (critters keep their hats), a balloon seller, or an ice cream cart.
+Every day or three something rare happens that leaves the town a little different: a shower brings up flowers (and a rainbow), a shooting star lands and stays as a glowing stone, a windy spell leaves a seedling that grows into a new tree, a duck family moves onto the water, a ring of mushrooms appears and everyone dances in it, or a bag of extra balls turns up for a day. Sometimes they string up lights for a few days (strands between trees and houses, glass globes in the branches) that glow at night, and then take them down again. Every few days they build a stage and put on a play about something that really happened in town, with a twist added (a dragon, a ghost, a duel), in costume, in front of everyone; then they take the stage down again. Now and then there's a picnic, a hat blows away and gets brought back, a postcard arrives from someone who left, or a rumour goes round about something big in the water. Sometimes a traveller wheels a cart into town for a few days: a hatmaker (critters keep their hats), a balloon seller, or an ice cream cart.
 
 You can tap a critter to say hi, tap a house to see who lives there, tap a painting to see it up close, or tap the ground to drop a snack. There's also a little ♪ radio button that plays internet radio (the critters dance more when it's on). There are twenty stations to flick through with the ‹ › buttons, from lofi and jazzhop to rain and birdsong; they're listed in `src/config.js`. The town is saved in your browser, so it's still there when you come back.
 
@@ -52,7 +52,7 @@ then open http://localhost:8000. Add `?speed=10` to the URL to fast-forward time
 
 A few things are there to poke at from the browser console:
 
-- `critterville.trigger('rain')` makes a rare event happen now. The ids are `rain`, `star`, `wind`, `ducks`, `ring`, `cart`, `farewell`, `adventure`, `picnic`, `rumour`, `theatre` and `balls`.
+- `critterville.trigger('rain')` makes a rare event happen now. The ids are `rain`, `star`, `wind`, `ducks`, `ring`, `cart`, `farewell`, `adventure`, `picnic`, `rumour`, `theatre`, `balls` and `lights`.
 - `critterville.status()` says what's being built, how far along the monument is, and what each critter is doing.
 - `critterville.version` is the build number.
 
@@ -106,6 +106,7 @@ src/
     instrument.js    the critters' home-made instruments
     cart.js          travellers' carts, hats and balloons
     props.js         things events leave behind, and hammocks
+    lights.js        string lights and hanging globes
     render.js        one frame: depth sort, day/night wash, glows
   world/
     geometry.js      obstacles and finding empty spots

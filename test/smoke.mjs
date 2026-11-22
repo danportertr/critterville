@@ -80,6 +80,7 @@ for (const [w, h, name] of SIZES) {
   for (const fn of listeners.resize || []) fn();
   newTown(); startDiary();
   const seen = new Set(), events = new Set(), stuck = new Map(), ballGames = new Set(), crowds = [];
+  const lights = [];   // how each set of lights went: the phases it passed through
   let crowd = -1;
   const t0 = Date.now();
   for (let i = 0; i < DAYS * DAY / STEP; i++) {
@@ -91,6 +92,7 @@ for (const [w, h, name] of SIZES) {
       check();
       for (const c of S.critters) seen.add(c.act);
       if (S.event) events.add(S.event.def.id);
+      if (S.lights) { if (S.lights.seed !== lights.cur) { lights.cur = S.lights.seed; lights.push([]); } /* (by seed: loading a save makes a new object) */ const l = lights[lights.length - 1]; if (l[l.length - 1] !== S.lights.phase) l.push(S.lights.phase); }
       // how many turned up to watch each play (the biggest audience it had)
       if (S.theatre && S.theatre.phase === 'show') crowd = Math.max(crowd, S.critters.filter(c => c.act === 'audience').length);
       else if (crowd >= 0) { crowds.push(crowd); crowd = -1; }
@@ -109,6 +111,7 @@ for (const [w, h, name] of SIZES) {
     }
   }
   if (crowds.length >= 3 && crowds.reduce((a, b) => a + b, 0) / crowds.length < 2.5) fail(`hardly anyone watches the plays (audiences: ${crowds.join(' ')})`);
+  for (const l of lights.slice(0, -1)) if (l.join() !== 'up,on,down') fail(`a set of lights went ${l.join(' > ')} instead of up > on > down`);
   total += seen.size;
   console.log(`ok  ${name.padEnd(7)} ${w}x${h}  ${DAYS} days in ${((Date.now() - t0) / 1000).toFixed(1)}s  ${S.critters.length} critters, ${S.houses.length} houses, ${S.plays.length} plays (audiences: ${crowds.join(' ') || 'none'}), ${S.games.length} games invented (${[...ballGames].filter(g => g.named).length} of ${ballGames.size} ball games were one of the town's own), ${seen.size} kinds of activity, events: ${[...events].join(' ') || 'none'}`);
 }

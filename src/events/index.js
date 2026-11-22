@@ -23,8 +23,9 @@ import picnic from './picnic.js';
 import rumour from './rumour.js';
 import theatre from './theatre.js';
 import balls from './balls.js';
+import lights from './lights.js';
 
-const EVENTS = [rain, star, wind, ducks, ring, cart, farewell, adventure, picnic, rumour, theatre, balls];
+const EVENTS = [rain, star, wind, ducks, ring, cart, farewell, adventure, picnic, rumour, theatre, balls, lights];
 const later = () => S.clock + rand(1.2, 2.6) * DAY_LEN;
 const PLAY_EVERY = 4;   // days from one play to the next, at most
 

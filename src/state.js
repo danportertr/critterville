@@ -14,6 +14,7 @@ export const S = {
   sound: true,                     // may the critters' instruments be heard?
   news: [], newsId: 0,             // what there is to talk about (talk.js)
   mail: [],                        // postcards on their way: {from, to, line, due}
+  lights: null,                         // string lights and globes, up for a few days (events/lights.js)
   lostHat: null, picnic: null, rumour: null,   // (events/ and activities/errands.js)
   away: [],                        // critters off on an adventure: {who, place, back} (events/journeys.js)
   theatre: null,                   // a stage, while there's a play on (events/theatre.js)

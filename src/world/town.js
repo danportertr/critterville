@@ -124,7 +124,7 @@ export function scatterDecor() {
 
 export function newTown() {
   const { W, H } = S;
-  Object.assign(S, { critters: [], houses: [], trees: [], flowers: [], apples: [], arts: [], pond: null, stream: null, bridge: null, pool: null, swing: null, tank: null, event: null, nextEvent: 0, wind: 0, stones: [], rings: [], ducks: null, hammocks: [], visitor: null, puffs: [], shots: [], extraBalls: [], ballGames: [], games: [], stageDay: 0, floaters: [], recent: null, cairns: [], monument: null, away: [], news: [], newsId: 0, mail: [], lostHat: null, picnic: null, rumour: null, theatre: null, songs: [], songId: 0, plays: [], band: null, townName: 'Critterville', fixing: false });
+  Object.assign(S, { critters: [], houses: [], trees: [], flowers: [], apples: [], arts: [], pond: null, stream: null, bridge: null, pool: null, swing: null, tank: null, event: null, nextEvent: 0, wind: 0, stones: [], rings: [], ducks: null, hammocks: [], visitor: null, puffs: [], shots: [], extraBalls: [], ballGames: [], games: [], stageDay: 0, lights: null, floaters: [], recent: null, cairns: [], monument: null, away: [], news: [], newsId: 0, mail: [], lostHat: null, picnic: null, rumour: null, theatre: null, songs: [], songId: 0, plays: [], band: null, townName: 'Critterville', fixing: false });
   setTownName('Critterville');
   S.journal = newJournal();
   S.clock = DAY_LEN * 0.08;

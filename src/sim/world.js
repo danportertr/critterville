@@ -21,6 +21,7 @@ import { updatePuffs } from '../puffs.js';
 import { updateMusic } from '../activities/music.js';
 import { updateShots, updatePranks } from '../activities/prank.js';
 import { updateBallGames } from '../activities/ballgames.js';
+import { updateLights } from '../events/lights.js';
 import { DAY_LEN } from '../config.js';
 import { planHammock, between, shape as hangHammock } from '../activities/hammock.js';
 
@@ -131,6 +132,7 @@ export function updateWorld(dt) {
   for (const h of S.hammocks) hangHammock(h);
   for (const b of [S.ball, ...S.extraBalls]) updateBall(b, dt);
   updateBallGames(dt);
+  updateLights();
 
   if (S.swing) for (const seat of S.swing.seats) {
     const going = seat.user && seat.user.act === 'swing';

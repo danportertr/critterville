@@ -12,6 +12,7 @@ import { drawCart, drawBalloon, drawHat } from './cart.js';
 import { drawCairn, drawMonument } from './sculpture.js';
 import { drawStageBack, drawStageFront } from './stage.js';
 import { drawPile } from './site.js';
+import { drawStrand, drawGlobes, litPoints, drawLightsLit, anchorOf, rgb } from './lights.js';
 import { drawPuffs } from '../puffs.js';
 import { drawShots } from '../activities/prank.js';
 import { currentSite } from '../sim/world.js';
@@ -108,6 +109,10 @@ export function render() {
   if (S.monument) items.push([S.monument.y, drawMonument, S.monument]);
   if (S.visitor) { items.push([S.visitor.y, drawCart, S.visitor]); items.push([S.visitor.owner.y, drawCritter, S.visitor.owner]); }
   for (const h of S.hammocks) if (h.A) items.push([h.y, drawHammock, h]);
+  if (S.lights) {   // strands hang in front of both the things they're tied to; globes hang in front of their tree
+    for (const s of S.lights.strands) if (s.up && anchorOf(s.a) && anchorOf(s.b)) items.push([Math.max(anchorOf(s.a).y, anchorOf(s.b).y) + 0.6, drawStrand, s]);
+    for (const g of S.lights.globes) if (g.up && S.trees[g.tree]) items.push([S.trees[g.tree].y + 0.6, drawGlobes, g]);
+  }
   if (S.theatre) { items.push([S.theatre.y - 3, drawStageBack, S.theatre]); items.push([S.theatre.y - 0.5, drawStageFront, S.theatre]); }   // the cast stand in between
   for (const c of S.critters) if (!c.hidden && !c.offstage) items.push([c.y, drawCritter, c]);
   // materials stacked beside whatever is being built
@@ -131,7 +136,10 @@ export function render() {
     for (const f of S.flies) glow(f.x, f.y, 9, '230,255,140', (0.5 + 0.5 * Math.sin(S.now * 2 + f.seed)) * n);   // fireflies
     for (const a of S.arts) if (a.material === 'star' && a.progress >= 1) glow(a.x, a.y - 34, 46 + Math.sin(S.now * 2 + a.seed) * 3, '255,244,170', 0.5 * n);   // so do things carved from them
     for (const s of S.stones) glow(s.x, s.y - 8, 38 + Math.sin(S.now * 2 + s.seed) * 3, '255,244,170', 0.55 * n);   // fallen stars glow
+    const bulbs = litPoints();   // string lights and globes
+    for (const b of bulbs) glow(b.x, b.y, b.r * 5.5, rgb(b.c), 0.5 * n);
     ctx.globalCompositeOperation = 'source-over';
+    drawLightsLit(ctx, bulbs, n);
     for (const h of lit) {
       sc.drawHouseLights(h, n);
       for (const it of items) {   // whatever is in front of this house and overlapping it
